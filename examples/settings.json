@@ -1,0 +1,30 @@
+{
+	"telname": "VLBA",
+	"msname": "EHT_TEST.MS",
+	"toggle_autocorr": 0,
+	"stationtable": "../data/eht_future.stations",
+	"feed": "perfect R L",
+	"shadowlimit_frac": 1e-6,
+	"elevationlimit_deg": 10,
+	"sources": { "M87": {
+			"ra": "12h30m49.42",
+			"dec": "+12.23.28.04",
+			"epoch": "J2000"
+		     },
+		     "Cal": {
+			"ra": "12h30m0.0",
+			"dec": "+12.15.0.0",
+			"epoch": "J2000"
+		     }
+		   },
+	"scans": ["Cal", "M87", "Cal"],
+	"scanlengths_s": [300, 900, 300],
+	"scanlags_s": [180, 300],
+	"inttime_s": 10,
+	"poltype": "RR RL LR LL",
+	"spwnames": ["WBAND86", "GBAND230", "GBAND345"],
+	"centrefreq_ghz": [86.0, 228.0, 345.0],
+	"bandwidth_ghz": [2.0, 2.0, 2.0],
+	"nchan": 8,
+	"starttime": "UTC,2021/04/28/00:00:00.00"
+}

@@ -1,12 +1,9 @@
-ENV["JULIA_CONDAPKG_BACKEND"] = "Null" # never install Conda packages; run script after activating the correct Conda environment externally
-
 # import julia libraries
 using PythonCall
-using ArgParse
-using JSON3
 using CSV
 using DataFrames
 using Logging
+using JSON3
 
 # import python libraries
 simulator = pyimport("casatools" => "simulator")
@@ -17,25 +14,6 @@ measures = pyimport("casatools" => "measures")
 sm = simulator()
 tb = table()
 me = measures()
-
-# create argument parser
-function create_parser()
-    s = ArgParseSettings()
-
-    @add_arg_table s begin
-	"config"
-	    help = "Input JSON file name with observation settings"
-	    required = true
-	"--template", "-t"
-	    help = "Input CASA ANTENNA table to use as template"
-	    arg_type = String
-	"--clobber", "-c"
-	    action = :store_true
-	    help = "Overwrite existing arguments"
-    end
-
-    return parse_args(s)
-end
 
 function mkCasaAntTable(stationasciifile, delim, ignorerepeated, casatemplate)
     """
@@ -70,19 +48,12 @@ function mkCasaAntTable(stationasciifile, delim, ignorerepeated, casatemplate)
     return stationtable
 end
 
-function main()
+function genms(jsonpars::JSON3.Object, templatetable::String, clobber::Bool)
     """
     Main function to generate MS.
     """
-    # create parser
-    args = create_parser()
-
-    # load input json file
-    json_string = read(args["config"], String)
-    jsonpars = JSON3.read(json_string)
-
     # check if MS exists and optionally delete it
-    isdir(jsonpars.msname) ? (args["clobber"] || error("$(jsonpars.msname) exists! Not overwriting.")) : run(`rm -rf $(jsonpars.msname)`)
+    isdir(jsonpars.msname) ? (clobber || error("$(jsonpars.msname) exists! Not overwriting.")) : run(`rm -rf $(jsonpars.msname)`)
 
     # open new MS
     sm.open(jsonpars.msname)
@@ -94,9 +65,9 @@ function main()
     stationtable = ""
     if isfile(jsonpars.stationtable)
 	# check if template is specified
-	args["template"] == nothing && error("$(jsonpars.stationtable) is a CSV file but template CASA ANTENNA table not specified!")
+	templatetable == nothing && error("$(jsonpars.stationtable) is a CSV file but template CASA ANTENNA table not specified!")
 	@info("Creating new ANTENNA table from CSV station info file...")
-	stationtable = mkCasaAntTable(jsonpars.stationtable, " ", true, args["template"])
+	stationtable = mkCasaAntTable(jsonpars.stationtable, " ", true, templatetable)
 	@info("ANTENNA table $(stationtable) created")
     elseif isdir(jsonpars.stationtable)
 	stationtable = jsonpars.stationtable
@@ -169,5 +140,3 @@ function main()
     sm.close()
     @info("$(jsonpars.msname) successfully created.")
 end
-
-main()
