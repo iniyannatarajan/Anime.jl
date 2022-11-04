@@ -3,8 +3,8 @@ ENV["JULIA_CONDAPKG_BACKEND"] = "Null" # never install Conda packages; run scrip
 using ArgParse
 using JSON3
 
-include("../src/ForwardModelRIME.jl")
-using .ForwardModelRIME
+include("../src/Anime.jl")
+using .Anime
 
 # create argument parser
 function create_parser()
