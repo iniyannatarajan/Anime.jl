@@ -34,3 +34,6 @@ jsonpars = JSON3.read(json_string)
 
 # create an empty MS
 genms(jsonpars, args["template"], args["clobber"])
+
+# call wscean to predict visibilities
+#slicewscleanoutputs(jsonpars.fitsdir, jsonpars.toggle_polmodel, jsonpars.channelgroups)

@@ -1,8 +1,8 @@
 module Anime
 
-include("createdataset/genms.jl")
-include("predictvis/wscleanpredict.jl")
+include("generatems/genms.jl")
+#include("predictvis/wscleanpredict.jl")
 
-export genms
+export genms#, slicewscleaninputs
 
 end

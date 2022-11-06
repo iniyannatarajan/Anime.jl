@@ -1,4 +1,3 @@
-# import julia libraries
 using PythonCall
 using CSV
 using DataFrames
@@ -15,7 +14,7 @@ sm = simulator()
 tb = table()
 me = measures()
 
-function mkCasaAntTable(stationasciifile, delim, ignorerepeated, casatemplate)
+function mkCasaAntTable(stationasciifile::String, delim::String, ignorerepeated::Bool, casatemplate::String)
     """
     Generate a CASA antenna table from CSV station info file in the current working directory.
     """

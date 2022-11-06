@@ -1,6 +1,10 @@
 {
 	"telname": "VLBA",
+	"outputdir": "output",
 	"msname": "EHT_TEST.MS",
+	"fitsdir": "../data/sourcemodels/oldgrmhdpol",
+	"toggle_polmodel": 0,
+	"channelgroups": 1,
 	"toggle_autocorr": 0,
 	"stationtable": "../data/eht_future.stations",
 	"feed": "perfect R L",
@@ -10,16 +14,11 @@
 			"ra": "12h30m49.42",
 			"dec": "+12.23.28.04",
 			"epoch": "J2000"
-		     },
-		     "Cal": {
-			"ra": "12h30m0.0",
-			"dec": "+12.15.0.0",
-			"epoch": "J2000"
 		     }
 		   },
-	"scans": ["Cal", "M87", "Cal"],
-	"scanlengths_s": [300, 900, 300],
-	"scanlags_s": [180, 300],
+	"scans": ["M87"],
+	"scanlengths_s": [900],
+	"scanlags_s": [],
 	"inttime_s": 10,
 	"poltype": "RR RL LR LL",
 	"spwnames": ["WBAND86", "GBAND230", "GBAND345"],
