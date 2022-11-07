@@ -1,7 +1,5 @@
-using PythonCall
 using CSV
 using DataFrames
-using Logging
 using JSON3
 
 # import python libraries
@@ -82,6 +80,7 @@ function genms(jsonpars::JSON3.Object, templatetable::String, clobber::Bool)
     station_mount = tb.getcol("MOUNT")
     x, y, z = tb.getcol("POSITION")
     tb.close()
+    tb.clearlocks()
 
     coords = "global" # CASA antenna tables use ITRF by default
     obspos = me.observatory(jsonpars.telname)
@@ -96,7 +95,7 @@ function genms(jsonpars::JSON3.Object, templatetable::String, clobber::Bool)
     sm.setfeed(mode=jsonpars.feed)
 
     # set limits for data flagging
-    sm.setlimits(shadowlimit=jsonpars.shadowlimit_frac, elevationlimit=jsonpars.elevationlimit_deg)
+    sm.setlimits(shadowlimit=jsonpars.shadowlimit_frac, elevationlimit=jsonpars.elevationlimit)
 
     # set spectral windows
     length(jsonpars.centrefreq_ghz) != length(jsonpars.spwnames) && error("Check if centre frequencies are defined for all spectral windows or vice versa!")

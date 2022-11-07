@@ -1,42 +1,35 @@
-using PythonCall
-
 table = pyimport("casatools" => "table")
 tb = table()
 
-function runwsclean(msname::String, modelimage::String, toggle_polmodel::Bool, channelgroups::UInt64, start_timestep::UInt64, end_timestep::UInt64, osfactor::UInt64)
-    toggle_polmodel ? `wsclean -channels-out $channelgroups -predict -name $modelimage -interval $start_timestep $end_timestep -pol I,Q,U,V -no-reorder -oversampling $osfactor -no-small-inversion $msname` : `wsclean -channels-out $channelgroups -predict -name $modelimage -interval $start_timestep $end_timestep -oversampling $osfactor -no-small-inversion $msname`
-end
-
-function slicewscleaninputs(msname::String, fitsdir::String, toggle_polmodel::Bool, channelgroups::UInt64, )
+function runwsclean(msname::String, fitsdir::String, toggle_polmodel::Bool, channelgroups::Int64, osfactor::Int64)
     fitsfiles = readdir(fitsdir, sort=true)
-    nfits = 0
+    nmodels = 0
     if toggle_polmodel
-        length(fitsfiles)%4 ? nfits = length(fitsfiles)/channelgroups/4 : error("toggle_polmodel is set to true but some polarisation images are missing!")
+        length(fitsfiles)%4 == 0 ? nmodels = floor(Int64, length(fitsfiles)/channelgroups/4) : error("toggle_polmodel=true but missing polarised models!")
     else
-	nfitsfiles = length(fitsfiles)/channelgroups
+        nmodels = floor(Int64, length(fitsfiles)/channelgroups)
     end
 
     # read in the MS
     tb.open(msname)
     times = tb.getcol("TIME")
-    uniqtimes = unique(times) 
+    uniqtimes = unique(times)
+    tb.close()
+    tb.clearlocks()
 
-    # compute timesteps per fits image -- BUT NTIMES MUST BE READ FROM THE MS! use mutable struct somewhere and store values? ALSO, how to read model images for all scans?
-    ntimes_per_fits = floor(Int, ntimes/nfitsfiles)
+    # compute timesteps per fits image
+    rows_per_modelimg = floor(Int64, length(uniqtimes)/nmodels)
 
-    start_timestep = 0
-    endvis = ntimes_per_fits
+    # initialise start and end rows
+    startrow = 0
+    endrow = rows_per_modelimg
 
-            for img_ind in range(self.num_images):
-                temp_input_fits = '%s/t%04d'%(self.input_fitsimage,img_ind)
-                info('Simulating visibilities (corr dumps) from %d to %d using input sky model %s'%(startvis,endvis,temp_input_fits))
-                run_wsclean(temp_input_fits, self.input_fitspol, self.input_changroups, startvis, endvis, self.oversampling)
-                startvis = endvis
-                if img_ind != self.num_images-2:
-                    endvis = endvis + self.vis_per_image
-                else:
-                    endvis = endvis + 2*self.vis_per_image # INI: ensure all vis at the end are accounted for in the next (last) iteration.
-
-            # INI: Copy over data from MODEL_DATA to output_column if output_column is not MODEL_DATA
-            if self.output_column != 'MODEL_DATA':
-                copy_between_cols(self.output_column, 'MODEL_DATA')
+    # loop through FITS models (polarised or unpolarised)
+    @info("Inverting source models to visibilities...")
+    for fitsindex in 0:nmodels-1
+	infits = "$(fitsdir)/t$(lpad(fitsindex, 4, "0"))"
+	toggle_polmodel ? run(`wsclean -channels-out $channelgroups -predict -name $infits -interval $startrow $endrow -pol I,Q,U,V -no-reorder -oversampling $osfactor -no-small-inversion $msname`) : run(`wsclean -channels-out $channelgroups -predict -name $infits -interval $startrow $endrow -oversampling $osfactor -no-small-inversion $msname`)
+        startrow = endrow
+        fitsindex == nmodels-2 ? endrow += 2*rows_per_modelimg : endrow += rows_per_modelimg
+    end
+end

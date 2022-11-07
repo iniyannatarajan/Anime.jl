@@ -1,8 +1,11 @@
 module Anime
 
-include("generatems/genms.jl")
-#include("predictvis/wscleanpredict.jl")
+using PythonCall
+using Logging
 
-export genms#, slicewscleaninputs
+include("generatems/genms.jl")
+include("coherency/wscleanpredict.jl")
+
+export genms, runwsclean
 
 end
