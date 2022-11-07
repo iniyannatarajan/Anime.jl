@@ -1,6 +1,6 @@
 using CSV
-using DataFrames
 using JSON3
+using DataFrames
 
 # import python libraries
 simulator = pyimport("casatools" => "simulator")
@@ -110,7 +110,7 @@ function genms(jsonpars::JSON3.Object, templatetable::String, clobber::Bool)
     end
 
     # set obs fields
-    for (src, val) in jsonpars.sources
+    for (src, val) in jsonpars.source
         sm.setfield(sourcename=src, sourcedirection=me.direction(rf=val.epoch, v0=val.ra, v1=val.dec))
     end
 
@@ -121,16 +121,16 @@ function genms(jsonpars::JSON3.Object, templatetable::String, clobber::Bool)
     sm.settimes(integrationtime=jsonpars.inttime_s, usehourangle=false, referencetime=referencetime)
 
     # observe
-    length(jsonpars.scans) != length(jsonpars.scanlengths_s) && error("scanlist and scanlengthlist do not match!")
-    length(jsonpars.scans) != length(jsonpars.scanlags_s)+1 && error("scanlist and scanlaglist+1 do not match!")
+    Int64(jsonpars.scans) != length(jsonpars.scanlengths_s) && error("Number of scans and length(scanlengths_s) do not match!")
+    Int64(jsonpars.scans) != length(jsonpars.scanlags_s)+1 && error("Number of scans and length(scanlaglist)+1 do not match!")
 
     stoptime = 0
-    for ii in 1:length(jsonpars.scans)
+    for ii in 1:Int64(jsonpars.scans)
 	starttime = ii==1 ? 0 : stoptime+jsonpars.scanlags_s[ii-1]
 	stoptime = starttime + jsonpars.scanlengths_s[ii]
 
 	for jj in 1:length(jsonpars.spwnames)
-    	    sm.observe(sourcename=jsonpars.scans[ii], spwname=jsonpars.spwnames[jj], starttime="$(starttime)s", stoptime="$(stoptime)s")
+    	    sm.observe(sourcename=collect(keys(jsonpars.source))[1], spwname=jsonpars.spwnames[jj], starttime="$(starttime)s", stoptime="$(stoptime)s")
 	end
     end
 

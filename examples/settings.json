@@ -12,15 +12,15 @@
 	"feed": "perfect R L",
 	"shadowlimit_frac": 1e-6,
 	"elevationlimit": "10deg",
-	"sources": { "M87": {
+	"source": { "M87": {
 			"ra": "12h30m49.42",
 			"dec": "+12.23.28.04",
 			"epoch": "J2000"
 		     }
 		   },
-	"scans": ["M87"],
-	"scanlengths_s": [43000],
-	"scanlags_s": [],
+	"scans": 5,
+	"scanlengths_s": [1200, 1200, 1200, 1200, 1200],
+	"scanlags_s": [300, 300, 300, 300],
 	"inttime_s": 10,
 	"poltype": "RR RL LR LL",
 	"spwnames": ["GBAND230"],
