@@ -1,6 +1,5 @@
 {
 	"telname": "VLBA",
-	"outputdir": "/home/iniyan/software/dev/Anime.jl/examples/output",
 	"msname": "EHT_TEST.MS",
 	"datacolumn": "DATA",
 	"osfactor": 8191,
