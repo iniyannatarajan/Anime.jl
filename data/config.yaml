@@ -1,0 +1,66 @@
+####################################################
+# sample config file for AnimeDriver.jl
+####################################################
+# settings to generate a new ms
+
+msname: "eht.ms"                       # name of output ms
+datacolumn: "DATA"                     # name of output data column in the ms
+telescopename: "VLBA"                  # preset telescope known to casa (not important since CASA is not used for predict; just a req. arg. to setconfig)
+mode: "manual"                         # "vex", "uvfits", "manual" are the only allowed values
+vex:
+  vexfile: "/home/iniyan/software/dev/Anime.jl/data/vexfiles/e17e11.vex"    # name of the VEX schedule to use for observing
+uvfits:
+  uvfitsfile: "/home/iniyan/software/dev/Anime.jl/data/uvfitsfiles/hops_lo_3601_M87+zbl-dtcal_selfcal.uvfits" # name of uvfits file to convert to ms
+manual:
+  autocorr: false                                                           # toggle whether to include autocorrelations
+  stations: "/home/iniyan/software/dev/Anime.jl/data/eht_future.stations"   # CSV file with station parameters
+  feed: "perfect R L"                                                       # "perfect R L" or "perfect X Y"
+  shadowlimit: 1e-6                                                         # maximum fraction of geometrically shadowed area before flagging occurs
+  elevationlimit: "10deg"                                                   # minimum elevation angle before flagging occurs
+  source:
+    M87:
+      RA: "12h30m49.42"                                                       # right ascension of source position in hours
+      Dec: "+12.23.28.04"                                                     # declination of source position in degrees
+      epoch: "J2000"                                                          # "J2000" or "B1950"
+  scans: 5                                                                  # number of scans
+  scanlengths: [1200, 1200, 1200, 1200, 1200]                               # list of lengths of each scan in seconds
+  scanlags: [300, 300, 300, 300]                                            # list of lengths of lag times between scans (one less than number of scans)
+  inttime: 10.0                                                             # integration time in seconds
+  stokes: "RR RL LR LL"                                                     # CASA understandable Stokes types to simulate (check official MS specification)
+  spwname:
+    GBAND230:
+      centrefreq: 228.0                                                     # centre frequency of spw in GHz
+      bandwidth: 2.0                                                        # bandwidth of spw in GHz
+      channels: 32                                                          # number of channels in spw
+  starttime: "UTC,2021/04/28/00:00:00.00"                                   # starting time of the first scan in the observation
+
+####################################################
+# settings for wsclean predict
+
+osfactor: 8191                                                              # oversampling factor
+modelmode: "fits"                                                           # "fits" or "hdf5"
+hdf5: "/home/iniyan/software/dev/Anime.jl/data/sspot_freq_230e9.hdf5"       # name of HDF5 file
+fits: "/home/iniyan/software/dev/Anime.jl/data/sourcemodels/grmhdpol"       # directory containing FITS sky models
+polarized: true                                                             # toggle source model polarization
+channelgroups: 1                                                            # number of groups to divide the channels into
+
+####################################################
+# settings for atmospheric corruptions
+
+####################################################
+# settings for primary beam
+
+####################################################
+# settings for instrumental polarization
+
+####################################################
+# settings for antenna gains
+
+####################################################
+# settings for bandpass
+
+####################################################
+# other settings
+
+thermalnoise: true                                                          # toggle thermal noise
+

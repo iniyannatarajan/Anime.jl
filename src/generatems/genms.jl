@@ -1,5 +1,4 @@
 using CSV
-using JSON3
 using DataFrames
 
 # import python libraries
@@ -12,7 +11,7 @@ sm = simulator()
 tb = table()
 me = measures()
 
-function mkCasaAntTable(stationasciifile::String, delim::String, ignorerepeated::Bool, casatemplate::String)
+function mkCasaAntTable(stationasciifile::String, delim::String, ignorerepeated::Bool, casaanttemplate::String)
     """
     Generate a CASA antenna table from CSV station info file in the current working directory.
     """
@@ -22,7 +21,7 @@ function mkCasaAntTable(stationasciifile::String, delim::String, ignorerepeated:
     stationtable = "ANTENNA_$(split(basename(stationasciifile), '.')[1])"
 
     # read template table and copy
-    tb.open(casatemplate)
+    tb.open(casaanttemplate)
     tb.copy(stationtable, deep=true, valuecopy=true)
     tb.close()
     tb.clearlocks()
@@ -45,31 +44,28 @@ function mkCasaAntTable(stationasciifile::String, delim::String, ignorerepeated:
     return stationtable
 end
 
-function genms(jsonpars::JSON3.Object, templatetable::String, clobber::Bool)
+function genms(yamlconf::Dict, casaanttemplate::String)
     """
     Main function to generate MS.
     """
-    # check if MS exists and optionally delete it
-    isdir(jsonpars.msname) ? (clobber || error("$(jsonpars.msname) exists! Not overwriting.")) : run(`rm -rf $(jsonpars.msname)`)
-
     # open new MS
-    sm.open(jsonpars.msname)
+    sm.open(yamlconf["msname"])
 
     # set autocorr
-    Bool(jsonpars.toggle_autocorr) ? sm.setauto(autocorrwt=1.0) : sm.setauto(autocorrwt=0.0)
+    Bool(yamlconf["manual"]["autocorr"]) ? sm.setauto(autocorrwt=1.0) : sm.setauto(autocorrwt=0.0)
     
     # set antenna config -- optionally create a new CASA ANTENNA table if the station info is in a CSV file
     stationtable = ""
-    if isfile(jsonpars.stationtable)
+    if isfile(yamlconf["manual"]["stations"])
 	# check if template is specified
-	templatetable == nothing && error("$(jsonpars.stationtable) is a CSV file but template CASA ANTENNA table not specified!")
+	casaanttemplate == nothing && error("$(yamlconf["manual"]["stations"]) is a CSV file but template CASA ANTENNA table not specified!")
 	@info("Creating new ANTENNA table from CSV station info file...")
-	stationtable = mkCasaAntTable(jsonpars.stationtable, " ", true, templatetable)
+	stationtable = mkCasaAntTable(yamlconf["manual"]["stations"], " ", true, casaanttemplate)
 	@info("ANTENNA table $(stationtable) created")
-    elseif isdir(jsonpars.stationtable)
-	stationtable = jsonpars.stationtable
+    elseif isdir(yamlconf["manual"]["stations"])
+	stationtable = yamlconf["manual"]["stations"]
     else
-        error("$(jsonpars.stationtable) does not exist!")
+        error("$(yamlconf["manual"]["stations"]) does not exist!")
     end
 
     # station locations are contained in a casa antenna table
@@ -83,58 +79,55 @@ function genms(jsonpars::JSON3.Object, templatetable::String, clobber::Bool)
     tb.clearlocks()
 
     coords = "global" # CASA antenna tables use ITRF by default
-    obspos = me.observatory(jsonpars.telname)
+    obspos = me.observatory(yamlconf["telescopename"])
     me.doframe(obspos)
 
     # NB: For any Python array with strings, convert elements to Julia strings and cast the entire Vector to PyList()
-    sm.setconfig(telescopename=jsonpars.telname, x=x, y=y, z=z,
+    sm.setconfig(telescopename=yamlconf["telescopename"], x=x, y=y, z=z,
 		 dishdiameter=dish_diameter, mount=PyList(string.(station_mount)), antname=PyList(string.(station_ind)),
 		 padname=PyList(string.(station_code)), coordsystem=coords, referencelocation=obspos)
 
     # set feed
-    sm.setfeed(mode=jsonpars.feed)
+    sm.setfeed(mode=yamlconf["manual"]["feed"])
 
     # set limits for data flagging
-    sm.setlimits(shadowlimit=jsonpars.shadowlimit_frac, elevationlimit=jsonpars.elevationlimit)
+    sm.setlimits(shadowlimit=yamlconf["manual"]["shadowlimit"], elevationlimit=yamlconf["manual"]["elevationlimit"])
 
     # set spectral windows
-    length(jsonpars.centrefreq_ghz) != length(jsonpars.spwnames) && error("Check if centre frequencies are defined for all spectral windows or vice versa!")
-    length(jsonpars.bandwidth_ghz) != length(jsonpars.spwnames) && error("Check if bandwidths are defined for all spectral windows or vice versa!")
-
-    for ii in 1:length(jsonpars.spwnames)
-	startfreq = jsonpars.centrefreq_ghz[ii] - jsonpars.bandwidth_ghz[ii]/2
-	deltafreq = jsonpars.bandwidth_ghz[ii]/jsonpars.nchan
-	sm.setspwindow(spwname=jsonpars.spwnames[ii], freq="$(startfreq)GHz",
-		deltafreq="$(deltafreq)GHz", freqresolution="$(deltafreq)GHz",
-                nchannels=jsonpars.nchan, stokes=jsonpars.poltype)
+    for (key, val) in yamlconf["manual"]["spwname"]
+	startfreq = val["centrefreq"] - val["bandwidth"]-2.0
+	chanwidth = val["bandwidth"]/val["channels"]
+	sm.setspwindow(spwname=key, freq="$(startfreq)GHz",
+		deltafreq="$(chanwidth)GHz", freqresolution="$(chanwidth)GHz",
+		nchannels=val["channels"], stokes=yamlconf["manual"]["stokes"])
     end
 
     # set obs fields
-    for (src, val) in jsonpars.source
-        sm.setfield(sourcename=src, sourcedirection=me.direction(rf=val.epoch, v0=val.ra, v1=val.dec))
+    for (key, val) in yamlconf["manual"]["source"]
+	sm.setfield(sourcename=key, sourcedirection=me.direction(rf=val["epoch"], v0=val["RA"], v1=val["Dec"]))
     end
 
     # set obs times
-    obs_starttime = split(jsonpars.starttime, ",")
+    obs_starttime = split(yamlconf["manual"]["starttime"], ",")
     referencetime = me.epoch(obs_starttime...)
     me.doframe(referencetime)
-    sm.settimes(integrationtime=jsonpars.inttime_s, usehourangle=false, referencetime=referencetime)
+    sm.settimes(integrationtime=yamlconf["manual"]["inttime"], usehourangle=false, referencetime=referencetime)
 
     # observe
-    Int64(jsonpars.scans) != length(jsonpars.scanlengths_s) && error("Number of scans and length(scanlengths_s) do not match!")
-    Int64(jsonpars.scans) != length(jsonpars.scanlags_s)+1 && error("Number of scans and length(scanlaglist)+1 do not match!")
+    Int64(yamlconf["manual"]["scans"]) != length(yamlconf["manual"]["scanlengths"]) && error("Number of scans and length(scanlengths_s) do not match!")
+    Int64(yamlconf["manual"]["scans"]) != length(yamlconf["manual"]["scanlags"])+1 && error("Number of scans and length(scanlaglist)+1 do not match!")
 
     stoptime = 0
-    for ii in 1:Int64(jsonpars.scans)
-	starttime = ii==1 ? 0 : stoptime+jsonpars.scanlags_s[ii-1]
-	stoptime = starttime + jsonpars.scanlengths_s[ii]
+    for ii in 1:Int64(yamlconf["manual"]["scans"])
+	starttime = ii==1 ? 0 : stoptime+yamlconf["manual"]["scanlags"][ii-1]
+	stoptime = starttime + yamlconf["manual"]["scanlengths"][ii]
 
-	for jj in 1:length(jsonpars.spwnames)
-    	    sm.observe(sourcename=collect(keys(jsonpars.source))[1], spwname=jsonpars.spwnames[jj], starttime="$(starttime)s", stoptime="$(stoptime)s")
+	for (key, val) in yamlconf["manual"]["spwname"]
+	    sm.observe(sourcename=collect(keys(yamlconf["manual"]["source"]))[1], spwname=key, starttime="$(starttime)s", stoptime="$(stoptime)s")
 	end
     end
 
     # clean up
     sm.close()
-    @info("$(jsonpars.msname) successfully created.")
+    @info("$(yamlconf["msname"]) successfully created.")
 end

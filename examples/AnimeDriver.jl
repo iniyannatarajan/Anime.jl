@@ -1,7 +1,7 @@
 ENV["JULIA_CONDAPKG_BACKEND"] = "Null" # never install Conda packages; run script after activating the correct Conda environment externally
 
 using ArgParse
-using JSON3
+using YAML
 using Logging
 
 include("../src/Anime.jl")
@@ -32,26 +32,35 @@ end
 # create parser
 args = create_parser()
 
-
-# Change to output directory -- all operations are performed within the output directory
+# get absolute paths of the input files
 startdir = pwd()
-isdir(args["outdir"]) || mkdir(args["outdir"])
-@info("Changing working directory to $(args["outdir"])")
-cd(args["outdir"])
-# ensure argparse paths are absolute
 config = abspath(startdir, args["config"])
 template = abspath(startdir, args["template"])
 
-# load input json file
-json_string = read(config, String)
-jsonpars = JSON3.read(json_string)
+# load input YAML file
+yamlconf = YAML.load_file(config, dicttype=Dict{String,Any})
 
-# create an empty MS
-genms(jsonpars, template, args["clobber"])
+# change to output directory, optionally creating it if it does not exist
+isdir(args["outdir"]) || mkdir(args["outdir"])
+@info("Changing working directory to $(args["outdir"])")
+cd(args["outdir"])
 
-# call wscean to predict visibilities
-runwsclean(jsonpars.msname, jsonpars.fitsdir, Bool(jsonpars.toggle_polmodel), jsonpars.channelgroups, jsonpars.osfactor)
+# create a new empty MS
+
+# check if MS exists and if yes, delete it
+isdir(yamlconf["msname"]) ? (args["clobber"] || error("$(yamlconf["msname"]) exists! Not overwriting.")) : run(`rm -rf $(yamlconf["msname"])`)
+genms(yamlconf, template)
+
+# call wscean to predict visibilities -- TODO: read in hdf5 model and create fitsdir with sky models
+if yamlconf["modelmode"] == "fits"
+    runwsclean(yamlconf["msname"], yamlconf["fits"], yamlconf["polarized"], yamlconf["channelgroups"], yamlconf["osfactor"])
+elseif yamlconf["modelmode"] == "hdf5"
+    runwsclean(yamlconf["msname"], yamlconf["hdf5"], yamlconf["polarized"], yamlconf["channelgroups"], yamlconf["osfactor"])
+else
+    error("Unrecognised value $(yamlconf["modelmode"]) for modelmode! Allowed values are 'hdf5' or 'fits'.")
+end
 
 # Change back to original working directory
 @info("Changing working directory back to $(startdir)")
 cd(startdir)
+@info("Anime run completed successfully :)")
