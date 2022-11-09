@@ -3,17 +3,17 @@
 ####################################################
 # settings to generate a new ms
 
-msname: "eht.ms"                       # name of output ms
-datacolumn: "DATA"                     # name of output data column in the ms
-telescopename: "VLBA"                  # preset telescope known to casa (not important since CASA is not used for predict; just a req. arg. to setconfig)
-mode: "manual"                         # "vex", "uvfits", "manual" are the only allowed values
+msname: "eht.ms"                                                            # name of output ms
+datacolumn: "DATA"                                                          # name of output data column in the ms
+telescopename: "VLBA"                                                       # preset telescope known to casa (not important since CASA is not used for predict; just an argument required for setconfig)
+stations: "/home/iniyan/software/dev/Anime.jl/data/eht_future.stations"     # CSV file with station parameters
+mode: "manual"                                                              # "vex", "uvfits", "manual" are the only allowed values
 vex:
   vexfile: "/home/iniyan/software/dev/Anime.jl/data/vexfiles/e17e11.vex"    # name of the VEX schedule to use for observing
 uvfits:
   uvfitsfile: "/home/iniyan/software/dev/Anime.jl/data/uvfitsfiles/hops_lo_3601_M87+zbl-dtcal_selfcal.uvfits" # name of uvfits file to convert to ms
 manual:
   autocorr: false                                                           # toggle whether to include autocorrelations
-  stations: "/home/iniyan/software/dev/Anime.jl/data/eht_future.stations"   # CSV file with station parameters
   feed: "perfect R L"                                                       # "perfect R L" or "perfect X Y"
   shadowlimit: 1e-6                                                         # maximum fraction of geometrically shadowed area before flagging occurs
   elevationlimit: "10deg"                                                   # minimum elevation angle before flagging occurs
@@ -38,7 +38,7 @@ manual:
 # settings for wsclean predict
 
 osfactor: 8191                                                              # oversampling factor
-modelmode: "fits"                                                           # "fits" or "hdf5"
+skymodelmode: "fits"                                                        # "fits" or "hdf5"
 hdf5: "/home/iniyan/software/dev/Anime.jl/data/sspot_freq_230e9.hdf5"       # name of HDF5 file
 fits: "/home/iniyan/software/dev/Anime.jl/data/sourcemodels/grmhdpol"       # directory containing FITS sky models
 polarized: true                                                             # toggle source model polarization
@@ -47,20 +47,39 @@ channelgroups: 1                                                            # nu
 ####################################################
 # settings for atmospheric corruptions
 
+atmosphere: ["troposphere", "ionosphere"]
+
+troposphere:                                                                # add troposphere
+  wetonly: false                                                            # add only the wet component
+  attenuate: false                                                          # signal attenuation due to opacity
+  skynoise: false                                                           # add tropospheric contribution to sky noise
+  turbulence: false                                                         # add turbulent phases
+  meandelay: false                                                          # add mean delays
+  fixdelays: false                                                          # add fixed delays 
+
+ionosphere:                                                                 # add ionosphere
+
 ####################################################
-# settings for primary beam
+# beam and pointing settings
+
+beam: ["pointing"]                                                                 # add pointing effects
+
+pointing:
+  samplinginterval: 10.0                                                    # time interval after which to regenerate pointing errors, in minutes
 
 ####################################################
 # settings for instrumental polarization
 
-####################################################
-# settings for antenna gains
+instrumentpol: false                                                        # add instrumental polarization
 
 ####################################################
-# settings for bandpass
+# settings for gains
+
+stationgains: false                                                         # add antenna gains
+bandpass: false                                                             # add bandpass effects 
 
 ####################################################
 # other settings
 
-thermalnoise: true                                                          # toggle thermal noise
-
+thermalnoise: false                                                         # toggle thermal noise
+correff: 0.88                                                               # correlator efficiency for 2 quantization bits (0.636 for 1-bit)

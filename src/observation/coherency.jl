@@ -1,7 +1,12 @@
+export runwsclean
+
 table = pyimport("casatools" => "table")
 tb = table()
 
 function runwsclean(msname::String, fitsdir::String, polarized::Bool, channelgroups::Int64, osfactor::Int64)
+    """
+    Run wsclean
+    """
     fitsfiles = readdir(fitsdir, sort=true)
     nmodels = 0
     if polarized
@@ -32,4 +37,5 @@ function runwsclean(msname::String, fitsdir::String, polarized::Bool, channelgro
         startrow = endrow
         fitsindex == nmodels-2 ? endrow += 2*rows_per_modelimg : endrow += rows_per_modelimg
     end
+    @info("Uncorrupted visibilities computed 🆗")
 end

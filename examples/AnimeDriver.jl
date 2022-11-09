@@ -45,22 +45,23 @@ isdir(args["outdir"]) || mkdir(args["outdir"])
 @info("Changing working directory to $(args["outdir"])")
 cd(args["outdir"])
 
-# create a new empty MS
-
-# check if MS exists and if yes, delete it
+# create a new empty MS -- check if it exists and if yes, delete
 isdir(yamlconf["msname"]) ? (args["clobber"] || error("$(yamlconf["msname"]) exists! Not overwriting.")) : run(`rm -rf $(yamlconf["msname"])`)
-genms(yamlconf, template)
+generatems(yamlconf, template)
 
 # call wscean to predict visibilities -- TODO: read in hdf5 model and create fitsdir with sky models
-if yamlconf["modelmode"] == "fits"
+if yamlconf["skymodelmode"] == "fits"
     runwsclean(yamlconf["msname"], yamlconf["fits"], yamlconf["polarized"], yamlconf["channelgroups"], yamlconf["osfactor"])
-elseif yamlconf["modelmode"] == "hdf5"
+elseif yamlconf["skymodelmode"] == "hdf5"
     runwsclean(yamlconf["msname"], yamlconf["hdf5"], yamlconf["polarized"], yamlconf["channelgroups"], yamlconf["osfactor"])
 else
-    error("Unrecognised value $(yamlconf["modelmode"]) for modelmode! Allowed values are 'hdf5' or 'fits'.")
+    error("Unrecognised value \"$(yamlconf["skymodelmode"])\" for modelmode! Allowed values are 'hdf5' or 'fits'.")
 end
+
+# add thermal noise
+yamlconf["thermalnoise"] && thermalnoise(yamlconf["stations"], " ", true, yamlconf["correff"])
 
 # Change back to original working directory
 @info("Changing working directory back to $(startdir)")
 cd(startdir)
-@info("Anime run completed successfully :)")
+@info("Anime run completed successfully 💯")

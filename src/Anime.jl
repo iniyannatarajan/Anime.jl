@@ -4,9 +4,7 @@ using YAML
 using Logging
 using PythonCall
 
-include("generatems/genms.jl")
-include("coherency/wscleanpredict.jl")
-
-export genms, runwsclean
+include("observation/observation.jl")
+include("corruption/corruption.jl")
 
 end

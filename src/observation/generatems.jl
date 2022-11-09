@@ -1,3 +1,5 @@
+export generatems
+
 using CSV
 using DataFrames
 
@@ -11,14 +13,14 @@ sm = simulator()
 tb = table()
 me = measures()
 
-function mkCasaAntTable(stationasciifile::String, delim::String, ignorerepeated::Bool, casaanttemplate::String)
+function makecasaanttable(stations::String, delim::String, ignorerepeated::Bool, casaanttemplate::String)
     """
     Generate a CASA antenna table from CSV station info file in the current working directory.
     """
-    # read in the ASCII file
-    df = CSV.read(stationasciifile, DataFrame; delim=delim, ignorerepeated=ignorerepeated)
+    # read in the stations CSV file
+    df = CSV.read(stations, DataFrame; delim=delim, ignorerepeated=ignorerepeated)
     
-    stationtable = "ANTENNA_$(split(basename(stationasciifile), '.')[1])"
+    stationtable = "ANTENNA_$(split(basename(stations), '.')[1])"
 
     # read template table and copy
     tb.open(casaanttemplate)
@@ -34,9 +36,9 @@ function mkCasaAntTable(stationasciifile::String, delim::String, ignorerepeated:
     tb.putcol("STATION", PyList(string.(df.station)))
     tb.putcol("NAME", PyList(string.(1:length(df.station)))) # assign numbers as indices/names for the stations
     tb.putcol("MOUNT", PyList(string.(df.mount)))
-    tb.putcol("DISH_DIAMETER", PyList(df.dish_diameter))
+    tb.putcol("DISH_DIAMETER", PyList(df.dishdiameter_m))
     for jj in 1:length(df.station)
-	tb.putcell("POSITION", jj-1, PyList(parse.(Float64, split.(df.xzy_position_m,',')[jj])))
+	tb.putcell("POSITION", jj-1, PyList(parse.(Float64, split.(df.xyzpos_m,',')[jj])))
     end
     tb.close()
     tb.clearlocks()
@@ -44,7 +46,16 @@ function mkCasaAntTable(stationasciifile::String, delim::String, ignorerepeated:
     return stationtable
 end
 
-function genms(yamlconf::Dict, casaanttemplate::String)
+function msfromconfig()
+end
+
+function msfromvex()
+end
+
+function msfromuvfits()
+end
+
+function generatems(yamlconf::Dict, casaanttemplate::String)
     """
     Main function to generate MS.
     """
@@ -56,16 +67,15 @@ function genms(yamlconf::Dict, casaanttemplate::String)
     
     # set antenna config -- optionally create a new CASA ANTENNA table if the station info is in a CSV file
     stationtable = ""
-    if isfile(yamlconf["manual"]["stations"])
+    if isfile(yamlconf["stations"])
 	# check if template is specified
-	casaanttemplate == nothing && error("$(yamlconf["manual"]["stations"]) is a CSV file but template CASA ANTENNA table not specified!")
-	@info("Creating new ANTENNA table from CSV station info file...")
-	stationtable = mkCasaAntTable(yamlconf["manual"]["stations"], " ", true, casaanttemplate)
-	@info("ANTENNA table $(stationtable) created")
-    elseif isdir(yamlconf["manual"]["stations"])
-	stationtable = yamlconf["manual"]["stations"]
+	casaanttemplate == nothing && error("$(yamlconf["stations"]) is a CSV file but template CASA ANTENNA table not specified 🔴")
+	stationtable = makecasaanttable(yamlconf["stations"], " ", true, casaanttemplate)
+	@info("Creating new ANTENNA table from CSV station info file... 🆗")
+    elseif isdir(yamlconf["stations"])
+	stationtable = yamlconf["stations"]
     else
-        error("$(yamlconf["manual"]["stations"]) does not exist!")
+        error("$(yamlconf["stations"]) does not exist 🔴")
     end
 
     # station locations are contained in a casa antenna table
@@ -114,8 +124,8 @@ function genms(yamlconf::Dict, casaanttemplate::String)
     sm.settimes(integrationtime=yamlconf["manual"]["inttime"], usehourangle=false, referencetime=referencetime)
 
     # observe
-    Int64(yamlconf["manual"]["scans"]) != length(yamlconf["manual"]["scanlengths"]) && error("Number of scans and length(scanlengths_s) do not match!")
-    Int64(yamlconf["manual"]["scans"]) != length(yamlconf["manual"]["scanlags"])+1 && error("Number of scans and length(scanlaglist)+1 do not match!")
+    Int64(yamlconf["manual"]["scans"]) != length(yamlconf["manual"]["scanlengths"]) && error("Number of scans and length(scanlengths_s) do not match 🔴")
+    Int64(yamlconf["manual"]["scans"]) != length(yamlconf["manual"]["scanlags"])+1 && error("Number of scans and length(scanlaglist)+1 do not match 🔴")
 
     stoptime = 0
     for ii in 1:Int64(yamlconf["manual"]["scans"])
@@ -129,5 +139,7 @@ function genms(yamlconf::Dict, casaanttemplate::String)
 
     # clean up
     sm.close()
-    @info("$(yamlconf["msname"]) successfully created.")
+    @info("$(yamlconf["msname"]) successfully created 🆗")
+
+    # TODO: load the MS in a struct and return it
 end
