@@ -58,6 +58,10 @@ else
     error("Unrecognised value \"$(yamlconf["skymodelmode"])\" for modelmode! Allowed values are 'hdf5' or 'fits'.")
 end
 
+# load ms data into custom struct
+measurementset = loadms(yamlconf["msname"], yamlconf["stations"])
+@info("Measurement Set loaded into memory for processing")
+
 # add thermal noise
 yamlconf["thermalnoise"] && thermalnoise(yamlconf["stations"], " ", true, yamlconf["correff"])
 

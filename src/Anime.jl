@@ -1,7 +1,9 @@
 module Anime
 
+using CSV
 using YAML
 using Logging
+using DataFrames
 using Casacore.Tables: Tables as CasacoreTables, Table as CasacoreTable
 
 using PythonCall

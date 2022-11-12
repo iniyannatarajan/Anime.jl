@@ -1,8 +1,5 @@
 export generatems
 
-using CSV
-using DataFrames
-
 # import python libraries
 simulator = pyimport("casatools" => "simulator")
 sm = simulator()
@@ -31,7 +28,7 @@ function makecasaanttable(stations::String, delim::String, ignorerepeated::Bool,
         tb.copyrows(stationtable, nrow=1)
     end
     tb.putcol("STATION", PyList(string.(df.station)))
-    tb.putcol("NAME", PyList(string.(1:length(df.station)))) # assign numbers as indices/names for the stations
+    tb.putcol("NAME", PyList(string.(df.station))) # same as station names
     tb.putcol("MOUNT", PyList(string.(df.mount)))
     tb.putcol("DISH_DIAMETER", PyList(df.dishdiameter_m))
     for jj in 1:length(df.station)
@@ -78,7 +75,6 @@ function generatems(yamlconf::Dict, casaanttemplate::String)
     # station locations are contained in a casa antenna table
     tb.open(stationtable)
     station_code = tb.getcol("STATION")
-    station_ind = tb.getcol("NAME")
     dish_diameter = tb.getcol("DISH_DIAMETER")
     station_mount = tb.getcol("MOUNT")
     x, y, z = tb.getcol("POSITION")
@@ -91,7 +87,7 @@ function generatems(yamlconf::Dict, casaanttemplate::String)
 
     # NB: For any Python array with strings, convert elements to Julia strings and cast the entire Vector to PyList()
     sm.setconfig(telescopename=yamlconf["telescopename"], x=x, y=y, z=z,
-		 dishdiameter=dish_diameter, mount=PyList(string.(station_mount)), antname=PyList(string.(station_ind)),
+		 dishdiameter=dish_diameter, mount=PyList(string.(station_mount)), antname=PyList(string.(station_code)),
 		 padname=PyList(string.(station_code)), coordsystem=coords, referencelocation=obspos)
 
     # set feed
