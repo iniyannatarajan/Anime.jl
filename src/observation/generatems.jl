@@ -137,8 +137,8 @@ function generatems(yamlconf::Dict, casaanttemplate::String)
     table = CasacoreTable(yamlconf["msname"], CasacoreTables.Update)
     x = size(table[:DATA])[1]
     y, z = size(table[:DATA][1])
-    table[:WEIGHT_SPECTRUM] = ones(Float64, y, z, x)::Array{Float64, 3}
-    table[:SIGMA_SPECTRUM] = ones(Float64, y, z, x)::Array{Float64, 3}
+    table[:WEIGHT_SPECTRUM] = ones(Float32, y, z, x)::Array{Float32, 3}
+    table[:SIGMA_SPECTRUM] = ones(Float32, y, z, x)::Array{Float32, 3}
 
     @info("$(yamlconf["msname"]) successfully created 🆗")
 
