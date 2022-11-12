@@ -45,7 +45,7 @@ isdir(args["outdir"]) || mkdir(args["outdir"])
 @info("Changing working directory to $(args["outdir"])")
 cd(args["outdir"])
 
-# create a new empty MS -- check if it exists and if yes, delete
+# create a new empty MS -- check if an MS of the same name exists and if yes, delete before creation
 isdir(yamlconf["msname"]) ? (args["clobber"] || error("$(yamlconf["msname"]) exists! Not overwriting.")) : run(`rm -rf $(yamlconf["msname"])`)
 generatems(yamlconf, template)
 

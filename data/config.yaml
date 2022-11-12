@@ -4,7 +4,6 @@
 # settings to generate a new ms
 
 msname: "eht.ms"                                                            # name of output ms
-datacolumn: "DATA"                                                          # name of output data column in the ms
 telescopename: "VLBA"                                                       # preset telescope known to casa (not important since CASA is not used for predict; just an argument required for setconfig)
 stations: "/home/iniyan/software/dev/Anime.jl/data/eht_future.stations"     # CSV file with station parameters
 mode: "manual"                                                              # "vex", "uvfits", "manual" are the only allowed values

@@ -5,11 +5,8 @@ using DataFrames
 
 # import python libraries
 simulator = pyimport("casatools" => "simulator")
-table = pyimport("casatools" => "table")
-measures = pyimport("casatools" => "measures")
-
-# instantiate casa python classes
 sm = simulator()
+
 tb = table()
 me = measures()
 
@@ -139,7 +136,9 @@ function generatems(yamlconf::Dict, casaanttemplate::String)
 
     # clean up
     sm.close()
+
+    # creating weight and sigma spectrum columns
+
     @info("$(yamlconf["msname"]) successfully created 🆗")
 
-    # TODO: load the MS in a struct and return it
 end

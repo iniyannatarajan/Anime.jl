@@ -1,7 +1,14 @@
 export runwsclean
 
-table = pyimport("casatools" => "table")
 tb = table()
+
+function copymodeltodata(msname::String)
+    # copying model data to data
+    tb.open(msname, nomodify=false)
+    tb.putcol("DATA", tb.getcol("MODEL_DATA"))
+    tb.close()
+    tb.clearlocks()
+end
 
 function runwsclean(msname::String, fitsdir::String, polarized::Bool, channelgroups::Int64, osfactor::Int64)
     """
@@ -37,5 +44,10 @@ function runwsclean(msname::String, fitsdir::String, polarized::Bool, channelgro
         startrow = endrow
         fitsindex == nmodels-2 ? endrow += 2*rows_per_modelimg : endrow += rows_per_modelimg
     end
+
+    # copy MODEL_DATA to DATA -- all corruptions will be added to DATA
+    copymodeltodata(msname)
+
     @info("Uncorrupted visibilities computed 🆗")
+
 end
