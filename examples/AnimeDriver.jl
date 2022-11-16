@@ -47,7 +47,7 @@ cd(args["outdir"])
 
 # create a new empty MS -- check if an MS of the same name exists and if yes, delete before creation
 isdir(yamlconf["msname"]) ? (args["clobber"] || error("$(yamlconf["msname"]) exists! Not overwriting.")) : run(`rm -rf $(yamlconf["msname"])`)
-generatems(yamlconf, template)
+generatems(yamlconf, ",", false, template) # comma-separated; do not ignore repeated delimiters
 
 # call wscean to predict visibilities -- TODO: read in hdf5 model and create fitsdir with sky models
 if yamlconf["skymodelmode"] == "fits"
@@ -59,11 +59,11 @@ else
 end
 
 # load ms data into custom struct
-measurementset = loadms(yamlconf["msname"], yamlconf["stations"])
-@info("Measurement Set loaded into memory for processing")
+#observation = loadobs(yamlconf["msname"], yamlconf["stations"])
+#@info("Measurement Set and station info loaded into memory for processing")
 
 # add thermal noise
-yamlconf["thermalnoise"] && thermalnoise(yamlconf["stations"], " ", true, yamlconf["correff"])
+#yamlconf["thermalnoise"]["enable"] && thermalnoise(observation, yamlconf)
 
 # Change back to original working directory
 @info("Changing working directory back to $(startdir)")

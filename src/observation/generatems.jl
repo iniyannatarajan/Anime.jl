@@ -31,8 +31,13 @@ function makecasaanttable(stations::String, delim::String, ignorerepeated::Bool,
     tb.putcol("NAME", PyList(string.(df.station))) # same as station names
     tb.putcol("MOUNT", PyList(string.(df.mount)))
     tb.putcol("DISH_DIAMETER", PyList(df.dishdiameter_m))
-    for jj in 1:length(df.station)
-	tb.putcell("POSITION", jj-1, PyList(parse.(Float64, split.(df.xyzpos_m,',')[jj])))
+    #for jj in 1:length(df.station)
+    #	tb.putcell("POSITION", jj-1, PyList(parse.(Float64, split.(df.xyzpos_m,',')[jj])))
+    #end
+    index = 0
+    for (x,y,z) in zip(df.x_m,df.y_m,df.z_m)
+        tb.putcell("POSITION", index, PyList([x,y,z]))
+        index += 1
     end
     tb.close()
     tb.clearlocks()
@@ -49,7 +54,7 @@ end
 function msfromuvfits()
 end
 
-function generatems(yamlconf::Dict, casaanttemplate::String)
+function generatems(yamlconf::Dict, delim::String, ignorerepeated::Bool, casaanttemplate::String)
     """
     Main function to generate MS.
     """
@@ -64,7 +69,7 @@ function generatems(yamlconf::Dict, casaanttemplate::String)
     if isfile(yamlconf["stations"])
 	# check if template is specified
 	casaanttemplate == nothing && error("$(yamlconf["stations"]) is a CSV file but template CASA ANTENNA table not specified 🔴")
-	stationtable = makecasaanttable(yamlconf["stations"], " ", true, casaanttemplate)
+	stationtable = makecasaanttable(yamlconf["stations"], delim, ignorerepeated, casaanttemplate)
 	@info("Creating new ANTENNA table from CSV station info file... 🆗")
     elseif isdir(yamlconf["stations"])
 	stationtable = yamlconf["stations"]
@@ -134,11 +139,11 @@ function generatems(yamlconf::Dict, casaanttemplate::String)
     sm.close()
 
     # create weight and sigma spectrum columns
-    table = CasacoreTable(yamlconf["msname"], CasacoreTables.Update)
+    table = CCTable(yamlconf["msname"], CCTables.Update)
     x = size(table[:DATA])[1]
     y, z = size(table[:DATA][1])
-    table[:WEIGHT_SPECTRUM] = ones(Float32, y, z, x)::Array{Float32, 3}
-    table[:SIGMA_SPECTRUM] = ones(Float32, y, z, x)::Array{Float32, 3}
+    table[:WEIGHT_SPECTRUM] = ones(Float32, y, z, x)::Array{Float32, 3} # Float32 to conform to the MSv2 specification (which WSClean expects... sometimes!)
+    table[:SIGMA_SPECTRUM] = ones(Float32, y, z, x)::Array{Float32, 3} 
 
     @info("$(yamlconf["msname"]) successfully created 🆗")
 

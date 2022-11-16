@@ -2,9 +2,10 @@ module Anime
 
 using CSV
 using YAML
+using Tables
 using Logging
 using DataFrames
-using Casacore.Tables: Tables as CasacoreTables, Table as CasacoreTable
+using Casacore.Tables: Tables as CCTables, Table as CCTable
 
 using PythonCall
 table = pyimport("casatools" => "table")
