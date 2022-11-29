@@ -44,6 +44,7 @@ channelgroups: 1                                                            # nu
 ####################################################
 # common settings
 
+corrupth5name: "allcorruptions.h5"                                          # HDF5 filename to store all corruptions; will be created in whatever output directory the user designates
 correff: 0.88                                                               # correlator efficiency for 2 quantization bits (use 0.636 for 1-bit)
 corruptseed: 456                                                            # seed to be used for generating random variables for corruptions
 

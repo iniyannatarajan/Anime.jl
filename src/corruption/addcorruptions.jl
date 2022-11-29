@@ -12,6 +12,11 @@ function addcorruptions(obs::CjlObservation)
     """
     Main fn to add corruptions
     """
+    # create HDF5 file to store all corruptions
+    fid = h5open(obs.yamlconf["corrupth5name"], "w")
+    close(fid)
+
+    # add thermal noise
     obs.yamlconf["thermalnoise"]["enable"] && thermalnoise(obs)
     
     # when all the corruptions have been applied, write data column back to ms
