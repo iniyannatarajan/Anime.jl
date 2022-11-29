@@ -1,4 +1,7 @@
-export troposphere, ionosphere
+export troposphere
 
 function troposphere()
+end
+
+function skynoise()
 end

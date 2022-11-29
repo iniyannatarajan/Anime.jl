@@ -62,19 +62,19 @@ function generatems(yamlconf::Dict, delim::String, ignorerepeated::Bool, casaant
     sm.open(yamlconf["msname"])
 
     # set autocorr
-    Bool(yamlconf["manual"]["autocorr"]) ? sm.setauto(autocorrwt=1.0) : sm.setauto(autocorrwt=0.0)
+    Bool(yamlconf["autocorr"]) ? sm.setauto(autocorrwt=1.0) : sm.setauto(autocorrwt=0.0)
     
     # set antenna config -- optionally create a new CASA ANTENNA table if the station info is in a CSV file
     stationtable = ""
     if isfile(yamlconf["stations"])
 	# check if template is specified
-	casaanttemplate == nothing && error("$(yamlconf["stations"]) is a CSV file but template CASA ANTENNA table not specified 🔴")
+	casaanttemplate == nothing && error("$(yamlconf["stations"]) is a CSV file but template CASA ANTENNA table not specified 🤷")
 	stationtable = makecasaanttable(yamlconf["stations"], delim, ignorerepeated, casaanttemplate)
-	@info("Creating new ANTENNA table from CSV station info file... 🆗")
+	@info("Creating new ANTENNA table from CSV station info file... 🙆")
     elseif isdir(yamlconf["stations"])
 	stationtable = yamlconf["stations"]
     else
-        error("$(yamlconf["stations"]) does not exist 🔴")
+        error("$(yamlconf["stations"]) does not exist 🤷")
     end
 
     # station locations are contained in a casa antenna table
@@ -96,42 +96,52 @@ function generatems(yamlconf::Dict, delim::String, ignorerepeated::Bool, casaant
 		 padname=PyList(string.(station_code)), coordsystem=coords, referencelocation=obspos)
 
     # set feed
-    sm.setfeed(mode=yamlconf["manual"]["feed"])
+    sm.setfeed(mode=yamlconf["feed"])
 
     # set limits for data flagging
-    sm.setlimits(shadowlimit=yamlconf["manual"]["shadowlimit"], elevationlimit=yamlconf["manual"]["elevationlimit"])
+    sm.setlimits(shadowlimit=yamlconf["shadowlimit"], elevationlimit=yamlconf["elevationlimit"])
 
     # set spectral windows
-    for (key, val) in yamlconf["manual"]["spwname"]
+    #=for (key, val) in yamlconf["manual"]["spwname"]
 	startfreq = val["centrefreq"] - val["bandwidth"]-2.0
 	chanwidth = val["bandwidth"]/val["channels"]
 	sm.setspwindow(spwname=key, freq="$(startfreq)GHz",
 		deltafreq="$(chanwidth)GHz", freqresolution="$(chanwidth)GHz",
 		nchannels=val["channels"], stokes=yamlconf["manual"]["stokes"])
+    end=#
+    for ind in 1:length(yamlconf["spw"]["centrefreq"])
+        startfreq = yamlconf["spw"]["centrefreq"][ind] - yamlconf["spw"]["bandwidth"][ind]/2.0
+        chanwidth = yamlconf["spw"]["bandwidth"][ind]/yamlconf["spw"]["channels"][ind]
+	sm.setspwindow(spwname="$(Int(yamlconf["spw"]["centrefreq"][ind]))GHz", freq="$(startfreq)GHz",
+        	deltafreq="$(chanwidth)GHz", freqresolution="$(chanwidth)GHz",
+		nchannels=yamlconf["spw"]["channels"][ind], stokes=yamlconf["stokes"])
     end
 
     # set obs fields
-    for (key, val) in yamlconf["manual"]["source"]
+    for (key, val) in yamlconf["source"]
 	sm.setfield(sourcename=key, sourcedirection=me.direction(rf=val["epoch"], v0=val["RA"], v1=val["Dec"]))
     end
 
     # set obs times
-    obs_starttime = split(yamlconf["manual"]["starttime"], ",")
+    obs_starttime = split(yamlconf["starttime"], ",")
     referencetime = me.epoch(obs_starttime...)
     me.doframe(referencetime)
-    sm.settimes(integrationtime=yamlconf["manual"]["inttime"], usehourangle=false, referencetime=referencetime)
+    sm.settimes(integrationtime=yamlconf["inttime"], usehourangle=false, referencetime=referencetime)
 
     # observe
-    Int64(yamlconf["manual"]["scans"]) != length(yamlconf["manual"]["scanlengths"]) && error("Number of scans and length(scanlengths_s) do not match 🔴")
-    Int64(yamlconf["manual"]["scans"]) != length(yamlconf["manual"]["scanlags"])+1 && error("Number of scans and length(scanlaglist)+1 do not match 🔴")
+    Int64(yamlconf["scans"]) != length(yamlconf["scanlengths"]) && error("Number of scans and length(scanlengths_s) do not match 🤷")
+    Int64(yamlconf["scans"]) != length(yamlconf["scanlags"])+1 && error("Number of scans and length(scanlaglist)+1 do not match 🤷")
 
     stoptime = 0
-    for ii in 1:Int64(yamlconf["manual"]["scans"])
-	starttime = ii==1 ? 0 : stoptime+yamlconf["manual"]["scanlags"][ii-1]
-	stoptime = starttime + yamlconf["manual"]["scanlengths"][ii]
+    for ii in 1:Int64(yamlconf["scans"])
+	starttime = ii==1 ? 0 : stoptime+yamlconf["scanlags"][ii-1]
+	stoptime = starttime + yamlconf["scanlengths"][ii]
 
-	for (key, val) in yamlconf["manual"]["spwname"]
+	#=for (key, val) in yamlconf["manual"]["spwname"]
 	    sm.observe(sourcename=collect(keys(yamlconf["manual"]["source"]))[1], spwname=key, starttime="$(starttime)s", stoptime="$(stoptime)s")
+	end=#
+	for ind in 1:length(yamlconf["spw"]["centrefreq"])
+            sm.observe(sourcename=collect(keys(yamlconf["source"]))[1], spwname="$(Int(yamlconf["spw"]["centrefreq"][ind]))GHz", starttime="$(starttime)s", stoptime="$(stoptime)s")
 	end
     end
 
@@ -145,6 +155,6 @@ function generatems(yamlconf::Dict, delim::String, ignorerepeated::Bool, casaant
     table[:WEIGHT_SPECTRUM] = ones(Float32, y, z, x)::Array{Float32, 3} # Float32 to conform to the MSv2 specification (which WSClean expects... sometimes!)
     table[:SIGMA_SPECTRUM] = ones(Float32, y, z, x)::Array{Float32, 3} 
 
-    @info("$(yamlconf["msname"]) successfully created 🆗")
+    @info("$(yamlconf["msname"]) successfully created 🙆")
 
 end

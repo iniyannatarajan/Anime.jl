@@ -48,6 +48,6 @@ function runwsclean(msname::String, fitsdir::String, polarized::Bool, channelgro
     # copy MODEL_DATA to DATA -- all corruptions will be added to DATA
     copymodeltodata(msname)
 
-    @info("Uncorrupted visibilities computed 🆗")
+    @info("Uncorrupted visibilities computed 🙆")
 
 end

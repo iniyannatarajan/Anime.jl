@@ -2,6 +2,7 @@ ENV["JULIA_CONDAPKG_BACKEND"] = "Null" # never install Conda packages; run scrip
 
 using ArgParse
 using YAML
+using Random
 using Logging
 
 include("../src/Anime.jl")
@@ -59,13 +60,15 @@ else
 end
 
 # load ms data into custom struct
-#observation = loadobs(yamlconf["msname"], yamlconf["stations"])
-#@info("Measurement Set and station info loaded into memory for processing")
+#observation, stationinfo = loadobs(yamlconf["msname"], yamlconf["stations"], ",", false)
+observation = loadobs(yamlconf, ",", false)
+@info("Measurement Set and station info loaded into memory for processing")
 
-# add thermal noise
-#yamlconf["thermalnoise"]["enable"] && thermalnoise(observation, yamlconf)
+# add corruptions
+#yamlconf["thermalnoise"]["enable"] && thermalnoise(observation)
+addcorruptions(observation)
 
 # Change back to original working directory
 @info("Changing working directory back to $(startdir)")
 cd(startdir)
-@info("Anime run completed successfully 💯")
+@info("Anime run completed successfully 🎃")
