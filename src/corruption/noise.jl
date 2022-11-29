@@ -9,38 +9,46 @@ function thermalnoise(obs::CjlObservation)
     mattype = typeof(obs.data[1])
     elemtype = typeof(obs.data[1][1])
 
+    # open h5 file for writing
+    fid = h5open(obs.yamlconf["corrupth5name"], "r+")
+    g = create_group(fid, "thermalnoise")
+    attributes(g)["desc"] = "Numerical values of thermal noise corruptions added to data"
+    attributes(g)["format"] = "each dataset corresponds to the 3d array stokes X channel X rows_per_baseline"
+
+    # get ant1 and ant2 vectors with unique elements
     uniqant1 = unique(obs.antenna1)
     uniqant2 = unique(obs.antenna2)
-    thermalvec = mattype[] # create empty thermalvec
+
+    # loop through each baseline pair and compute and apply thermal noise to obs.data
     for a1 in uniqant1
 	for a2 in uniqant2
 	    if a2>a1
+		# compute sigma per baseline
 		sigmaperbl = (1/obs.yamlconf["correff"]) * sqrt((obs.stationinfo.sefd_Jy[a1+1]*obs.stationinfo.sefd_Jy[a2+1])
 								/(2*obs.yamlconf["inttime"]*(obs.yamlconf["spw"]["bandwidth"][1]*1e9/obs.yamlconf["spw"]["channels"][1])))
 		indices = intersect(findall(obs.antenna1.==a1), findall(obs.antenna2.==a2))
-                datasubset = getindex(obs.data, intersect(findall(obs.antenna1.==a1), findall(obs.antenna2.==a2)))
+                datasubset = getindex(obs.data, indices)
+                thermalvec = mattype[] # create empty thermalvec
 
 		# write to thermalnoise vector of matrices
 		for ii in 1:length(datasubset)
 		    push!(thermalvec, sigmaperbl*randn(obs.rngcorrupt, elemtype, matsize))
 		end
+
+                # add thermal noise to data
+                setindex!(obs.data, datasubset+thermalvec, indices)
+
+                # reduce vector of matrices to 3d array for HDF5 compatibility and write as dataset within the group in the h5 file
+                g["baseline $(a1)-$(a2)"] = reduce((x,y) -> cat(x, y, dims=3), thermalvec)
 	    end
 	end
     end
 
-    # add thermal noise to data
-    setindex!(obs.data, obs.data+thermalvec, 1:length(thermalvec))
+    # add datatype attribute
+    attributes(g)["datatype"] = string(typeof(read(g[keys(g)[1]])))
 
-    # save thermal noise vector
-    # reduce vector of matrices to 3d array for HDF5 compatibility
-    thermalnoisevector = reduce((x,y) -> cat(x, y, dims=3), thermalvec)
+    # close h5 file
+    close(fid)
 
-    h5open(obs.yamlconf["corrupth5name"], "r+") do fid
-        g = create_group(fid, "thermalnoise")
-        g["thermalnoisevector"] = thermalnoisevector
-	attributes(g)["desc"] = "Numerical values of thermal noise corruptions added to data"
-	attributes(g)["datatype"] = string(typeof(read(g["thermalnoisevector"])))
-	attributes(g)["quantities"] = "stokes X channel X row"
-    end
     @info("Thermal noise applied 🙆")
 end
