@@ -4,7 +4,7 @@ function thermalnoise(obs::CjlObservation)
     """
     Add thermal noise to visibilities
     """
-    # get matrix type and size to be created
+    # get matrix type and size to be created -- data is a vector of "stokes X channel" matrices
     matsize = size(obs.data[1])
     mattype = typeof(obs.data[1])
     elemtype = typeof(obs.data[1][1])
@@ -24,8 +24,6 @@ function thermalnoise(obs::CjlObservation)
 		for ii in 1:length(datasubset)
 		    push!(thermalvec, sigmaperbl*randn(obs.rngcorrupt, elemtype, matsize))
 		end
-
-
 	    end
 	end
     end
@@ -38,11 +36,11 @@ function thermalnoise(obs::CjlObservation)
     thermalnoisevector = reduce((x,y) -> cat(x, y, dims=3), thermalvec)
 
     h5open(obs.yamlconf["corrupth5name"], "r+") do fid
-        #=if haskey(fid, "thermalnoise")
-       	    delete_object(fid, "thermalnoise")
-        end=#
         g = create_group(fid, "thermalnoise")
         g["thermalnoisevector"] = thermalnoisevector
+	attributes(g)["desc"] = "Numerical values of thermal noise corruptions added to data"
+	attributes(g)["datatype"] = string(typeof(read(g["thermalnoisevector"])))
+	attributes(g)["quantities"] = "stokes X channel X row"
     end
     @info("Thermal noise applied 🙆")
 end
