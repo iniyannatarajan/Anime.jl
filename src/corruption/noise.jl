@@ -5,15 +5,13 @@ function thermalnoise(obs::CjlObservation)
     Add thermal noise to visibilities
     """
     # get matrix type and size to be created -- data is a vector of "stokes X channel" matrices
-    matsize = size(obs.data[1])
-    mattype = typeof(obs.data[1])
-    elemtype = typeof(obs.data[1][1])
+    elemtype = typeof(obs.data[1])
 
     # open h5 file for writing
     fid = h5open(obs.yamlconf["corrupth5name"], "r+")
     g = create_group(fid, "thermalnoise")
     attributes(g)["desc"] = "Numerical values of thermal noise corruptions added to data"
-    attributes(g)["format"] = "each dataset corresponds to the 3d array stokes X channel X rows_per_baseline"
+    attributes(g)["format"] = "each dataset corresponds to the 3d array stokes X channel X rows_per_baseline (for all scans)"
 
     # get ant1 and ant2 vectors with unique elements
     uniqant1 = unique(obs.antenna1)
@@ -27,19 +25,13 @@ function thermalnoise(obs::CjlObservation)
 		sigmaperbl = (1/obs.yamlconf["correff"]) * sqrt((obs.stationinfo.sefd_Jy[a1+1]*obs.stationinfo.sefd_Jy[a2+1])
 								/(2*obs.yamlconf["inttime"]*(obs.yamlconf["spw"]["bandwidth"][1]*1e9/obs.yamlconf["spw"]["channels"][1])))
 		indices = intersect(findall(obs.antenna1.==a1), findall(obs.antenna2.==a2))
-                datasubset = getindex(obs.data, indices)
-                thermalvec = mattype[] # create empty thermalvec
 
-		# write to thermalnoise vector of matrices
-		for ii in 1:length(datasubset)
-		    push!(thermalvec, sigmaperbl*randn(obs.rngcorrupt, elemtype, matsize))
-		end
-
-                # add thermal noise to data
-                setindex!(obs.data, datasubset+thermalvec, indices)
+                # compute and add thermal noise to data
+		thermalvec = sigmaperbl*randn(obs.rngcorrupt, elemtype, size(obs.data[:,:,:,indices]))
+		obs.data[:,:,:,indices] += thermalvec
 
                 # reduce vector of matrices to 3d array for HDF5 compatibility and write as dataset within the group in the h5 file
-                g["baseline $(a1)-$(a2)"] = reduce((x,y) -> cat(x, y, dims=3), thermalvec)
+                g["baseline $(obs.stationinfo.station[a1+1])-$(obs.stationinfo.station[a2+1])"] = thermalvec #reduce((x,y) -> cat(x, y, dims=3), thermalvec)
 	    end
 	end
     end

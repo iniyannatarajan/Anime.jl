@@ -4,11 +4,14 @@ abstract type AbstractObservation{T} end
 
 struct CjlObservation{T} <: AbstractObservation{T}
     uvw::Matrix{Float64}
-    data::Array{Array{Complex{Float32},2},1}
+    #data::Array{Array{Complex{Float32},2},1}
+    data::Array{Complex{Float32},4}
     antenna1::Vector{Int}
     antenna2::Vector{Int}
     times::Vector{Float64}
     scanno::Vector{Int}
+    flag::Array{Bool,4}
+    flagrow::Vector{Bool}
     weight::Vector{Vector{Float32}}
     weightspec::Array{Float32,3}
     sigma::Vector{Vector{Float32}}
@@ -76,10 +79,21 @@ function loadobs(yamlconf::Dict, delim::String, ignorerepeated::Bool)
     antenna2 = tab[:ANTENNA2][:]
     times = tab[:TIME][:]
     scanno = tab[:SCAN_NUMBER][:]
+    flag = tab[:FLAG][:]
+    flagrow = tab[:FLAG_ROW][:]
     weight = tab[:WEIGHT][:]
     weightspec = tab[:WEIGHT_SPECTRUM][:,:,:]
     sigma = tab[:SIGMA][:]
     sigmaspec = tab[:SIGMA_SPECTRUM][:,:,:]
+
+    # reshape the various arrays
+    data3d = reduce((x,y) -> cat(x, y, dims=3), data)
+    data3dres = reshape(data3d, 2, 2, size(data[1])[2], :) # get nchan as 3rd dim and all rows as 4th dim
+    data3dresandperm = permutedims(data3dres, (2,1,3,4))
+
+    flag3d = reduce((x,y) -> cat(x, y, dims=3), flag)
+    flag3dres = reshape(flag3d, 2, 2, size(flag[1])[2], :) # get nchan as 3rd dim and all rows as 4th dim
+    flag3dresandperm = permutedims(flag3dres, (2,1,3,4))
 
     #observation = CjlObservation{Float64}(uvw,data,antenna1,antenna2,times,scanno,weight,weightspec,sigma,sigmaspec)
     
@@ -107,7 +121,7 @@ function loadobs(yamlconf::Dict, delim::String, ignorerepeated::Bool)
     rngtrop = Xoshiro(Int(yamlconf["troposphere"]["tropseed"]))
 
     # construct CjlObservation object
-    observation = CjlObservation{Float64}(uvw,data,antenna1,antenna2,times,scanno,weight,weightspec,sigma,sigmaspec,stationinfo,yamlconf,rngcorrupt,rngtrop)
+    observation = CjlObservation{Float64}(uvw,data3dresandperm,antenna1,antenna2,times,scanno,flag3dresandperm,flagrow,weight,weightspec,sigma,sigmaspec,stationinfo,yamlconf,rngcorrupt,rngtrop)
 
     return observation
 end

@@ -70,7 +70,7 @@ function generatems(yamlconf::Dict, delim::String, ignorerepeated::Bool, casaant
 	# check if template is specified
 	casaanttemplate == nothing && error("$(yamlconf["stations"]) is a CSV file but template CASA ANTENNA table not specified 🤷")
 	stationtable = makecasaanttable(yamlconf["stations"], delim, ignorerepeated, casaanttemplate)
-	@info("Creating new ANTENNA table from CSV station info file... 🙆")
+	@info("Creating new ANTENNA table from CSV station info file...")
     elseif isdir(yamlconf["stations"])
 	stationtable = yamlconf["stations"]
     else
