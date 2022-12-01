@@ -4,7 +4,7 @@ function thermalnoise(obs::CjlObservation)
     """
     Add thermal noise to visibilities
     """
-    # get matrix type and size to be created -- data is a vector of "stokes X channel" matrices
+    # get matrix type and size to be created -- data is a 4d array
     elemtype = typeof(obs.data[1])
 
     # open h5 file for writing
@@ -30,7 +30,7 @@ function thermalnoise(obs::CjlObservation)
 		thermalvec = sigmaperbl*randn(obs.rngcorrupt, elemtype, size(obs.data[:,:,:,indices]))
 		obs.data[:,:,:,indices] += thermalvec
 
-                # reduce vector of matrices to 3d array for HDF5 compatibility and write as dataset within the group in the h5 file
+                # write as individual dataset within the group created above in the h5 file
                 g["baseline $(obs.stationinfo.station[a1+1])-$(obs.stationinfo.station[a2+1])"] = thermalvec #reduce((x,y) -> cat(x, y, dims=3), thermalvec)
 	    end
 	end

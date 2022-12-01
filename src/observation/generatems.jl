@@ -135,7 +135,7 @@ function generatems(yamlconf::Dict, delim::String, ignorerepeated::Bool, casaant
     stoptime = 0
     for ii in 1:Int64(yamlconf["scans"])
 	starttime = ii==1 ? 0 : stoptime+yamlconf["scanlags"][ii-1]
-	stoptime = starttime + yamlconf["scanlengths"][ii]
+	stoptime = starttime + yamlconf["scanlengths"][ii] + yamlconf["inttime"] # inttime added here to add one more inttime at the end of the scan
 
 	#=for (key, val) in yamlconf["manual"]["spwname"]
 	    sm.observe(sourcename=collect(keys(yamlconf["manual"]["source"]))[1], spwname=key, starttime="$(starttime)s", stoptime="$(stoptime)s")
