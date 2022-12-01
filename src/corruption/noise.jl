@@ -42,5 +42,5 @@ function thermalnoise(obs::CjlObservation)
     # close h5 file
     close(fid)
 
-    @info("Thermal noise applied 🙆")
+    @info("Compute and apply thermal noise... 🙆")
 end

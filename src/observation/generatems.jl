@@ -156,6 +156,6 @@ function generatems(yamlconf::Dict, delim::String, ignorerepeated::Bool, casaant
     table[:WEIGHT_SPECTRUM] = ones(Float32, y, z, x)::Array{Float32, 3} # Float32 to conform to the MSv2 specification (which WSClean expects... sometimes!)
     table[:SIGMA_SPECTRUM] = ones(Float32, y, z, x)::Array{Float32, 3} 
 
-    @info("$(yamlconf["msname"]) successfully created 🙆")
+    @info("Create $(yamlconf["msname"])... 🙆")
 
 end

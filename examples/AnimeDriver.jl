@@ -62,7 +62,6 @@ end
 # load ms data into custom struct
 #observation, stationinfo = loadobs(yamlconf["msname"], yamlconf["stations"], ",", false)
 observation = loadobs(yamlconf, ",", false)
-@info("Measurement Set and station info loaded into memory for processing")
 
 # add corruptions
 addcorruptions(observation)
@@ -70,4 +69,4 @@ addcorruptions(observation)
 # Change back to original working directory
 @info("Changing working directory back to $(startdir)")
 cd(startdir)
-@info("Anime run completed successfully 🎃")
+@info("Anime observation completed successfully 📡")

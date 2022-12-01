@@ -120,16 +120,18 @@ function loadobs(yamlconf::Dict, delim::String, ignorerepeated::Bool)
     # read values from station info csv file
     stationinfo = CSV.read(yamlconf["stations"], DataFrame; delim=delim, ignorerepeated=ignorerepeated)
 
-    # generate some quantities to be available for all corrupting functions and them to the observation composite type
-    @info("Creating random number generator instance seeded with $(yamlconf["corruptseed"]) for all corruptions except troposphere...")
-    rngcorrupt = Xoshiro(Int(yamlconf["corruptseed"]))
+    # parse strings to complex values for gjones terms
+    stationinfo.g_pol1_loc = map(x->parse(ComplexF32,x), stationinfo.g_pol1_loc)
+    stationinfo.g_pol2_loc = map(x->parse(ComplexF32,x), stationinfo.g_pol2_loc)
 
-    @info("Creating random number generator instance seeded with $(yamlconf["troposphere"]["tropseed"]) for troposphere...")
+    # generate some quantities to be available for all corrupting functions and them to the observation composite type
+    rngcorrupt = Xoshiro(Int(yamlconf["corruptseed"]))
     rngtrop = Xoshiro(Int(yamlconf["troposphere"]["tropseed"]))
 
     # construct CjlObservation object
     observation = CjlObservation{Float64}(uvw,data3dresandperm,antenna1,antenna2,times,exposure,scanno,weight,weightspec,sigma,sigmaspec,
 					  numchan,chanfreqvec,chanwidth,stationinfo,yamlconf,rngcorrupt,rngtrop)
 
+    @info("Load observation and metadata into memory for processing... 🙆")
     return observation
 end

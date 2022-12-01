@@ -30,5 +30,5 @@ function addcorruptions(obs::CjlObservation)
     # when all the corruptions have been applied, write data column back to ms
     table = CCTable(obs.yamlconf["msname"], CCTables.Update)
     table[:DATA] = revdata # Float32 to conform to the MSv2 specification (which WSClean expects... sometimes!)
-    @info("Corrupted data written to Measurement Set 🙆")
+    @info("Write corrupted visibilities to disk... 🙆")
 end
