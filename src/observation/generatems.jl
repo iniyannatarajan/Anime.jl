@@ -110,10 +110,11 @@ function generatems(yamlconf::Dict, delim::String, ignorerepeated::Bool, casaant
 		nchannels=val["channels"], stokes=yamlconf["manual"]["stokes"])
     end=#
     for ind in 1:length(yamlconf["spw"]["centrefreq"])
-        startfreq = yamlconf["spw"]["centrefreq"][ind] - yamlconf["spw"]["bandwidth"][ind]/2.0
         chanwidth = yamlconf["spw"]["bandwidth"][ind]/yamlconf["spw"]["channels"][ind]
-	sm.setspwindow(spwname="$(Int(yamlconf["spw"]["centrefreq"][ind]))GHz", freq="$(startfreq)GHz",
-        	deltafreq="$(chanwidth)GHz", freqresolution="$(chanwidth)GHz",
+        startfreq = yamlconf["spw"]["centrefreq"][ind] - yamlconf["spw"]["bandwidth"][ind]/2. + chanwidth/2.
+	@info("$(startfreq), $(chanwidth)")
+	sm.setspwindow(spwname="$(Int(yamlconf["spw"]["centrefreq"][ind]/1e9))GHz", freq="$(startfreq)Hz",
+        	deltafreq="$(chanwidth)Hz", freqresolution="$(chanwidth)Hz",
 		nchannels=yamlconf["spw"]["channels"][ind], stokes=yamlconf["stokes"])
     end
 
@@ -141,7 +142,7 @@ function generatems(yamlconf::Dict, delim::String, ignorerepeated::Bool, casaant
 	    sm.observe(sourcename=collect(keys(yamlconf["manual"]["source"]))[1], spwname=key, starttime="$(starttime)s", stoptime="$(stoptime)s")
 	end=#
 	for ind in 1:length(yamlconf["spw"]["centrefreq"])
-            sm.observe(sourcename=collect(keys(yamlconf["source"]))[1], spwname="$(Int(yamlconf["spw"]["centrefreq"][ind]))GHz", starttime="$(starttime)s", stoptime="$(stoptime)s")
+            sm.observe(sourcename=collect(keys(yamlconf["source"]))[1], spwname="$(Int(yamlconf["spw"]["centrefreq"][ind]/1e9))GHz", starttime="$(starttime)s", stoptime="$(stoptime)s")
 	end
     end
 

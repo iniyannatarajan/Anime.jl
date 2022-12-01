@@ -52,9 +52,9 @@ generatems(yamlconf, ",", false, template) # comma-separated; do not ignore repe
 
 # call wscean to predict visibilities -- TODO: read in hdf5 model and create fitsdir with sky models
 if yamlconf["skymodelmode"] == "fits"
-    runwsclean(yamlconf["msname"], yamlconf["fits"], yamlconf["polarized"], yamlconf["channelgroups"], yamlconf["osfactor"])
+    runwsclean(yamlconf["msname"], yamlconf["fitssky"], yamlconf["polarized"], yamlconf["channelgroups"], yamlconf["osfactor"])
 elseif yamlconf["skymodelmode"] == "hdf5"
-    runwsclean(yamlconf["msname"], yamlconf["hdf5"], yamlconf["polarized"], yamlconf["channelgroups"], yamlconf["osfactor"])
+    runwsclean(yamlconf["msname"], yamlconf["hdf5sky"], yamlconf["polarized"], yamlconf["channelgroups"], yamlconf["osfactor"])
 else
     error("Unrecognised value \"$(yamlconf["skymodelmode"])\" for modelmode! Allowed values are 'hdf5' or 'fits'.")
 end
@@ -65,7 +65,6 @@ observation = loadobs(yamlconf, ",", false)
 @info("Measurement Set and station info loaded into memory for processing")
 
 # add corruptions
-#yamlconf["thermalnoise"]["enable"] && thermalnoise(observation)
 addcorruptions(observation)
 
 # Change back to original working directory
