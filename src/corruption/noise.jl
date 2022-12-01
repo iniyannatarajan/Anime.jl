@@ -8,7 +8,7 @@ function thermalnoise(obs::CjlObservation)
     elemtype = typeof(obs.data[1])
 
     # open h5 file for writing
-    fid = h5open(obs.yamlconf["corrupth5name"], "r+")
+    fid = h5open(obs.yamlconf["hdf5corruptions"], "r+")
     g = create_group(fid, "thermalnoise")
     attributes(g)["desc"] = "Numerical values of thermal noise corruptions added to data"
     attributes(g)["format"] = "each dataset corresponds to the 3d array stokes X channel X rows_per_baseline (for all scans)"

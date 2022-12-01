@@ -13,7 +13,7 @@ function addcorruptions(obs::CjlObservation)
     Main fn to add corruptions
     """
     # create HDF5 file to store all corruptions
-    fid = h5open(obs.yamlconf["corrupth5name"], "w")
+    fid = h5open(obs.yamlconf["hdf5corruptions"], "w")
     close(fid)
 
     # add station gains

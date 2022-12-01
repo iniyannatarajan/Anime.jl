@@ -26,8 +26,8 @@ scanlags: [300] #[300, 300, 300, 300]                                           
 inttime: 10.0                                                             # integration time in seconds
 stokes: "RR RL LR LL"                                                     # CASA understandable Stokes types to simulate (check official MS specification)
 spw:
-    centrefreq: [230.0e9]                                                     # centre frequency of spw in GHz
-    bandwidth: [2.0e9]                                                        # bandwidth of spw in GHz
+    centrefreq: [230.0e9]                                                     # centre frequency of spw in Hz
+    bandwidth: [2.0e9]                                                        # bandwidth of spw in Hz
     channels: [8]                                                          # number of channels in spw
 starttime: "UTC,2021/04/28/00:00:00.00"                                   # starting time of the first scan in the observation
 
@@ -44,7 +44,7 @@ channelgroups: 1                                                            # nu
 ####################################################
 # common settings
 
-corrupth5name: "allcorruptions.h5"                                          # HDF5 filename to store all corruptions; will be created in whatever output directory the user designates
+hdf5corruptions: "allcorruptions.h5"                                        # HDF5 filename to store all corruptions; will be created in whatever output directory the user designates
 corruptseed: 456                                                            # seed to be used for generating random variables for corruptions
 
 ####################################################
