@@ -64,7 +64,7 @@ function stationgains(obs::CjlObservation)
 		    for chan in 1:obs.numchan
 			#@info(row, scan, idealtimeindex, chan, ant1+1, ant2+1)
                         #@info(gjonesdict[scan][:,:,idealtimeindex,ant1+1], obs.data[:,:,chan,row], adjoint(gjonesdict[scan][:,:,idealtimeindex,ant2+1]))
-		        obs.data[:,:,chan,idealtimeindex] = gjonesdict[scan][:,:,idealtimeindex,ant1+1]*obs.data[:,:,chan,row]*adjoint(gjonesdict[scan][:,:,idealtimeindex,ant2+1])
+		        obs.data[:,:,chan,row] = gjonesdict[scan][:,:,idealtimeindex,ant1+1]*obs.data[:,:,chan,row]*adjoint(gjonesdict[scan][:,:,idealtimeindex,ant2+1])
                         #@info(obs.data[:,:,chan,row])
 		    end
 		    row += 1 # increment obs.data last index i.e. row number

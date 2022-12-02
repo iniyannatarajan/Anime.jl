@@ -112,7 +112,6 @@ function generatems(yamlconf::Dict, delim::String, ignorerepeated::Bool, casaant
     for ind in 1:length(yamlconf["spw"]["centrefreq"])
         chanwidth = yamlconf["spw"]["bandwidth"][ind]/yamlconf["spw"]["channels"][ind]
         startfreq = yamlconf["spw"]["centrefreq"][ind] - yamlconf["spw"]["bandwidth"][ind]/2. + chanwidth/2.
-	@info("$(startfreq), $(chanwidth)")
 	sm.setspwindow(spwname="$(Int(yamlconf["spw"]["centrefreq"][ind]/1e9))GHz", freq="$(startfreq)Hz",
         	deltafreq="$(chanwidth)Hz", freqresolution="$(chanwidth)Hz",
 		nchannels=yamlconf["spw"]["channels"][ind], stokes=yamlconf["stokes"])
