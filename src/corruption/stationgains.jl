@@ -12,14 +12,14 @@ function generatetimeseries(mode::String, location::ComplexF32, scale::Float64, 
             series[ii] = series[ii-1] + (scale*randn(ComplexF32)/sqrtnsamples)
         end
     elseif mode == "gaussian"
-	series = location + scale*randn(ComplexF32, nsamples)
+	series = location .+ scale*randn(ComplexF32, nsamples)
     end
     return series
 end
 
 function stationgains(obs::CjlObservation)
     """
-    Add time-vriable station gains to visibilities
+    Add time-variable station gains to visibilities
     """
     # get element type to be used
     elemtype = typeof(obs.data[1][1])
@@ -34,6 +34,7 @@ function stationgains(obs::CjlObservation)
     uniqscans = unique(obs.scanno)
 
     # loop through each station to create a vector of 2x2 G-Jones terms evolving over time
+    row = 1 # variable to index obs.data array
     gjonesdict = Dict() # create empty dict
     for scan in uniqscans
         # compute ideal ntimes per scan
@@ -54,11 +55,20 @@ function stationgains(obs::CjlObservation)
 
         # loop over time/row and apply gjones terms corresponding to each baseline
 	for idealtimeindex in 1:idealtscanveclen
-	    if idealtscanvec[idealtimeindex] in actualtscanvec
-		#for chan in 1:obs.numchan
-		    #obs.data[:,:,chan,idealtimeindex] = gjonesdict[scan][:,:,idealtimeindex,obs.antenna1[idealtimeindex]+1]*obs.data[:,:,chan,idealtimeindex]*adjoint(gjonesdict[scan][:,:,idealtimeindex,obs.antenna2[idealtimeindex]+1])
-		    obs.data[:,:,:,idealtimeindex] = gjonesdict[scan][:,:,idealtimeindex,obs.antenna1[idealtimeindex]+1].*obs.data[:,:,:,idealtimeindex].*adjoint(gjonesdict[scan][:,:,idealtimeindex,obs.antenna2[idealtimeindex]+1])
-	        #end
+	    currenttime = idealtscanvec[idealtimeindex]
+	    if currenttime in actualtscanvec
+		# read all baselines present in a given time
+		ant1vec = getindex(obs.antenna1, findall(obs.times.==currenttime))
+		ant2vec = getindex(obs.antenna2, findall(obs.times.==currenttime))
+		for (ant1,ant2) in zip(ant1vec, ant2vec)
+		    for chan in 1:obs.numchan
+			#@info(row, scan, idealtimeindex, chan, ant1+1, ant2+1)
+                        #@info(gjonesdict[scan][:,:,idealtimeindex,ant1+1], obs.data[:,:,chan,row], adjoint(gjonesdict[scan][:,:,idealtimeindex,ant2+1]))
+		        obs.data[:,:,chan,idealtimeindex] = gjonesdict[scan][:,:,idealtimeindex,ant1+1]*obs.data[:,:,chan,row]*adjoint(gjonesdict[scan][:,:,idealtimeindex,ant2+1])
+                        #@info(obs.data[:,:,chan,row])
+		    end
+		    row += 1 # increment obs.data last index i.e. row number
+	        end
 	    else
 		continue
 	    end
