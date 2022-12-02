@@ -1,18 +1,18 @@
 export stationgains
 
-function generatetimeseries(mode::String, location::ComplexF32, scale::Float64, nsamples::Int64)
+function generatetimeseries(mode::String, location::ComplexF32, scale::Float64, nsamples::Int64, rng::AbstractRNG)
     """
     Generate complex-valued wiener series
     """
     series = zeros(ComplexF32, nsamples)
     if mode == "wiener"	    
         sqrtnsamples = sqrt(nsamples)
-        series[1] = location + (scale*randn(ComplexF32)/sqrtnsamples)
+        series[1] = location + (scale*randn(rng, ComplexF32)/sqrtnsamples)
         for ii in 2:nsamples
-            series[ii] = series[ii-1] + (scale*randn(ComplexF32)/sqrtnsamples)
+            series[ii] = series[ii-1] + (scale*randn(rng, ComplexF32)/sqrtnsamples)
         end
     elseif mode == "gaussian"
-	series = location .+ scale*randn(ComplexF32, nsamples)
+	series = location .+ scale*randn(rng, ComplexF32, nsamples)
     end
     return series
 end
@@ -22,13 +22,14 @@ function stationgains(obs::CjlObservation)
     Add time-variable station gains to visibilities
     """
     # get element type to be used
+    # TODO USE THE CORRECT RNG FOR RANDN
     elemtype = typeof(obs.data[1][1])
 
     # open h5 file for writing
     fid = h5open(obs.yamlconf["hdf5corruptions"], "r+")
     g = create_group(fid, "stationgains")
     attributes(g)["desc"] = "Numerical values of time-variable per station G-Jones terms applied to data"
-    attributes(g)["format"] = "for each scan, a 4d array of 2 x 2 x ntime x nant is stored"
+    attributes(g)["dims"] = "2 x 2 x ntimes_per_scan x nant" #for each scan, a 4d array of 2 x 2 x ntime x nant is stored
 
     # get unique scan numbers
     uniqscans = unique(obs.scanno)
@@ -46,8 +47,8 @@ function stationgains(obs::CjlObservation)
 	gjonesmatrices = zeros(elemtype, 2, 2, idealtscanveclen, size(obs.stationinfo)[1]) # 2 x 2 x ntimes x nant
 
 	for ant in 1:size(obs.stationinfo)[1]
-	   gjonesmatrices[1, 1, :, ant] = generatetimeseries(obs.yamlconf["stationgains"]["mode"], obs.stationinfo.g_pol1_loc[ant], obs.stationinfo.g_pol1_scale[ant], idealtscanveclen)
-	   gjonesmatrices[2, 2, :, ant] = generatetimeseries(obs.yamlconf["stationgains"]["mode"], obs.stationinfo.g_pol2_loc[ant], obs.stationinfo.g_pol2_scale[ant], idealtscanveclen)
+	   gjonesmatrices[1, 1, :, ant] = generatetimeseries(obs.yamlconf["stationgains"]["mode"], obs.stationinfo.g_pol1_loc[ant], obs.stationinfo.g_pol1_scale[ant], idealtscanveclen, obs.rngcorrupt)
+	   gjonesmatrices[2, 2, :, ant] = generatetimeseries(obs.yamlconf["stationgains"]["mode"], obs.stationinfo.g_pol2_loc[ant], obs.stationinfo.g_pol2_scale[ant], idealtscanveclen, obs.rngcorrupt)
 	end
 
 	# add to gjonesdict
@@ -62,10 +63,7 @@ function stationgains(obs::CjlObservation)
 		ant2vec = getindex(obs.antenna2, findall(obs.times.==currenttime))
 		for (ant1,ant2) in zip(ant1vec, ant2vec)
 		    for chan in 1:obs.numchan
-			#@info(row, scan, idealtimeindex, chan, ant1+1, ant2+1)
-                        #@info(gjonesdict[scan][:,:,idealtimeindex,ant1+1], obs.data[:,:,chan,row], adjoint(gjonesdict[scan][:,:,idealtimeindex,ant2+1]))
 		        obs.data[:,:,chan,row] = gjonesdict[scan][:,:,idealtimeindex,ant1+1]*obs.data[:,:,chan,row]*adjoint(gjonesdict[scan][:,:,idealtimeindex,ant2+1])
-                        #@info(obs.data[:,:,chan,row])
 		    end
 		    row += 1 # increment obs.data last index i.e. row number
 	        end
