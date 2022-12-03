@@ -7,7 +7,7 @@ function generatetimeseries(mode::String, location::ComplexF32, scale::Float64, 
     series = zeros(ComplexF32, nsamples)
     if mode == "wiener"	    
         sqrtnsamples = sqrt(nsamples)
-        series[1] = location + (scale*randn(rng, ComplexF32)/sqrtnsamples)
+        series[1] = location + scale*randn(rng, ComplexF32)
         for ii in 2:nsamples
             series[ii] = series[ii-1] + (scale*randn(rng, ComplexF32)/sqrtnsamples)
         end
