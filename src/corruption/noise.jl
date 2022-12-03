@@ -11,7 +11,7 @@ function thermalnoise(obs::CjlObservation)
     fid = h5open(obs.yamlconf["hdf5corruptions"], "r+")
     g = create_group(fid, "thermalnoise")
     attributes(g)["desc"] = "Numerical values of thermal noise corruptions added to data"
-    attributes(g)["dims"] = "stokes x nchan X ntimes_per_baseline (for all scans)"
+    attributes(g)["dims"] = "stokes x nchan x ntimes_per_baseline (for all scans)"
 
     # get ant1 and ant2 vectors with unique elements
     uniqant1 = unique(obs.antenna1)

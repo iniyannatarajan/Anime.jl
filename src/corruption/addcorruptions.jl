@@ -19,6 +19,9 @@ function addcorruptions(obs::CjlObservation)
     # add station gains
     obs.yamlconf["stationgains"]["enable"] && stationgains(obs)
 
+    # add bandpasses
+    obs.yamlconf["bandpass"]["enable"] && bandpass(obs)
+
     # add thermal noise
     obs.yamlconf["thermalnoise"]["enable"] && thermalnoise(obs)
 
