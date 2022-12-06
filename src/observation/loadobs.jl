@@ -2,6 +2,7 @@ export loadobs
 
 abstract type AbstractObservation{T} end
 
+# TODO the entire data structure to hold MS data needs to be rewritten
 struct CjlObservation{T} <: AbstractObservation{T}
     uvw::Matrix{Float64}
     data::Array{Complex{Float32},4}
@@ -17,6 +18,7 @@ struct CjlObservation{T} <: AbstractObservation{T}
     numchan::Int64
     chanfreqvec::Array{Float64,1}
     chanwidth::Float64
+    phasedir::Array{Float64,2}
     stationinfo::DataFrame
     yamlconf::Dict
     rngcorrupt::AbstractRNG
@@ -25,50 +27,12 @@ end
 
 struct CpyObservation{T} <: AbstractObservation{T} end
 
-#=struct StationInfo{T} <: Tables.AbstractColumns
-    station::Array{String,1}
-    dishdiameter::Array{T,1}
-    sefd::Array{T,1}
-    pwv::Array{T,1}
-    groundpresssure::Array{T,1}
-    groundtemperature::Array{T,1}
-    coherencetime::Array{T,1}
-    pointingrms::Array{T,1}
-    beamfwhm230::Array{T,1}
-    beammodel::Array{String,1}
-    apefficiency::Array{T,1}
-    g_pol1_re_mean::Array{T,1}
-    g_pol1_re_std::Array{T,1}
-    g_pol1_im_mean::Array{T,1}
-    g_pol1_im_std::Array{T,1}
-    g_pol2_re_mean::Array{T,1}
-    g_pol2_re_std::Array{T,1}
-    g_pol2_im_mean::Array{T,1}
-    g_pol2_im_std::Array{T,1}
-    d_pol1_re_mean::Array{T,1}
-    d_pol1_re_std::Array{T,1}
-    d_pol1_im_mean::Array{T,1}
-    d_pol1_im_std::Array{T,1}
-    d_pol2_re_mean::Array{T,1}
-    d_pol2_re_std::Array{T,1}
-    d_pol2_im_mean::Array{T,1}
-    d_pol2_im_std::Array{T,1}
-    feedangle::Array{T,1}
-    mount::Array{String,1}
-end=#
-
 # implement Tables interface for CjlObservation
 Tables.istable(::Type{<:CjlObservation}) = true
 Tables.columnaccess(::Type{<:CjlObservation}) = true
 Tables.columns(m::CjlObservation) = m
 
-# implement Tables interface for StationInfo
-#=Tables.istable(::Type{<:StationInfo}) = true
-Tables.columnaccess(::Type{<:StationInfo}) = true
-Tables.columns(m::StationInfo) = m=#
-
 # define loadobs function
-#function loadobs(msname::String, stationinfo::String, delim::String, ignorerepeated::Bool)
 function loadobs(yamlconf::Dict, delim::String, ignorerepeated::Bool)
     """
     load data and metadata from ms and station table
@@ -93,6 +57,9 @@ function loadobs(yamlconf::Dict, delim::String, ignorerepeated::Bool)
     chanfreqvec = spectab[:CHAN_FREQ][1]
     chanwidth = spectab[:CHAN_WIDTH][1][1] # get only the first element instead of the entire channel width vector
 
+    fieldtab = tab.FIELD
+    phasedir = fieldtab[:PHASE_DIR][:][1] # 2 x 1 Matrix of ra and dec
+
     # reshape the various arrays
     data3d = reduce((x,y) -> cat(x, y, dims=3), data)
     data3dres = reshape(data3d, 2, 2, size(data[1])[2], :) # get nchan as 3rd dim and all rows as 4th dim
@@ -101,21 +68,6 @@ function loadobs(yamlconf::Dict, delim::String, ignorerepeated::Bool)
     #=flag3d = reduce((x,y) -> cat(x, y, dims=3), flag)
     flag3dres = reshape(flag3d, 2, 2, size(flag[1])[2], :) # get nchan as 3rd dim and all rows as 4th dim
     flag3dresandperm = permutedims(flag3dres, (2,1,3,4))=#
-
-    #observation = CjlObservation{Float64}(uvw,data,antenna1,antenna2,times,scanno,weight,weightspec,sigma,sigmaspec)
-    
-    # construct ms dataframe
-    #=measurementset = DataFrame()
-    measurementset.uvw = uvw
-    measurementset.data = data
-    measurementset.antenna1 = antenna1
-    measurementset.antenna2 = antenna2
-    measurementset.times = times
-    measurementset.scanno = scanno
-    measurementset.weight = weight
-    measurementset.weightspectrum = weightspec
-    measurementset.sigma = sigma
-    measurementset.sigmaspectrum = sigmaspec=#
 
     # read values from station info csv file
     stationinfo = CSV.read(yamlconf["stations"], DataFrame; delim=delim, ignorerepeated=ignorerepeated)
@@ -130,7 +82,7 @@ function loadobs(yamlconf::Dict, delim::String, ignorerepeated::Bool)
 
     # construct CjlObservation object
     observation = CjlObservation{Float64}(uvw,data3dresandperm,antenna1,antenna2,times,exposure,scanno,weight,weightspec,sigma,sigmaspec,
-					  numchan,chanfreqvec,chanwidth,stationinfo,yamlconf,rngcorrupt,rngtrop)
+					  numchan,chanfreqvec,chanwidth,phasedir,stationinfo,yamlconf,rngcorrupt,rngtrop)
 
     @info("Load observation and metadata into memory for processing... 🙆")
     return observation

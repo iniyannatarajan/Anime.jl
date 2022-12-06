@@ -101,7 +101,7 @@ function generatems(yamlconf::Dict, delim::String, ignorerepeated::Bool, casaant
     # set limits for data flagging
     sm.setlimits(shadowlimit=yamlconf["shadowlimit"], elevationlimit=yamlconf["elevationlimit"])
 
-    # set spectral windows
+    # set spectral windows -- NB: we are not handling multiple spws as of now
     #=for (key, val) in yamlconf["manual"]["spwname"]
 	startfreq = val["centrefreq"] - val["bandwidth"]-2.0
 	chanwidth = val["bandwidth"]/val["channels"]
@@ -137,6 +137,7 @@ function generatems(yamlconf::Dict, delim::String, ignorerepeated::Bool, casaant
 	starttime = ii==1 ? 0 : stoptime+yamlconf["scanlags"][ii-1]
 	stoptime = starttime + yamlconf["scanlengths"][ii] #+ yamlconf["inttime"] # inttime added here to add one more inttime at the end of the scan
 
+	# NB: We are not handling multiple spectral windows as of now
 	#=for (key, val) in yamlconf["manual"]["spwname"]
 	    sm.observe(sourcename=collect(keys(yamlconf["manual"]["source"]))[1], spwname=key, starttime="$(starttime)s", stoptime="$(stoptime)s")
 	end=#

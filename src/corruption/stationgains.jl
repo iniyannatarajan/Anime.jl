@@ -1,28 +1,12 @@
 export stationgains
 
-function generatetimeseries(mode::String, location::ComplexF32, scale::Float64, nsamples::Int64, rng::AbstractRNG)
-    """
-    Generate complex-valued wiener series
-    """
-    series = zeros(ComplexF32, nsamples)
-    if mode == "wiener"	    
-        sqrtnsamples = sqrt(nsamples)
-        series[1] = location + scale*randn(rng, ComplexF32)
-        for ii in 2:nsamples
-            series[ii] = series[ii-1] + (scale*randn(rng, ComplexF32)/sqrtnsamples)
-        end
-    elseif mode == "gaussian"
-	series = location .+ scale*randn(rng, ComplexF32, nsamples)
-    end
-    return series
-end
+include(joinpath("util.jl"))
 
 function stationgains(obs::CjlObservation)
     """
     Add time-variable station gains to visibilities
     """
     # get element type to be used
-    # TODO USE THE CORRECT RNG FOR RANDN
     elemtype = typeof(obs.data[1][1])
 
     # open h5 file for writing
@@ -35,6 +19,7 @@ function stationgains(obs::CjlObservation)
     uniqscans = unique(obs.scanno)
 
     # loop through each station to create a vector of 2x2 G-Jones terms evolving over time
+    # TODO parametrise in terms of gain ratio
     row = 1 # variable to index obs.data array
     gjonesdict = Dict() # create empty dict
     for scan in uniqscans
@@ -47,8 +32,8 @@ function stationgains(obs::CjlObservation)
 	gjonesmatrices = zeros(elemtype, 2, 2, idealtscanveclen, size(obs.stationinfo)[1]) # 2 x 2 x ntimes x nant
 
 	for ant in 1:size(obs.stationinfo)[1]
-	   gjonesmatrices[1, 1, :, ant] = generatetimeseries(obs.yamlconf["stationgains"]["mode"], obs.stationinfo.g_pol1_loc[ant], obs.stationinfo.g_pol1_scale[ant], idealtscanveclen, obs.rngcorrupt)
-	   gjonesmatrices[2, 2, :, ant] = generatetimeseries(obs.yamlconf["stationgains"]["mode"], obs.stationinfo.g_pol2_loc[ant], obs.stationinfo.g_pol2_scale[ant], idealtscanveclen, obs.rngcorrupt)
+	   gjonesmatrices[1, 1, :, ant] = gentimeseries(obs.yamlconf["stationgains"]["mode"], obs.stationinfo.g_pol1_loc[ant], obs.stationinfo.g_pol1_scale[ant], idealtscanveclen, obs.rngcorrupt)
+	   gjonesmatrices[2, 2, :, ant] = gentimeseries(obs.yamlconf["stationgains"]["mode"], obs.stationinfo.g_pol2_loc[ant], obs.stationinfo.g_pol2_scale[ant], idealtscanveclen, obs.rngcorrupt)
 	end
 
 	# add to gjonesdict

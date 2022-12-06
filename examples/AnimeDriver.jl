@@ -48,20 +48,20 @@ cd(args["outdir"])
 
 # create a new empty MS -- check if an MS of the same name exists and if yes, delete before creation
 isdir(yamlconf["msname"]) ? (args["clobber"] || error("$(yamlconf["msname"]) exists! Not overwriting.")) : run(`rm -rf $(yamlconf["msname"])`)
-generatems(yamlconf, ",", false, template) # comma-separated; do not ignore repeated delimiters
+@time generatems(yamlconf, ",", false, template) # comma-separated; do not ignore repeated delimiters
 
 # call wscean to predict visibilities -- TODO: read in hdf5 model and create fitsdir with sky models
 if yamlconf["skymodelmode"] == "fits"
-    runwsclean(yamlconf["msname"], yamlconf["fitssky"], yamlconf["polarized"], yamlconf["channelgroups"], yamlconf["osfactor"])
+    @time runwsclean(yamlconf["msname"], yamlconf["fitssky"], yamlconf["polarized"], yamlconf["channelgroups"], yamlconf["osfactor"])
 elseif yamlconf["skymodelmode"] == "hdf5"
-    runwsclean(yamlconf["msname"], yamlconf["hdf5sky"], yamlconf["polarized"], yamlconf["channelgroups"], yamlconf["osfactor"])
+    @time runwsclean(yamlconf["msname"], yamlconf["hdf5sky"], yamlconf["polarized"], yamlconf["channelgroups"], yamlconf["osfactor"])
 else
     error("Unrecognised value \"$(yamlconf["skymodelmode"])\" for modelmode! Allowed values are 'hdf5' or 'fits'.")
 end
 
 # load ms data into custom struct
 #observation, stationinfo = loadobs(yamlconf["msname"], yamlconf["stations"], ",", false)
-observation = loadobs(yamlconf, ",", false)
+@time observation = loadobs(yamlconf, ",", false)
 
 # add corruptions
 addcorruptions(observation)

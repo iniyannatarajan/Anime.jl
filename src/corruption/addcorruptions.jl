@@ -3,7 +3,7 @@ export addcorruptions
 include(joinpath("troposphere.jl"))
 include(joinpath("ionosphere.jl"))
 include(joinpath("beam.jl"))
-include(joinpath("instrumentpol.jl"))
+#include(joinpath("instrumentalpol.jl"))
 include(joinpath("stationgains.jl"))
 include(joinpath("bandpass.jl"))
 include(joinpath("noise.jl"))
@@ -13,17 +13,20 @@ function addcorruptions(obs::CjlObservation)
     Main fn to add corruptions
     """
     # create HDF5 file to store all corruptions
-    fid = h5open(obs.yamlconf["hdf5corruptions"], "w")
+    fid = h5open(obs.yamlconf["hdf5corruptions"], "w") # using mode "w" to destroy existing contents
     close(fid)
 
+    # add instrumental polarization
+    #obs.yamlconf["instrumentalpol"]["enable"] && @time instrumentalpol(obs)
+
     # add station gains
-    obs.yamlconf["stationgains"]["enable"] && stationgains(obs)
+    obs.yamlconf["stationgains"]["enable"] && @time stationgains(obs)
 
     # add bandpasses
-    obs.yamlconf["bandpass"]["enable"] && bandpass(obs)
+    obs.yamlconf["bandpass"]["enable"] && @time bandpass(obs)
 
     # add thermal noise
-    obs.yamlconf["thermalnoise"]["enable"] && thermalnoise(obs)
+    obs.yamlconf["thermalnoise"]["enable"] && @time thermalnoise(obs)
 
     # convert data array back to the format required by Casacore
     revdata3dres = permutedims(obs.data, (2,1,3,4))

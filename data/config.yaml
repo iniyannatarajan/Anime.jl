@@ -20,10 +20,10 @@ source:
     RA: "12h30m49.42"                                                       # right ascension of source position in hours
     Dec: "+12.23.28.04"                                                     # declination of source position in degrees
     epoch: "J2000"                                                          # "J2000" or "B1950"
-scans: 5                                                                  # number of scans
-scanlengths: [1200, 1200, 1200, 1200, 1200]                               # list of lengths of each scan in seconds
-scanlags: [300, 300, 300, 300]                                            # list of lengths of lag times between scans (one less than number of scans)
-inttime: 10.0                                                             # integration time in seconds
+scans: 2                                                                  # number of scans
+scanlengths: [600, 600]                                                   # list of lengths of each scan in seconds
+scanlags: [300]                                                           # list of lengths of lag times between scans (one less than number of scans)
+inttime: 0.5                                                             # integration time in seconds
 stokes: "RR RL LR LL"                                                     # CASA understandable Stokes types to simulate (check official MS specification)
 spw:
     centrefreq: [229.0e9]                                                     # centre frequency of spw in Hz
@@ -73,17 +73,18 @@ pointing:
 ####################################################
 # settings for instrumental polarization
 
-instrumentpol: 
+instrumentalpol: 
   enable: false                                                             # add instrumental polarization
+  visibilityframe: "sky"                                                   # "sky" or "antenna"; "sky" frame is used by default
 
 ####################################################
 # settings for gains
 
 stationgains: 
-  enable: false                                                             # add antenna gains
+  enable: true                                                             # add antenna gains
   mode: "wiener"                                                           # "wiener" or "gaussian"
 bandpass: 
-  enable: true                                                             # add bandpass effects 
+  enable: false                                                             # add bandpass effects 
   bandpassfile: "/home/iniyan/software/dev/Anime.jl/data/eht_future.bandpass" # csv file containing bandpass information for all stations
 
 ####################################################
