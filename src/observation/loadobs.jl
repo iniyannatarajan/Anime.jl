@@ -19,6 +19,7 @@ struct CjlObservation{T} <: AbstractObservation{T}
     chanfreqvec::Array{Float64,1}
     chanwidth::Float64
     phasedir::Array{Float64,2}
+    pos::Array{Float64, 2}
     stationinfo::DataFrame
     yamlconf::Dict
     rngcorrupt::AbstractRNG
@@ -60,6 +61,9 @@ function loadobs(yamlconf::Dict, delim::String, ignorerepeated::Bool)
     fieldtab = tab.FIELD
     phasedir = fieldtab[:PHASE_DIR][:][1] # 2 x 1 Matrix of ra and dec
 
+    anttab = tab.ANTENNA
+    pos = anttab[:POSITION][:,:]
+
     # reshape the various arrays
     data3d = reduce((x,y) -> cat(x, y, dims=3), data)
     data3dres = reshape(data3d, 2, 2, size(data[1])[2], :) # get nchan as 3rd dim and all rows as 4th dim
@@ -82,7 +86,7 @@ function loadobs(yamlconf::Dict, delim::String, ignorerepeated::Bool)
 
     # construct CjlObservation object
     observation = CjlObservation{Float64}(uvw,data3dresandperm,antenna1,antenna2,times,exposure,scanno,weight,weightspec,sigma,sigmaspec,
-					  numchan,chanfreqvec,chanwidth,phasedir,stationinfo,yamlconf,rngcorrupt,rngtrop)
+					  numchan,chanfreqvec,chanwidth,phasedir,pos,stationinfo,yamlconf,rngcorrupt,rngtrop)
 
     @info("Load observation and metadata into memory for processing... 🙆")
     return observation
