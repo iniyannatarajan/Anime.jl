@@ -73,7 +73,7 @@ function elevationangle(obs::CjlObservation)
     return elevationmatrix
 end
 
-function gentimeseries(mode::String, location::ComplexF32, scale::Float64, nsamples::Int64, rng::AbstractRNG)
+function gentimeseries(mode::String, location::ComplexF32, scale::Float64, driftrate::Float64, nsamples::Int64, rng::AbstractRNG)
     """
     Generate complex-valued wiener series
     """
@@ -83,7 +83,7 @@ function gentimeseries(mode::String, location::ComplexF32, scale::Float64, nsamp
         sqrtnsamples = sqrt(nsamples)
         series[1] = location + scale*randn(rng, ComplexF32)
         for ii in 2:nsamples
-            series[ii] = series[ii-1] + (scale*randn(rng, ComplexF32)/sqrtnsamples)
+            series[ii] = series[ii-1] + (scale*randn(rng, ComplexF32)/sqrtnsamples) + driftrate*ii
         end
     elseif mode == "gaussian"
         series = location .+ scale*randn(rng, ComplexF32, nsamples)
