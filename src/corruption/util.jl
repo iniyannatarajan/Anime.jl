@@ -19,6 +19,8 @@ function parallacticangle(obs::CjlObservation)
     starttime = me.epoch("utc", qa.quantity(uniqtimes[1], "s"))
     me.doframe(starttime)
 
+    nant = size(obs.stationinfo)[1]
+
     parallacticanglematrix = zeros(size(uniqtimes)[1], nant)
 
     for ant in 1:nant
@@ -30,7 +32,7 @@ function parallacticangle(obs::CjlObservation)
         sec2rad = 2*pi/(24.0*3600.0)
         hourangle = pyconvert(Float64, me.measure(pointing, "HADEC")["m0"]["value"]) .+ (uniqtimes.-minimum(uniqtimes)).*sec2rad
         earthradius = 6371000.0
-        latitude = asin(pos[3, ant]/earthradius)
+        latitude = asin(obs.pos[3, ant]/earthradius)
 	parallacticanglematrix[:,ant] = atan.(sin.(hourangle).*cos(latitude), (cos(obs.phasedir[2])*sin(latitude).-cos.(hourangle).*cos(latitude).*sin(obs.phasedir[2])))
     end
 
@@ -50,6 +52,8 @@ function elevationangle(obs::CjlObservation)
     pointing = me.direction("j2000", ra, dec)
     starttime = me.epoch("utc", qa.quantity(uniqtimes[1], "s"))
     me.doframe(starttime)
+
+    nant = size(obs.stationinfo)[1]
     
     elevationmatrix = zeros(size(uniqtimes)[1], nant)
     
@@ -62,7 +66,7 @@ function elevationangle(obs::CjlObservation)
         sec2rad = 2*pi/(24.0*3600.0)
         hourangle = pyconvert(Float64, me.measure(pointing, "HADEC")["m0"]["value"]) .+ (uniqtimes.-minimum(uniqtimes)).*sec2rad
         earthradius = 6371000.0
-        latitude = asin(pos[3, ant]/earthradius)
+        latitude = asin(obs.pos[3, ant]/earthradius)
         elevationmatrix[:,ant] = asin.(sin(latitude)*sin(obs.phasedir[2]).+cos(latitude)*cos(obs.phasedir[2]).*cos.(hourangle))
     end
 

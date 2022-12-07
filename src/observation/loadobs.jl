@@ -80,6 +80,10 @@ function loadobs(yamlconf::Dict, delim::String, ignorerepeated::Bool)
     stationinfo.g_pol1_loc = map(x->parse(ComplexF32,x), stationinfo.g_pol1_loc)
     stationinfo.g_pol2_loc = map(x->parse(ComplexF32,x), stationinfo.g_pol2_loc)
 
+    # parse strings to complex values for djones terms
+    stationinfo.d_pol1_loc = map(x->parse(ComplexF32,x), stationinfo.d_pol1_loc)
+    stationinfo.d_pol2_loc = map(x->parse(ComplexF32,x), stationinfo.d_pol2_loc)
+
     # generate some quantities to be available for all corrupting functions and them to the observation composite type
     rngcorrupt = Xoshiro(Int(yamlconf["corruptseed"]))
     rngtrop = Xoshiro(Int(yamlconf["troposphere"]["tropseed"]))

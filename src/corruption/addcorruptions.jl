@@ -3,7 +3,7 @@ export addcorruptions
 include(joinpath("troposphere.jl"))
 include(joinpath("ionosphere.jl"))
 include(joinpath("beam.jl"))
-#include(joinpath("instrumentalpol.jl"))
+include(joinpath("instrumentalpol.jl"))
 include(joinpath("stationgains.jl"))
 include(joinpath("bandpass.jl"))
 include(joinpath("noise.jl"))
@@ -17,7 +17,7 @@ function addcorruptions(obs::CjlObservation)
     close(fid)
 
     # add instrumental polarization
-    #obs.yamlconf["instrumentalpol"]["enable"] && @time instrumentalpol(obs)
+    obs.yamlconf["instrumentalpol"]["enable"] && @time instrumentalpol(obs)
 
     # add station gains
     obs.yamlconf["stationgains"]["enable"] && @time stationgains(obs)
