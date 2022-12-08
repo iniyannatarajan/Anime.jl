@@ -24,7 +24,7 @@ function create_parser()
             arg_type = String
         "--clobber", "-c"
             action = :store_true
-            help = "Overwrite existing arguments"
+            help = "Delete and create output directory anew"
     end
 
     return parse_args(s)
@@ -41,13 +41,22 @@ template = abspath(startdir, args["template"])
 # load input YAML file
 yamlconf = YAML.load_file(config, dicttype=Dict{String,Any})
 
-# change to output directory, optionally creating it if it does not exist
-isdir(args["outdir"]) || mkdir(args["outdir"])
+# create a new empty output dir if clobber==true
+if isdir(args["outdir"])
+    if args["clobber"]
+        run(`rm -rf $(args["outdir"])`)
+	mkdir(args["outdir"])
+    else 
+	error("Output dir '$(args["outdir"])' exists but clobber=false 🤷") 
+    end
+else
+    mkdir(args["outdir"])
+end
+
 @info("Changing working directory to $(args["outdir"])")
 cd(args["outdir"])
 
-# create a new empty MS -- check if an MS of the same name exists and if yes, delete before creation
-isdir(yamlconf["msname"]) ? (args["clobber"] || error("$(yamlconf["msname"]) exists! Not overwriting.")) : run(`rm -rf $(yamlconf["msname"])`)
+# create new ms
 @time generatems(yamlconf, ",", false, template) # comma-separated; do not ignore repeated delimiters
 
 # call wscean to predict visibilities -- TODO: read in hdf5 model and create fitsdir with sky models

@@ -35,6 +35,7 @@ function pointing(obs::CjlObservation)
     """
     Compute pointing errors and apply to data
     """
+    @info("Computing pointing errors...")
     # get element type to be used
     elemtype = typeof(obs.data[1][1])
     nant = size(obs.stationinfo)[1]
@@ -50,6 +51,7 @@ function pointing(obs::CjlObservation)
 
     pbfwhm = obs.stationinfo.pbfwhm230_arcsec./(mean(obs.chanfreqvec)/230.0e9) # scale primary beam to centre frequency of spw
     pointinginterval = obs.yamlconf["pointing"]["interval"] == "coherencetime" ? mean(obs.stationinfo.ctime_sec) : obs.yamlconf["pointing"]["interval"]
+    @info("Generating new mispointings every $(pointinginterval) seconds")
 
     # TODO calculate antenna rise and set times and mask pointing offsets? Is this really necessary? 
     # If the source is not above horizon, the antenna would automatically be flagged; shouldn't make a difference
@@ -107,5 +109,5 @@ function pointing(obs::CjlObservation)
     # close h5 file
     close(fid)
 
-    @info("Compute and apply pointing errors... 🙆")
+    @info("Apply pointing errors to visibilities... 🙆")
 end

@@ -1,7 +1,7 @@
 export addcorruptions
 
 include(joinpath("troposphere.jl"))
-include(joinpath("ionosphere.jl"))
+#include(joinpath("ionosphere.jl"))
 include(joinpath("beam.jl"))
 include(joinpath("instrumentalpol.jl"))
 include(joinpath("stationgains.jl"))
@@ -15,6 +15,9 @@ function addcorruptions(obs::CjlObservation)
     # create HDF5 file to store all corruptions
     fid = h5open(obs.yamlconf["hdf5corruptions"], "w") # using mode "w" to destroy existing contents
     close(fid)
+
+    # add tropospheric effects
+    obs.yamlconf["troposphere"]["enable"] && @time troposphere(obs)
 
     # add instrumental polarization
     obs.yamlconf["instrumentalpol"]["enable"] && @time instrumentalpol(obs)
