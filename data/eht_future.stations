@@ -1,4 +1,4 @@
-station,x_m,y_m,z_m,dishdiameter_m,sefd_Jy,pwv_mm,gpress_mb,gtemp_K,ctime_sec,pointingrms_arcsec,beamfwhm230_arcsec,beam_model,aperture_eff,g_pol1_loc,g_pol1_scale,g_pol2_loc,g_pol2_scale,d_pol1_loc,d_pol1_scale,d_pol2_loc,d_pol2_scale,feedangle_deg,mount
+station,x_m,y_m,z_m,dishdiameter_m,sefd_Jy,pwv_mm,gpress_mb,gtemp_K,ctime_sec,pointingrms_arcsec,pbfwhm230_arcsec,pbmodel,aperture_eff,g_pol1_loc,g_pol1_scale,g_pol2_loc,g_pol2_scale,d_pol1_loc,d_pol1_scale,d_pol2_loc,d_pol2_scale,feedangle_deg,mount
 AA, 2225060.8136, -5440059.59994, -2481681.15054, 73, 60.0, 1.5, 555, 271, 10, 1.0, 27, gaussian, 0.73, 1.03+0.5im, 0.1, 1.02+0.4im, 0.1, 0.05+0.0im, 0.0, 0.05+0.0im, 0.0, 0.0, ALT-AZ
 AP, 2225039.52970, -5441197.62920, -2479303.35970, 12, 3300.0, 1.5, 555, 271, 10, 1.0, 27, gaussian, 0.63, 1.03+0.5im, 0.1, 1.02+0.4im, 0.1, 0.05+0.0im, 0.0, 0.05+0.0im, 0.0, 0.0, ALT-AZ+NASMYTH-R
 AZ, -1828796.20000, -5054406.80000, 3427865.20000, 10, 7700.0, 4.4, 695, 276, 3, 1.0, 32, gaussian, 0.57, 1.03+0.5im, 0.1, 1.02+0.4im, 0.1, 0.05+0.0im, 0.0, 0.05+0.0im, 0.0, 0.0, ALT-AZ+NASMYTH-R

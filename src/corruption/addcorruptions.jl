@@ -19,6 +19,9 @@ function addcorruptions(obs::CjlObservation)
     # add instrumental polarization
     obs.yamlconf["instrumentalpol"]["enable"] && @time instrumentalpol(obs)
 
+    # add pointing errors
+    obs.yamlconf["pointing"]["enable"] && @time pointing(obs)
+
     # add station gains
     obs.yamlconf["stationgains"]["enable"] && @time stationgains(obs)
 

@@ -3,94 +3,99 @@
 ####################################################
 # settings to generate a new ms
 
-msname: "eht.ms"                                                            # name of output ms
-telescopename: "VLBA"                                                       # preset telescope known to casa (not important since CASA is not used for predict; just an argument required for setconfig)
+msname: "eht.ms"                                     # name of output ms
+telescopename: "VLBA"                                # preset telescope known to casa (not important since CASA is not used for predict; just an argument required for setconfig)
 stations: "/home/iniyan/software/dev/Anime.jl/data/eht_future.stations"     # CSV file with station parameters
-mode: "manual"                                                              # "vex", "uvfits", "manual" are the only allowed values
+mode: "manual"                                       # "vex", "uvfits", "manual" are the only allowed values
 vex:
   vexfile: "/home/iniyan/software/dev/Anime.jl/data/vexfiles/e17e11.vex"    # name of the VEX schedule to use for observing
 uvfits:
   uvfitsfile: "/home/iniyan/software/dev/Anime.jl/data/uvfitsfiles/hops_lo_3601_M87+zbl-dtcal_selfcal.uvfits" # name of uvfits file to convert to ms
-autocorr: false                                                           # toggle whether to include autocorrelations
-feed: "perfect R L"                                                       # "perfect R L" or "perfect X Y"
-shadowlimit: 1e-6                                                         # maximum fraction of geometrically shadowed area before flagging occurs
-elevationlimit: "10deg"                                                   # minimum elevation angle before flagging occurs
+autocorr: false                                      # toggle whether to include autocorrelations
+feed: "perfect R L"                                  # "perfect R L" or "perfect X Y"
+shadowlimit: 1e-6                                    # maximum fraction of geometrically shadowed area before flagging occurs
+elevationlimit: "10deg"                              # minimum elevation angle before flagging occurs
 source:
   M87:
-    RA: "12h30m49.42"                                                       # right ascension of source position in hours
-    Dec: "+12.23.28.04"                                                     # declination of source position in degrees
-    epoch: "J2000"                                                          # "J2000" or "B1950"
-scans: 2                                                                  # number of scans
-scanlengths: [600, 600]                                                   # list of lengths of each scan in seconds
-scanlags: [300]                                                           # list of lengths of lag times between scans (one less than number of scans)
-inttime: 10                                                             # integration time in seconds
-stokes: "RR RL LR LL"                                                     # CASA understandable Stokes types to simulate (check official MS specification)
+    RA: "12h30m49.42"                                # right ascension of source position in hours
+    Dec: "+12.23.28.04"                              # declination of source position in degrees
+    epoch: "J2000"                                   # "J2000" or "B1950"
+scans: 2                                             # number of scans
+scanlengths: [600, 600]                              # list of lengths of each scan in seconds
+scanlags: [300]                                      # list of lengths of lag times between scans (one less than number of scans)
+inttime: 0.5                                          # integration time in seconds
+stokes: "RR RL LR LL"                                # CASA understandable Stokes types to simulate (check official MS specification)
 spw:
-    centrefreq: [229.0e9]                                                     # centre frequency of spw in Hz
-    bandwidth: [2.0e9]                                                        # bandwidth of spw in Hz
-    channels: [32]                                                          # number of channels in spw
-starttime: "UTC,2021/04/28/00:00:00.00"                                   # starting time of the first scan in the observation
+    centrefreq: [229.0e9]                            # centre frequency of spw in Hz
+    bandwidth: [2.0e9]                               # bandwidth of spw in Hz
+    channels: [32]                                   # number of channels in spw
+starttime: "UTC,2021/04/28/00:00:00.00"              # starting time of the first scan in the observation
 
 ####################################################
 # settings for wsclean predict
 
-osfactor: 8191                                                              # oversampling factor
-skymodelmode: "fits"                                                        # "fits" or "hdf5"
+osfactor: 8191                                       # oversampling factor
+skymodelmode: "fits"                                 # "fits" or "hdf5"
 hdf5sky: "/home/iniyan/software/dev/Anime.jl/data/sspot_freq_230e9.hdf5"       # name of HDF5 file
 fitssky: "/home/iniyan/software/dev/Anime.jl/data/sourcemodels/point"       # directory containing FITS sky models
-polarized: false                                                             # toggle source model polarization
-channelgroups: 1                                                            # number of groups to divide the channels into
+polarized: false                                     # toggle source model polarization
+channelgroups: 1                                     # number of groups to divide the channels into
 
 ####################################################
 # common settings
 
-hdf5corruptions: "allcorruptions.h5"                                        # HDF5 filename to store all corruptions; will be created in whatever output directory the user designates
-corruptseed: 456                                                            # seed to be used for generating random variables for corruptions
+hdf5corruptions: "allcorruptions.h5"                 # HDF5 filename to store all corruptions; will be created in whatever output directory the user designates
+corruptseed: 456                                     # seed to be used for generating random variables for corruptions
 
 ####################################################
 # settings for atmospheric corruptions
 
-troposphere:                                                                # add troposphere
+troposphere:                                         # add troposphere
   enable: false
-  wetonly: false                                                            # add only the wet component
-  attenuate: false                                                          # signal attenuation due to opacity
-  skynoise: false                                                           # add tropospheric contribution to sky noise
-  turbulence: false                                                         # add turbulent phases
-  meandelay: false                                                          # add mean delays
-  fixdelays: false                                                          # add fixed delays 
-  tropseed: 821                                                             # independent seed for generating random variables for troposphere
+  wetonly: false                                     # add only the wet component
+  attenuate: false                                   # signal attenuation due to opacity
+  skynoise: false                                    # add tropospheric contribution to sky noise
+  turbulence: false                                  # add turbulent phases
+  meandelay: false                                   # add mean delays
+  fixdelays: false                                   # add fixed delays 
+  tropseed: 821                                      # independent seed for generating random variables for troposphere
 
-ionosphere:                                                                 # add ionosphere
+ionosphere:                                          # add ionosphere
   enable: false
 
 ####################################################
 # beam and pointing settings
 
 pointing:
-  enable: false
-  samplinginterval: 10.0                                                    # time interval after which to regenerate pointing errors, in minutes
+  enable: true
+  interval: "coherencetime"                          # time interval after which to realise new pointing errors in seconds (or "coherencetime")
+  longterm:
+    enable: false                                    # enable longterm, multiscan pointing drifts
+    nscan: 5                                         # no. of scans after which to reset long term pointing drift
+    sigmascale: 1.2                                  # scale pointing rms by this value
+    epsilon: 0.1                                     # growth factor multiplied with the scaled up sigma
 
 ####################################################
 # settings for instrumental polarization
 
 instrumentalpol: 
-  enable: true                                                             # add instrumental polarization
-  mode: "wiener"                                                           # "wiener" or "gaussian"
-  visibilityframe: "sky"                                                   # "sky" or "antenna"; "sky" frame is used by default
+  enable: false                                       # add instrumental polarization
+  mode: "wiener"                                     # "wiener" or "gaussian"
+  visibilityframe: "sky"                             # "sky" or "antenna"; "sky" frame is used by default
 
 ####################################################
 # settings for gains
 
 stationgains: 
-  enable: false                                                             # add antenna gains
-  mode: "wiener"                                                           # "wiener" or "gaussian"
+  enable: false                                      # add antenna gains
+  mode: "wiener"                                     # "wiener" or "gaussian"
 bandpass: 
-  enable: false                                                             # add bandpass effects 
+  enable: false                                      # add bandpass effects 
   bandpassfile: "/home/iniyan/software/dev/Anime.jl/data/eht_future.bandpass" # csv file containing bandpass information for all stations
 
 ####################################################
 # noise settings
 
 thermalnoise: 
-  enable: false                                                             # toggle thermal noise
-  correff: 0.88                                                            # correlator efficiency for 2 quantization bits (use 0.636 for 1-bit)
+  enable: false                                      # toggle thermal noise
+  correff: 0.88                                      # correlator efficiency for 2 quantization bits (use 0.636 for 1-bit)

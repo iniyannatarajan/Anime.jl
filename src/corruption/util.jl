@@ -90,3 +90,21 @@ function gentimeseries(mode::String, location::ComplexF32, scale::Float64, drift
     end
     return series
 end
+
+function gentimeseries(mode::String, location::Float32, scale::Float64, driftrate::Float64, nsamples::Int64, rng::AbstractRNG)
+    """
+    Generate complex-valued wiener series
+    """
+    # TODO this is a crude version of a wiener process -- to be updated
+    series = zeros(Float32, nsamples)
+    if mode == "wiener"
+        sqrtnsamples = sqrt(nsamples)
+        series[1] = location + scale*randn(rng, Float32)
+        for ii in 2:nsamples
+            series[ii] = series[ii-1] + (scale*randn(rng, Float32)/sqrtnsamples) + driftrate*ii
+        end
+    elseif mode == "gaussian"
+        series = location .+ scale*randn(rng, Float32, nsamples)
+    end
+    return series
+end
