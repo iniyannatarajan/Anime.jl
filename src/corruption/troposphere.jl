@@ -43,6 +43,25 @@ function run_atm(obs::CjlObservation)::DataFrame
     return absdf
 end
 
+function compute_transmission(obs::CjlObservation, atmdf::DataFrame, elevationmatrix::Array{Float64, 2}, ntimes::Int64)::Array{Float32, 3}
+    """
+    Compute transmission matrix
+    """
+    # compute time and frequency varying transmission matrix for each station
+    transmission = zeros(Float32, obs.numchan, ntimes, size(obs.stationinfo)[1])
+    for ant in 1:size(obs.stationinfo)[1]
+        # get opacity at all frequencies for this station
+        opacityvec = obs.yamlconf["troposphere"]["wetonly"] ? atmdf[atmdf.Station .== "AA",:].Wet_opacity : opacity = atmdf[atmdf.Station .== "AA",:].Dry_opacity +
+                        atmdf[atmdf.Station .== "AA",:].Wet_opacity
+        for t in 1:ntimes
+            for chan in 1:obs.numchan
+                    transmission[chan, t, ant] = exp(-1*opacityvec[chan]/sin(elevationmatrix[t, ant]))
+            end
+        end
+    end
+    return transmission
+end
+
 function attenuate(obs::CjlObservation, atmdf::DataFrame, elevationmatrix::Array{Float64, 2})
     """
     Compute signal attenuation due to opacity
@@ -50,28 +69,17 @@ function attenuate(obs::CjlObservation, atmdf::DataFrame, elevationmatrix::Array
     # get unique times
     uniqtimes = unique(obs.times)
 
-    # compute time and frequency varying transmission matrix for each station
-    transmissionmatrix = zeros(Float32, obs.numchan, size(uniqtimes)[1], size(obs.stationinfo)[1])
-    for ant in 1:size(obs.stationinfo)[1]
-	# get opacity at all frequencies for this station
-	opacityvec = obs.yamlconf["troposphere"]["wetonly"] ? atmdf[atmdf.Station .== "AA",:].Wet_opacity : opacity = atmdf[atmdf.Station .== "AA",:].Dry_opacity + 
-			atmdf[atmdf.Station .== "AA",:].Wet_opacity
-        for t in 1:size(uniqtimes)[1]
-            for chan in 1:obs.numchan
-		    transmissionmatrix[chan, t, ant] = exp(-1*opacityvec[chan]/sin(elevationmatrix[t, ant]))
-	    end
-        end
-    end
+    transmission = compute_transmission(obs, atmdf, elevationmatrix, size(uniqtimes)[1])
 
     # attenuate visibilities
     row = 1
-    for t in 1:size(uniqtimes)[1]
+    for t in 1:size(transmission)[2] # no. of unique times
 	# read all baselines present in a given time
 	ant1vec = getindex(obs.antenna1, findall(obs.times.==uniqtimes[t]))
 	ant2vec = getindex(obs.antenna2, findall(obs.times.==uniqtimes[t]))
 	for (ant1,ant2) in zip(ant1vec, ant2vec)
             for chan in 1:obs.numchan
-		obs.data[:, :, chan, row] = sqrt(transmissionmatrix[chan, t, ant1+1]*transmissionmatrix[chan, t, ant2+1]) .* abs.(obs.data[:, :, chan, row]) .* exp.(angle.(obs.data[:, :, chan, row])*im)
+		obs.data[:, :, chan, row] = sqrt(transmission[chan, t, ant1+1]*transmission[chan, t, ant2+1]) .* abs.(obs.data[:, :, chan, row]) .* exp.(angle.(obs.data[:, :, chan, row])*im)
 	    end
 	    row += 1 # increment the last dimension i.e. row number
         end
