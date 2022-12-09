@@ -22,7 +22,7 @@ function thermalnoise(obs::CjlObservation)
 	for a2 in uniqant2
 	    if a2>a1
 		# compute sigma per baseline
-		sigmaperbl = (1/obs.yamlconf["thermalnoise"]["correff"]) * sqrt((obs.stationinfo.sefd_Jy[a1+1]*obs.stationinfo.sefd_Jy[a2+1])
+		sigmaperbl = (1/obs.yamlconf["correff"]) * sqrt((obs.stationinfo.sefd_Jy[a1+1]*obs.stationinfo.sefd_Jy[a2+1])
 								/(2*obs.exposure*obs.chanwidth))
 		indices = intersect(findall(obs.antenna1.==a1), findall(obs.antenna2.==a2))
 

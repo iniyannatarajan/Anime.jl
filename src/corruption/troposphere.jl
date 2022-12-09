@@ -1,6 +1,7 @@
 export troposphere
 
 include(joinpath("util.jl"))
+using PhysicalConstants
 
 function run_atm(obs::CjlObservation)::DataFrame
     """
@@ -51,8 +52,8 @@ function compute_transmission(obs::CjlObservation, atmdf::DataFrame, elevationma
     transmission = zeros(Float32, obs.numchan, ntimes, size(obs.stationinfo)[1])
     for ant in 1:size(obs.stationinfo)[1]
         # get opacity at all frequencies for this station
-        opacityvec = obs.yamlconf["troposphere"]["wetonly"] ? atmdf[atmdf.Station .== "AA",:].Wet_opacity : opacity = atmdf[atmdf.Station .== "AA",:].Dry_opacity +
-                        atmdf[atmdf.Station .== "AA",:].Wet_opacity
+	opacityvec = obs.yamlconf["troposphere"]["wetonly"] ? atmdf[atmdf.Station .== obs.stationinfo.station[ant],:].Wet_opacity : 
+	             atmdf[atmdf.Station .== obs.stationinfo.station[ant],:].Dry_opacity + atmdf[atmdf.Station .== obs.stationinfo.station[ant],:].Wet_opacity
         for t in 1:ntimes
             for chan in 1:obs.numchan
                     transmission[chan, t, ant] = exp(-1*opacityvec[chan]/sin(elevationmatrix[t, ant]))
@@ -87,11 +88,46 @@ function attenuate(obs::CjlObservation, atmdf::DataFrame, elevationmatrix::Array
     @info("Applying attenuation due to opacity... 🙆")
 end
 
-function compute_skynoise()
+function compute_skynoise(obs::CjlObservation, atmdf::DataFrame, elevation::Array{Float64, 2})
     """
     Use ATM (Pardo et al. 2001) to compute atmospheric contribution to temperature
     """
     # needs skybrightness, opacity, elevation
+    # get unique times
+    uniqtimes = unique(obs.times)
+
+    # get matrix type and size to be created -- data is a 4d array
+    elemtype = typeof(obs.data[1])
+
+    transmission = compute_transmission(obs, atmdf, elevation, size(uniqtimes)[1])
+    sefdarray = zeros(Float32, obs.numchan, size(uniqtimes)[1], size(obs.stationinfo)[1])
+    for ant in 1:size(obs.stationinfo)[1]
+        # get opacity at all frequencies for this station
+        opacityvec = obs.yamlconf["troposphere"]["wetonly"] ? atmdf[atmdf.Station .== obs.stationinfo.station[ant],:].Wet_opacity :
+                     atmdf[atmdf.Station .== obs.stationinfo.station[ant],:].Dry_opacity + atmdf[atmdf.Station .== obs.stationinfo.station[ant],:].Wet_opacity
+        for t in 1:size(uniqtimes)[1]
+            for chan in 1:obs.numchan
+		    sefdarray[chan, t, ant] = 2*k_B / (obs.aperture_eff[ant]*pi*((obs.dishdiameter_m[ant]/2.0)^2)) * transmission[chan, t, ant]
+            end
+        end
+    end
+
+    # compute sky noise and add to data
+    row = 1
+    for t in 1:size(transmission)[2] # no. of unique times
+        # read all baselines present in a given time
+        ant1vec = getindex(obs.antenna1, findall(obs.times.==uniqtimes[t]))
+        ant2vec = getindex(obs.antenna2, findall(obs.times.==uniqtimes[t]))
+        for (ant1,ant2) in zip(ant1vec, ant2vec)
+            for chan in 1:obs.numchan
+		rms = (1.0/obs.yamlconf["correff"]) * sqrt(sefdarray[chan, t, ant1+1]*sefdarray[chan, t, ant2+1] / 2*obs.exposure*obs.chanwidth)
+		obs.data[:, :, chan, row] += rms*randn(obs.rngtrop, elemtype, 1)
+            end
+            row += 1 # increment the last dimension i.e. row number
+        end
+    end
+
+    @info("Applying tropospheric noise... 🙆")
 end
 
 function compute_meandelays()
