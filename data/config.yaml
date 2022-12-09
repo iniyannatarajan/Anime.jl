@@ -51,9 +51,9 @@ corruptseed: 456                                     # seed to be used for gener
 # settings for atmospheric corruptions
 
 troposphere:                                         # add troposphere
-  enable: false
+  enable: true
   wetonly: false                                     # add only the wet component
-  attenuate: false                                   # signal attenuation due to opacity
+  attenuate: true                                   # signal attenuation due to opacity
   skynoise: false                                    # add tropospheric contribution to sky noise
   turbulence: false                                  # add turbulent phases
   meandelay: false                                   # add mean delays
@@ -67,7 +67,7 @@ ionosphere:                                          # add ionosphere
 # beam and pointing settings
 
 pointing:
-  enable: true
+  enable: false
   interval: "coherencetime"                          # time interval after which to realise new pointing errors in seconds (or "coherencetime")
   longterm:
     enable: false                                    # enable longterm, multiscan pointing drifts
