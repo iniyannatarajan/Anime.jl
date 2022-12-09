@@ -102,12 +102,10 @@ function compute_skynoise(obs::CjlObservation, atmdf::DataFrame, elevation::Arra
     transmission = compute_transmission(obs, atmdf, elevation, size(uniqtimes)[1])
     sefdarray = zeros(Float32, obs.numchan, size(uniqtimes)[1], size(obs.stationinfo)[1])
     for ant in 1:size(obs.stationinfo)[1]
-        # get opacity at all frequencies for this station
-        opacityvec = obs.yamlconf["troposphere"]["wetonly"] ? atmdf[atmdf.Station .== obs.stationinfo.station[ant],:].Wet_opacity :
-                     atmdf[atmdf.Station .== obs.stationinfo.station[ant],:].Dry_opacity + atmdf[atmdf.Station .== obs.stationinfo.station[ant],:].Wet_opacity
+        skytempvec = 
         for t in 1:size(uniqtimes)[1]
             for chan in 1:obs.numchan
-		    sefdarray[chan, t, ant] = 2*k_B / (obs.aperture_eff[ant]*pi*((obs.dishdiameter_m[ant]/2.0)^2)) * transmission[chan, t, ant]
+                sefdarray[chan, t, ant] = 2*k_B / (obs.aperture_eff[ant]*pi*((obs.dishdiameter_m[ant]/2.0)^2))*(1e26*skytempvec[chan]*(1.0 - transmission[chan, t, ant]))
             end
         end
     end
