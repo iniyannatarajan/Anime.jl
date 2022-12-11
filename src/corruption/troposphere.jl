@@ -1,7 +1,7 @@
 export troposphere
 
 include(joinpath("util.jl"))
-using PhysicalConstants
+const Boltzmann = 1.380649e-23
 
 function run_atm(obs::CjlObservation)::DataFrame
     """
@@ -44,7 +44,7 @@ function run_atm(obs::CjlObservation)::DataFrame
     return absdf
 end
 
-function compute_transmission(obs::CjlObservation, atmdf::DataFrame, elevationmatrix::Array{Float64, 2}, ntimes::Int64)::Array{Float32, 3}
+function compute_transmission(obs::CjlObservation, atmdf::DataFrame, elevationmatrix::Array{Float64, 2}, ntimes::Int64, g::HDF5.Group)::Array{Float32, 3}
     """
     Compute transmission matrix
     """
@@ -60,17 +60,22 @@ function compute_transmission(obs::CjlObservation, atmdf::DataFrame, elevationma
             end
         end
     end
+
+    if !(haskey(g, "transmission"))
+        g["transmission"] = transmission
+    end
+
     return transmission
 end
 
-function attenuate(obs::CjlObservation, atmdf::DataFrame, elevationmatrix::Array{Float64, 2})
+function attenuate(obs::CjlObservation, atmdf::DataFrame, elevationmatrix::Array{Float64, 2}, g::HDF5.Group)
     """
     Compute signal attenuation due to opacity
     """
     # get unique times
     uniqtimes = unique(obs.times)
 
-    transmission = compute_transmission(obs, atmdf, elevationmatrix, size(uniqtimes)[1])
+    transmission = compute_transmission(obs, atmdf, elevationmatrix, size(uniqtimes)[1], g)
 
     # attenuate visibilities
     row = 1
@@ -88,7 +93,7 @@ function attenuate(obs::CjlObservation, atmdf::DataFrame, elevationmatrix::Array
     @info("Applying attenuation due to opacity... 🙆")
 end
 
-function compute_skynoise(obs::CjlObservation, atmdf::DataFrame, elevation::Array{Float64, 2})
+function compute_skynoise(obs::CjlObservation, atmdf::DataFrame, elevation::Array{Float64, 2}, g::HDF5.Group)
     """
     Use ATM (Pardo et al. 2001) to compute atmospheric contribution to temperature
     """
@@ -99,18 +104,20 @@ function compute_skynoise(obs::CjlObservation, atmdf::DataFrame, elevation::Arra
     # get matrix type and size to be created -- data is a 4d array
     elemtype = typeof(obs.data[1])
 
-    transmission = compute_transmission(obs, atmdf, elevation, size(uniqtimes)[1])
-    sefdarray = zeros(Float32, obs.numchan, size(uniqtimes)[1], size(obs.stationinfo)[1])
+    transmission = compute_transmission(obs, atmdf, elevation, size(uniqtimes)[1], g)
+    sefdarray = zeros(Float64, obs.numchan, size(uniqtimes)[1], size(obs.stationinfo)[1])
     for ant in 1:size(obs.stationinfo)[1]
-        skytempvec = 
+        skytempvec = atmdf[atmdf.Station .== obs.stationinfo.station[ant],:].Sky_brightness
         for t in 1:size(uniqtimes)[1]
             for chan in 1:obs.numchan
-                sefdarray[chan, t, ant] = 2*k_B / (obs.aperture_eff[ant]*pi*((obs.dishdiameter_m[ant]/2.0)^2))*(1e26*skytempvec[chan]*(1.0 - transmission[chan, t, ant]))
+                sefdarray[chan, t, ant] = 2*Boltzmann/(obs.stationinfo.aperture_eff[ant]*pi*((obs.stationinfo.dishdiameter_m[ant]/2.0)^2))*(1e26*skytempvec[chan]*(1.0 - transmission[chan, t, ant]))
             end
         end
     end
 
     # compute sky noise and add to data
+    skynoiserms = zeros(elemtype, size(obs.data))
+    skynoise = zeros(elemtype, size(obs.data))
     row = 1
     for t in 1:size(transmission)[2] # no. of unique times
         # read all baselines present in a given time
@@ -118,11 +125,19 @@ function compute_skynoise(obs::CjlObservation, atmdf::DataFrame, elevation::Arra
         ant2vec = getindex(obs.antenna2, findall(obs.times.==uniqtimes[t]))
         for (ant1,ant2) in zip(ant1vec, ant2vec)
             for chan in 1:obs.numchan
-		rms = (1.0/obs.yamlconf["correff"]) * sqrt(sefdarray[chan, t, ant1+1]*sefdarray[chan, t, ant2+1] / 2*obs.exposure*obs.chanwidth)
-		obs.data[:, :, chan, row] += rms*randn(obs.rngtrop, elemtype, 1)
+		skynoiserms[:, :, chan, row] .= (1/obs.yamlconf["correff"]) * sqrt((sefdarray[chan, t, ant1+1]*sefdarray[chan, t, ant2+1])/(2*obs.exposure*obs.chanwidth))
+		skynoise[:, :, chan, row] .= skynoiserms[:, :, chan, row]*randn(obs.rngtrop, elemtype) # NB: sky noise not polarized
+		obs.data[:, :, chan, row] = skynoise[:, :, chan, row]
             end
             row += 1 # increment the last dimension i.e. row number
         end
+    end
+    
+    if !(haskey(g, "skynoiserms"))
+        g["skynoiserms"] = skynoiserms
+    end
+    if !(haskey(g, "skynoise"))
+        g["skynoise"] = skynoise
     end
 
     @info("Applying tropospheric noise... 🙆")
@@ -147,13 +162,29 @@ function troposphere(obs::CjlObservation)
     Add tropospheric effects
     """
     @info("Computing tropospheric effects...")
+
+    # open h5 file for writing
+    fid = h5open(obs.yamlconf["hdf5corruptions"], "r+")
+    g = create_group(fid, "troposphere")
+    attributes(g)["desc"] = "all tropospheric signal corruptions"
+    attributes(g)["dims"] = "various"
     
     @time atmdf = run_atm(obs)
 
     elevationmatrix = elevationangle(obs) # compute elevation angle for all stations
 
+    if !(haskey(g, "elevation"))
+        g["elevation"] = elevationmatrix
+    end
+
     # attenuate
-    obs.yamlconf["troposphere"]["attenuate"] && @time attenuate(obs, atmdf, elevationmatrix)
+    obs.yamlconf["troposphere"]["attenuate"] && @time attenuate(obs, atmdf, elevationmatrix, g)
+
+    # skynoise
+    obs.yamlconf["troposphere"]["skynoise"] && @time compute_skynoise(obs, atmdf, elevationmatrix, g)
+
+    # close h5 file
+    close(fid)
 
     @info("Finish propagating signal through troposphere... 🙆")
 end
