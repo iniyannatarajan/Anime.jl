@@ -2,6 +2,7 @@ export troposphere
 
 include(joinpath("util.jl"))
 const Boltzmann = 1.380649e-23
+const lightspeed = 2.99792458e8
 
 function run_atm(obs::CjlObservation)::DataFrame
     """
@@ -143,18 +144,55 @@ function compute_skynoise(obs::CjlObservation, atmdf::DataFrame, elevation::Arra
     @info("Applying tropospheric noise... 🙆")
 end
 
-function compute_meandelays()
+function compute_meandelays(obs::CjlObservation, atmdf::DataFrame, elevationmatrix::Array{Float64, 2}, g::HDF5.Group)
     """
     Use ATM (Pardo et al. 2001) to compute mean delays
     """
-    # needs elevation
+    # get unique times
+    uniqtimes = unique(obs.times)
+    ntimes = size(uniqtimes)[1]
+
+    # compute time and frequency varying phase delays for each station
+    phasedelays = zeros(Float32, obs.numchan, ntimes, size(obs.stationinfo)[1])
+    for ant in 1:size(obs.stationinfo)[1]
+        # get delta path length
+	deltapathlengthvec = obs.yamlconf["troposphere"]["wetonly"] ? atmdf[atmdf.Station .== obs.stationinfo.station[ant],:].Wet_disp + 
+	                     atmdf[atmdf.Station .== obs.stationinfo.station[ant],:].Wet_nondisp : atmdf[atmdf.Station .== obs.stationinfo.station[ant],:].Wet_disp + 
+			     atmdf[atmdf.Station .== obs.stationinfo.station[ant],:].Wet_nondisp + atmdf[atmdf.Station .== obs.stationinfo.station[ant],:].Dry_nondisp
+        for t in 1:ntimes
+            for chan in 1:obs.numchan
+		phasedelays[chan, t, ant] = 2*pi*(deltapathlengthvec[chan]/lightspeed/sin(elevationmatrix[t, ant]))*obs.chanfreqvec[chan]
+            end
+        end
+    end
+
+    if !(haskey(g, "phasedelays"))
+        g["phasedelays"] = phasedelays
+    end
+
+    # apply phase delays to visibilities
+    row = 1
+    for t in 1:size(phasedelays)[2] # no. of unique times
+        # read all baselines present in a given time
+        ant1vec = getindex(obs.antenna1, findall(obs.times.==uniqtimes[t]))
+        ant2vec = getindex(obs.antenna2, findall(obs.times.==uniqtimes[t]))
+        for (ant1,ant2) in zip(ant1vec, ant2vec)
+            for chan in 1:obs.numchan
+		    obs.data[:, :, chan, row] .*= exp((phasedelays[chan, t, ant1+1]-phasedelays[chan, t, ant2+1])*im)
+            end
+            row += 1 # increment the last dimension i.e. row number
+        end
+    end
+
+    @info("Applying mean delays due to troposphere... 🙆")    
+
 end
 
 function compute_turbulent_phases()
     """
     Use ATM (Pardo et al. 2001) to compute turbulent phases
     """
-    # needs additionalpathlength, elevation
+    # needs elevation
 end
 
 function troposphere(obs::CjlObservation)
@@ -182,6 +220,9 @@ function troposphere(obs::CjlObservation)
 
     # skynoise
     obs.yamlconf["troposphere"]["skynoise"] && @time compute_skynoise(obs, atmdf, elevationmatrix, g)
+
+    # skynoise
+    obs.yamlconf["troposphere"]["meandelays"] && @time compute_meandelays(obs, atmdf, elevationmatrix, g)
 
     # close h5 file
     close(fid)
