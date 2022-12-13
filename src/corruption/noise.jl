@@ -31,7 +31,7 @@ function thermalnoise(obs::CjlObservation)
 		obs.data[:,:,:,indices] += thermalvec
 
                 # write as individual dataset within the group created above in the h5 file
-                g["baseline $(obs.stationinfo.station[a1+1])-$(obs.stationinfo.station[a2+1])"] = thermalvec #reduce((x,y) -> cat(x, y, dims=3), thermalvec)
+                g["baseline_$(obs.stationinfo.station[a1+1])-$(obs.stationinfo.station[a2+1])"] = thermalvec #reduce((x,y) -> cat(x, y, dims=3), thermalvec)
 	    end
 	end
     end

@@ -56,7 +56,6 @@ function pointing(obs::CjlObservation)
     # TODO calculate antenna rise and set times and mask pointing offsets? Is this really necessary? 
     # If the source is not above horizon, the antenna would automatically be flagged; shouldn't make a difference
     row = 1 # variable to index obs.data array
-    pointingamperrorsdict = Dict() # create empty dict
     for scan in uniqscans
         # compute ideal ntimes per scan
         actualtscanvec = unique(getindex(obs.times, findall(obs.scanno.==scan)))
@@ -75,9 +74,6 @@ function pointing(obs::CjlObservation)
 	    end
 	end
 
-	# add to pointingamperrorsdict
-	pointingamperrorsdict[scan] = perscanpointingamperrors
-
 	# compute mispointvec
 	mispointvec = computemispointvec(obs.exposure, idealtscanvec, pointinginterval, mispointsperscan)
 
@@ -90,7 +86,7 @@ function pointing(obs::CjlObservation)
                 ant2vec = getindex(obs.antenna2, findall(obs.times.==currenttime))
                 for (ant1,ant2) in zip(ant1vec, ant2vec)
                     for chan in 1:obs.numchan
-  		        obs.data[:,:,chan,row] = pointingamperrorsdict[scan][mispointvec[idealtimeindex],ant1+1]*obs.data[:,:,chan,row]*pointingamperrorsdict[scan][mispointvec[idealtimeindex],ant2+1]
+  		        obs.data[:,:,chan,row] = perscanpointingamperrors[mispointvec[idealtimeindex],ant1+1]*obs.data[:,:,chan,row]*perscanpointingamperrors[mispointvec[idealtimeindex],ant2+1]
                     end
                     row += 1 # increment obs.data last index i.e. row number
                 end
@@ -100,7 +96,7 @@ function pointing(obs::CjlObservation)
         end
 
         # write to h5 file
-        g["scan $(scan)"] = perscanpointingamperrors
+	g["perscanamperr_scan$(scan)"] = perscanpointingamperrors
     end
 
     # add datatype attribute

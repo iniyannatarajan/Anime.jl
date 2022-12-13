@@ -172,7 +172,7 @@ function compute_meandelays(obs::CjlObservation, atmdf::DataFrame, elevationmatr
     end
 
     if !(haskey(g, "phasedelays"))
-        g["phasedelays"] = phasedelays
+        g["mean_phasedelays"] = phasedelays
     end
 
     # apply phase delays to visibilities
@@ -266,7 +266,7 @@ function compute_turbulence(obs::CjlObservation, atmdf::DataFrame, elevationmatr
             end
         end
 
-	g["scan$(scan)_turbulence_phasedelays"] = turbulence_phasedelays
+	g["turbulence_phasedelays_scan$(scan)"] = turbulence_phasedelays
 
     end
 

@@ -21,7 +21,6 @@ function stationgains(obs::CjlObservation)
     # loop through each station to create a vector of 2x2 G-Jones terms evolving over time
     # TODO parametrise in terms of gain ratio
     row = 1 # variable to index obs.data array
-    gjonesdict = Dict() # create empty dict
     for scan in uniqscans
         # compute ideal ntimes per scan
         actualtscanvec = unique(getindex(obs.times, findall(obs.scanno.==scan)))
@@ -36,9 +35,6 @@ function stationgains(obs::CjlObservation)
 	   gjonesmatrices[2, 2, :, ant] = gentimeseries(obs.yamlconf["stationgains"]["mode"], obs.stationinfo.g_pol2_loc[ant], obs.stationinfo.g_pol2_scale[ant], 0.0, idealtscanveclen, obs.rngcorrupt)
 	end
 
-	# add to gjonesdict
-	gjonesdict[scan] = gjonesmatrices
-
         # loop over time/row and apply gjones terms corresponding to each baseline
 	for idealtimeindex in 1:idealtscanveclen
 	    currenttime = idealtscanvec[idealtimeindex]
@@ -48,7 +44,7 @@ function stationgains(obs::CjlObservation)
 		ant2vec = getindex(obs.antenna2, findall(obs.times.==currenttime))
 		for (ant1,ant2) in zip(ant1vec, ant2vec)
 		    for chan in 1:obs.numchan
-		        obs.data[:,:,chan,row] = gjonesdict[scan][:,:,idealtimeindex,ant1+1]*obs.data[:,:,chan,row]*adjoint(gjonesdict[scan][:,:,idealtimeindex,ant2+1])
+		        obs.data[:,:,chan,row] = gjonesmatrices[:,:,idealtimeindex,ant1+1]*obs.data[:,:,chan,row]*adjoint(gjonesmatrices[:,:,idealtimeindex,ant2+1])
 		    end
 		    row += 1 # increment obs.data last index i.e. row number
 	        end
@@ -58,7 +54,7 @@ function stationgains(obs::CjlObservation)
         end
 
 	# write to h5 file
-	g["scan $(scan)"] = gjonesmatrices
+	g["gjones_scan$(scan)"] = gjonesmatrices
     end
 
     # add datatype attribute
