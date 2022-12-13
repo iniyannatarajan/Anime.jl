@@ -22,6 +22,14 @@ function instrumentalpol(obs::CjlObservation)
     elevationmatrix = elevationangle(obs)
     parallacticanglematrix = parallacticangle(obs)
 
+    if !(haskey(g, "elevation"))
+        g["elevation"] = elevationmatrix
+    end
+
+    if !(haskey(g, "parallacticangle"))
+        g["parallacticangle"] = parallacticanglematrix
+    end
+
     # compute D-terms
     if obs.yamlconf["instrumentalpol"]["visibilityframe"] != "antenna"
 	# compute in sky frame
@@ -39,19 +47,19 @@ function instrumentalpol(obs::CjlObservation)
 
 	    for chan in 1:obs.numchan
     	        if uppercase(obs.stationinfo.mount[ant]) == "ALT-AZ"
-        	    polrotmatrices[1, 2, chan, :, ant] = djonesmatrices[1, 2, chan, ant] * exp.(2*im*(obs.stationinfo.feedangle_deg[ant].+parallacticanglematrix[:, ant]))
-        	    polrotmatrices[2, 1, chan, :, ant] = djonesmatrices[2, 1, chan, ant] * exp.(-2*im*(obs.stationinfo.feedangle_deg[ant].+parallacticanglematrix[:, ant]))
+		    polrotmatrices[1, 2, chan, :, ant] = djonesmatrices[1, 2, chan, ant] * exp.(2*im*(deg2rad(obs.stationinfo.feedangle_deg[ant]).+parallacticanglematrix[:, ant]))
+		    polrotmatrices[2, 1, chan, :, ant] = djonesmatrices[2, 1, chan, ant] * exp.(-2*im*(deg2rad(obs.stationinfo.feedangle_deg[ant]).+parallacticanglematrix[:, ant]))
 		elseif uppercase(obs.stationinfo.mount[ant]) == "ALT-AZ+NASMYTH-L"
-		    polrotmatrices[1, 2, chan, :, ant] = djonesmatrices[1, 2, chan, ant] * exp.(2*im*(obs.stationinfo.feedangle_deg[ant].+parallacticanglematrix[:, ant].-elevationmatrix[:, ant]))
-        	    polrotmatrices[2, 1, chan, :, ant] = djonesmatrices[2, 1, chan, ant] * exp.(-2*im*(obs.stationinfo.feedangle_deg[ant].+parallacticanglematrix[:, ant].-elevationmatrix[:, ant]))
+    		    polrotmatrices[1, 2, chan, :, ant] = djonesmatrices[1, 2, chan, ant] * exp.(2*im*(deg2rad(obs.stationinfo.feedangle_deg[ant]).+parallacticanglematrix[:, ant].-elevationmatrix[:, ant]))
+		    polrotmatrices[2, 1, chan, :, ant] = djonesmatrices[2, 1, chan, ant] * exp.(-2*im*(deg2rad(obs.stationinfo.feedangle_deg[ant]).+parallacticanglematrix[:, ant].-elevationmatrix[:, ant]))
 		elseif uppercase(obs.stationinfo.mount[ant]) == "ALT-AZ+NASMYTH-R"
-		    polrotmatrices[1, 2, chan, :, ant] = djonesmatrices[1, 2, chan, ant] * exp.(2*im*(obs.stationinfo.feedangle_deg[ant].+parallacticanglematrix[:, ant].+elevationmatrix[:, ant]))
-        	    polrotmatrices[2, 1, chan, :, ant] = djonesmatrices[2, 1, chan, ant] * exp.(-2*im*(obs.stationinfo.feedangle_deg[ant].+parallacticanglematrix[:, ant].+elevationmatrix[:, ant]))
+		    polrotmatrices[1, 2, chan, :, ant] = djonesmatrices[1, 2, chan, ant] * exp.(2*im*(deg2rad(obs.stationinfo.feedangle_deg[ant]).+parallacticanglematrix[:, ant].+elevationmatrix[:, ant]))
+		    polrotmatrices[2, 1, chan, :, ant] = djonesmatrices[2, 1, chan, ant] * exp.(-2*im*(deg2rad(obs.stationinfo.feedangle_deg[ant]).+parallacticanglematrix[:, ant].+elevationmatrix[:, ant]))
 		end
     	    end
         end
 
-	# apply Dterms to data
+	# apply Dterms to data TODO rewrite the following loop
 	row = 1 # variable to index obs.data array
         for timeval in 1:size(uniqtimes)[1]
             for chan in 1:obs.numchan

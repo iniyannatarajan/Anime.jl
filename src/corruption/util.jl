@@ -36,7 +36,6 @@ function parallacticangle(obs::CjlObservation)
 	parallacticanglematrix[:,ant] = atan.(sin.(hourangle).*cos(latitude), (cos(obs.phasedir[2])*sin(latitude).-cos.(hourangle).*cos(latitude).*sin(obs.phasedir[2])))
     end
 
-    parallacticanglematrix[parallacticanglematrix .< 0] .= NaN # set all negative values to NaN
     return parallacticanglematrix
 end
 
