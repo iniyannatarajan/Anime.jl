@@ -41,28 +41,28 @@ function loadobs(yamlconf::Dict, delim::String, ignorerepeated::Bool)
     tab = CCTable(yamlconf["msname"], CCTables.Old)
 
     # read values from ms
-    uvw = tab[:UVW][:,:]
-    data = tab[:DATA][:]
-    antenna1 = tab[:ANTENNA1][:]
-    antenna2 = tab[:ANTENNA2][:]
-    times = tab[:TIME][:]
-    exposure = tab[:EXPOSURE][1]
-    scanno = tab[:SCAN_NUMBER][:]
-    weight = tab[:WEIGHT][:]
-    weightspec = tab[:WEIGHT_SPECTRUM][:,:,:]
-    sigma = tab[:SIGMA][:]
-    sigmaspec = tab[:SIGMA_SPECTRUM][:,:,:]
+    uvw::Matrix{Float64} = tab[:UVW][:,:]
+    data::Vector{Matrix{ComplexF32}} = tab[:DATA][:]
+    antenna1::Vector{Int32} = tab[:ANTENNA1][:]
+    antenna2::Vector{Int32} = tab[:ANTENNA2][:]
+    times::Vector{Float64} = tab[:TIME][:]
+    exposure::Float64 = tab[:EXPOSURE][1]
+    scanno::Vector{Int32} = tab[:SCAN_NUMBER][:]
+    weight::Vector{Vector{Float32}} = tab[:WEIGHT][:]
+    weightspec::Array{Float32, 3} = tab[:WEIGHT_SPECTRUM][:,:,:]
+    sigma::Vector{Vector{Float32}} = tab[:SIGMA][:]
+    sigmaspec::Array{Float32, 3} = tab[:SIGMA_SPECTRUM][:,:,:]
 
     spectab = tab.SPECTRAL_WINDOW
-    numchan = spectab[:NUM_CHAN][1]
-    chanfreqvec = spectab[:CHAN_FREQ][1]
-    chanwidth = spectab[:CHAN_WIDTH][1][1] # get only the first element instead of the entire channel width vector
+    numchan::Int32 = spectab[:NUM_CHAN][1]
+    chanfreqvec::Vector{Float64} = spectab[:CHAN_FREQ][1]
+    chanwidth::Float64 = spectab[:CHAN_WIDTH][1][1] # get only the first element instead of the entire channel width vector
 
     fieldtab = tab.FIELD
-    phasedir = fieldtab[:PHASE_DIR][:][1] # 2 x 1 Matrix of ra and dec
+    phasedir::Matrix{Float64} = fieldtab[:PHASE_DIR][:][1] # 2 x 1 Matrix of ra and dec
 
     anttab = tab.ANTENNA
-    pos = anttab[:POSITION][:,:]
+    pos::Matrix{Float64} = anttab[:POSITION][:,:]
 
     # reshape the various arrays
     data3d = reduce((x,y) -> cat(x, y, dims=3), data)

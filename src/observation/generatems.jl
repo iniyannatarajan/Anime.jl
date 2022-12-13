@@ -45,9 +45,6 @@ function makecasaanttable(stations::String, delim::String, ignorerepeated::Bool,
     return stationtable
 end
 
-function msfromconfig()
-end
-
 function msfromvex()
 end
 
