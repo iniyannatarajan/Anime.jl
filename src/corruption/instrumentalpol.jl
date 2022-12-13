@@ -9,8 +9,12 @@ function instrumentalpol(obs::CjlObservation)
     # get element type to be used for the Jones matrices
     elemtype = typeof(obs.data[1][1])
 
+    # get unique scan numbers
+    uniqscans = unique(obs.scanno)
+
     # get unique times
     uniqtimes = unique(obs.times)
+    ntimes = size(uniqtimes)[1]
 
     # open h5 file for writing
     fid = h5open(obs.yamlconf["hdf5corruptions"], "r+")
@@ -39,33 +43,53 @@ function instrumentalpol(obs::CjlObservation)
         
 	# D-terms -- perform twice the feed angle rotation
 	djonesmatrices = ones(elemtype, 2, 2, obs.numchan, size(obs.stationinfo)[1]) # 2 x 2 x nchan x nant
-	polrotmatrices = ones(elemtype, 2, 2, obs.numchan, size(uniqtimes)[1], size(obs.stationinfo)[1])
+	polrotmatrices = ones(elemtype, 2, 2, obs.numchan, ntimes, size(obs.stationinfo)[1])
 
         for ant in 1:size(obs.stationinfo)[1]
             djonesmatrices[1, 2, :, ant] = gentimeseries(obs.yamlconf["instrumentalpol"]["mode"], obs.stationinfo.d_pol1_loc[ant], obs.stationinfo.d_pol1_scale[ant], 0.0, obs.numchan, obs.rngcorrupt)
             djonesmatrices[2, 1, :, ant] = gentimeseries(obs.yamlconf["instrumentalpol"]["mode"], obs.stationinfo.d_pol2_loc[ant], obs.stationinfo.d_pol2_scale[ant], 0.0, obs.numchan, obs.rngcorrupt)
 
-	    for chan in 1:obs.numchan
-    	        if uppercase(obs.stationinfo.mount[ant]) == "ALT-AZ"
-		    polrotmatrices[1, 2, chan, :, ant] = djonesmatrices[1, 2, chan, ant] * exp.(2*im*(deg2rad(obs.stationinfo.feedangle_deg[ant]).+parallacticanglematrix[:, ant]))
-		    polrotmatrices[2, 1, chan, :, ant] = djonesmatrices[2, 1, chan, ant] * exp.(-2*im*(deg2rad(obs.stationinfo.feedangle_deg[ant]).+parallacticanglematrix[:, ant]))
-		elseif uppercase(obs.stationinfo.mount[ant]) == "ALT-AZ+NASMYTH-L"
-    		    polrotmatrices[1, 2, chan, :, ant] = djonesmatrices[1, 2, chan, ant] * exp.(2*im*(deg2rad(obs.stationinfo.feedangle_deg[ant]).+parallacticanglematrix[:, ant].-elevationmatrix[:, ant]))
-		    polrotmatrices[2, 1, chan, :, ant] = djonesmatrices[2, 1, chan, ant] * exp.(-2*im*(deg2rad(obs.stationinfo.feedangle_deg[ant]).+parallacticanglematrix[:, ant].-elevationmatrix[:, ant]))
-		elseif uppercase(obs.stationinfo.mount[ant]) == "ALT-AZ+NASMYTH-R"
-		    polrotmatrices[1, 2, chan, :, ant] = djonesmatrices[1, 2, chan, ant] * exp.(2*im*(deg2rad(obs.stationinfo.feedangle_deg[ant]).+parallacticanglematrix[:, ant].+elevationmatrix[:, ant]))
-		    polrotmatrices[2, 1, chan, :, ant] = djonesmatrices[2, 1, chan, ant] * exp.(-2*im*(deg2rad(obs.stationinfo.feedangle_deg[ant]).+parallacticanglematrix[:, ant].+elevationmatrix[:, ant]))
-		end
-    	    end
+	    for t in 1:ntimes
+    	        for chan in 1:obs.numchan
+    	            if uppercase(obs.stationinfo.mount[ant]) == "ALT-AZ"
+		        polrotmatrices[1, 2, chan, t, ant] = djonesmatrices[1, 2, chan, ant] * exp(2*im*(deg2rad(obs.stationinfo.feedangle_deg[ant])+parallacticanglematrix[t, ant]))
+		        polrotmatrices[2, 1, chan, t, ant] = djonesmatrices[2, 1, chan, ant] * exp(-2*im*(deg2rad(obs.stationinfo.feedangle_deg[ant])+parallacticanglematrix[t, ant]))
+		    elseif uppercase(obs.stationinfo.mount[ant]) == "ALT-AZ+NASMYTH-L"
+    		        polrotmatrices[1, 2, chan, t, ant] = djonesmatrices[1, 2, chan, ant] * exp(2*im*(deg2rad(obs.stationinfo.feedangle_deg[ant])+parallacticanglematrix[t, ant]-elevationmatrix[t, ant]))
+		        polrotmatrices[2, 1, chan, t, ant] = djonesmatrices[2, 1, chan, ant] * exp(-2*im*(deg2rad(obs.stationinfo.feedangle_deg[ant])+parallacticanglematrix[t, ant]-elevationmatrix[t, ant]))
+		    elseif uppercase(obs.stationinfo.mount[ant]) == "ALT-AZ+NASMYTH-R"
+		        polrotmatrices[1, 2, chan, t, ant] = djonesmatrices[1, 2, chan, ant] * exp(2*im*(deg2rad(obs.stationinfo.feedangle_deg[ant])+parallacticanglematrix[t, ant]+elevationmatrix[t, ant]))
+		        polrotmatrices[2, 1, chan, t, ant] = djonesmatrices[2, 1, chan, ant] * exp(-2*im*(deg2rad(obs.stationinfo.feedangle_deg[ant])+parallacticanglematrix[t, ant]+elevationmatrix[t, ant]))
+		    end
+    	        end
+	    end
         end
 
 	# apply Dterms to data TODO rewrite the following loop
-	row = 1 # variable to index obs.data array
-        for timeval in 1:size(uniqtimes)[1]
-            for chan in 1:obs.numchan
-                obs.data[:,:,chan,row] = polrotmatrices[:,:,chan,timeval,obs.antenna1[row]+1]*obs.data[:,:,chan,row]*adjoint(polrotmatrices[:,:,chan,timeval,obs.antenna2[row]+1])
+        row = 1 # variable to index obs.data array
+        for scan in uniqscans
+            # compute ideal ntimes per scan
+            actualtscanvec = unique(getindex(obs.times, findall(obs.scanno.==scan)))
+            idealtscanvec = collect(first(actualtscanvec):obs.exposure:last(actualtscanvec))
+            idealtscanveclen = length(idealtscanvec)
+    
+            # loop over time/row and apply Dterms corresponding to each baseline
+            for t in 1:idealtscanveclen
+                currenttime = idealtscanvec[t]
+                if currenttime in actualtscanvec
+                    # read all baselines present in a given time
+                    ant1vec = getindex(obs.antenna1, findall(obs.times.==currenttime))
+                    ant2vec = getindex(obs.antenna2, findall(obs.times.==currenttime))
+                    for (ant1,ant2) in zip(ant1vec, ant2vec)
+                        for chan in 1:obs.numchan
+                            obs.data[:,:,chan,row] = polrotmatrices[:,:,chan,t,ant1+1]*obs.data[:,:,chan,row]*adjoint(polrotmatrices[:,:,chan,t,ant2+1])
+                        end
+                        row += 1 # increment obs.data last index i.e. row number
+                    end
+                else
+                    continue
+                end
             end
-	    row += 1 # increment obs.data last index i.e. row number
         end
 	
     else

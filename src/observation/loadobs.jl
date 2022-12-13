@@ -86,6 +86,7 @@ function loadobs(yamlconf::Dict, delim::String, ignorerepeated::Bool)
 
     # parse strings t
     stationinfo.pbmodel = map(x->strip(x), stationinfo.pbmodel)
+    stationinfo.mount = map(x->strip(x), stationinfo.mount)
 
     # generate some quantities to be available for all corrupting functions and them to the observation composite type
     rngcorrupt = Xoshiro(Int(yamlconf["corruptseed"]))
