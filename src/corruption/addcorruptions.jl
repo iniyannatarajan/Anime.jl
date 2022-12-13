@@ -34,6 +34,9 @@ function addcorruptions(obs::CjlObservation)
     # add thermal noise
     obs.yamlconf["thermalnoise"]["enable"] && @time thermalnoise(obs)
 
+    # replace NaNs with zeros
+    obs.data[isnan.(obs.data)] .= 0.0+0.0*im
+
     # convert data array back to the format required by Casacore
     revdata3dres = permutedims(obs.data, (2,1,3,4))
     revdata3d = reshape(revdata3dres, 4, size(revdata3dres)[3], :)
