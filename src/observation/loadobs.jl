@@ -12,9 +12,9 @@ struct CjlObservation{T} <: AbstractObservation{T}
     exposure::Float64
     scanno::Vector{Int}
     weight::Vector{Vector{Float32}}
-    weightspec::Array{Float32,3}
+    #weightspec::Array{Float32,3}
     sigma::Vector{Vector{Float32}}
-    sigmaspec::Array{Float32,3}
+    #sigmaspec::Array{Float32,3}
     numchan::Int64
     chanfreqvec::Array{Float64,1}
     chanwidth::Float64
@@ -49,9 +49,9 @@ function loadobs(yamlconf::Dict, delim::String, ignorerepeated::Bool)
     exposure::Float64 = tab[:EXPOSURE][1]
     scanno::Vector{Int32} = tab[:SCAN_NUMBER][:]
     weight::Vector{Vector{Float32}} = tab[:WEIGHT][:]
-    weightspec::Array{Float32, 3} = tab[:WEIGHT_SPECTRUM][:,:,:]
+    #weightspec::Array{Float32, 3} = tab[:WEIGHT_SPECTRUM][:,:,:]
     sigma::Vector{Vector{Float32}} = tab[:SIGMA][:]
-    sigmaspec::Array{Float32, 3} = tab[:SIGMA_SPECTRUM][:,:,:]
+    #sigmaspec::Array{Float32, 3} = tab[:SIGMA_SPECTRUM][:,:,:]
 
     spectab = tab.SPECTRAL_WINDOW
     numchan::Int32 = spectab[:NUM_CHAN][1]
@@ -93,7 +93,9 @@ function loadobs(yamlconf::Dict, delim::String, ignorerepeated::Bool)
     rngtrop = Xoshiro(Int(yamlconf["troposphere"]["tropseed"]))
 
     # construct CjlObservation object
-    observation = CjlObservation{Float64}(uvw,data3dresandperm,antenna1,antenna2,times,exposure,scanno,weight,weightspec,sigma,sigmaspec,
+    #observation = CjlObservation{Float64}(uvw,data3dresandperm,antenna1,antenna2,times,exposure,scanno,weight,weightspec,sigma,sigmaspec,
+    #					  numchan,chanfreqvec,chanwidth,phasedir,pos,stationinfo,yamlconf,rngcorrupt,rngtrop)
+    observation = CjlObservation{Float64}(uvw,data3dresandperm,antenna1,antenna2,times,exposure,scanno,weight,sigma,
 					  numchan,chanfreqvec,chanwidth,phasedir,pos,stationinfo,yamlconf,rngcorrupt,rngtrop)
 
     @info("Load observation and metadata into memory for processing... 🙆")

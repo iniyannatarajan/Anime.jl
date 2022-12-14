@@ -7,6 +7,8 @@ sm = simulator()
 tb = table()
 me = measures()
 
+importuvfits = pyimport("casatasks" => "importuvfits")
+
 function makecasaanttable(stations::String, delim::String, ignorerepeated::Bool, casaanttemplate::String)
     """
     Generate a CASA antenna table from CSV station info file in the current working directory.
@@ -48,10 +50,86 @@ end
 function msfromvex()
 end
 
-function msfromuvfits()
+function msfromuvfits(yamlconf::Dict, delim::String, ignorerepeated::Bool)
+    """
+    Create MS from uvfits file.
+    """
+    # convert uvfits to ms
+    importuvfits(fitsfile=yamlconf["uvfits"]["fitsfile"], vis=yamlconf["msname"])
+
+    # compare ANTENNA table in ms with stations file
+    df = CSV.read(yamlconf["stations"], DataFrame; delim=delim, ignorerepeated=ignorerepeated)
+
+    tb.open("$(yamlconf["msname"])::ANTENNA")
+    msstations = string.(tb.getcol("STATION"))
+    tb.close()
+
+    if !(issetequal(msstations, df.station))
+        error("Station info file $(yamlconf["stations"]) and MS ANTENNA table do not match 🤷")
+    end
+   
+    # if specified, replace EXPOSURE column with user-supplied value
+    if !(yamlconf["uvfits"]["exposure"] == 0.0)
+	@info("Replacing (potentially inconsistent) EXPOSURE column in MS with user-supplied value: $(yamlconf["uvfits"]["exposure"]) s")
+        tb.open(yamlconf["msname"], nomodify=false)
+	exposurevec = yamlconf["uvfits"]["exposure"] .+ zeros(Float64, pyconvert(Int64, tb.nrows()))
+        tb.putcol("EXPOSURE", PyList(exposurevec))
+        tb.putcol("INTERVAL", PyList(exposurevec))
+	tb.close()
+    end
+
+    #= create weight and sigma spectrum columns
+    table = CCTable(yamlconf["msname"], CCTables.Update)
+    x = size(table[:DATA])[1]
+    y, z = size(table[:DATA][1])
+    table[:WEIGHT_SPECTRUM] = ones(Float32, y, z, x)::Array{Float32, 3} # Float32 to conform to the MSv2 specification (which WSClean expects... sometimes!)
+    table[:SIGMA_SPECTRUM] = ones(Float32, y, z, x)::Array{Float32, 3}
+    table = nothing
+    GC.gc()=#
 end
 
-function generatems(yamlconf::Dict, delim::String, ignorerepeated::Bool, casaanttemplate::String)
+#=function setupexistingms(yamlconf::Dict, delim::String, ignorerepeated::Bool)
+    """
+    Perform some sanity checks on an existing MS.
+    """
+    # symlink existing ms to output directory
+    symlink = `ln -s $(yamlconf["existingms"]["msname"]) $(yamlconf["msname"])`
+    run(symlink)
+
+    # compare ANTENNA table in existing ms with stations file
+    df = CSV.read(yamlconf["stations"], DataFrame; delim=delim, ignorerepeated=ignorerepeated)
+
+    tb.open("$(yamlconf["msname"])::ANTENNA")
+    msstations = string.(tb.getcol("STATION"))
+    tb.close()
+
+    if !(issetequal(msstations, df.station))
+        error("Station info file $(yamlconf["stations"]) and MS ANTENNA table do not match 🤷")
+    end
+
+    # zero all values in DATA and MODEL_DATA
+    #=tb.open(yamlconf["msname"], nomodify=false)
+    nrows = pyconvert(Int64, tb.nrows())
+    cell = pyconvert(Tuple, tb.getcell("DATA", rownr=0).shape)=#
+    table = CCTable(yamlconf["msname"], CCTables.Update)
+    data = table[:DATA][:]
+    zmat = zeros(typeof(data[1][1,1]), size(data[1]))
+    zdata = [data[ii] = zmat for ii in 1:length(data)]
+    table[:DATA] = zdata
+
+    # if MODEL_DATA does not exist, create it and fill it with zeros (using Casacore.jl implicit construction)
+    table[:MODEL_DATA] = zdata
+
+    # if specified, replace EXPOSURE column with user-supplied value
+    if !(yamlconf["existingms"]["exposure"] == 0.0)
+	@info("Replacing (potentially inconsistent) EXPOSURE column in MS with user-supplied value: $(yamlconf["existingms"]["exposure"]) s")
+	table[:EXPOSURE] = yamlconf["existingms"]["exposure"] .+ zeros(Float64, length(data))
+    end
+    
+    @info("Set up existing dataset at $(yamlconf["existingms"]["msname"]) as $(yamlconf["msname"])... 🙆")
+end=#
+
+function msfromconfig(yamlconf::Dict, delim::String, ignorerepeated::Bool, casaanttemplate::String)
     """
     Main function to generate MS.
     """
@@ -123,7 +201,7 @@ function generatems(yamlconf::Dict, delim::String, ignorerepeated::Bool, casaant
     obs_starttime = split(yamlconf["starttime"], ",")
     referencetime = me.epoch(obs_starttime...)
     me.doframe(referencetime)
-    sm.settimes(integrationtime=yamlconf["inttime"], usehourangle=false, referencetime=referencetime)
+    sm.settimes(integrationtime=yamlconf["exposure"], usehourangle=false, referencetime=referencetime)
 
     # observe
     Int64(yamlconf["scans"]) != length(yamlconf["scanlengths"]) && error("Number of scans and length(scanlengths_s) do not match 🤷")
@@ -132,7 +210,7 @@ function generatems(yamlconf::Dict, delim::String, ignorerepeated::Bool, casaant
     stoptime = 0
     for ii in 1:Int64(yamlconf["scans"])
 	starttime = ii==1 ? 0 : stoptime+yamlconf["scanlags"][ii-1]
-	stoptime = starttime + yamlconf["scanlengths"][ii] #+ yamlconf["inttime"] # inttime added here to add one more inttime at the end of the scan
+	stoptime = starttime + yamlconf["scanlengths"][ii] #+ yamlconf["exposure"] # one more exposure added here at the end of the scan
 
 	# NB: We are not handling multiple spectral windows as of now
 	#=for (key, val) in yamlconf["manual"]["spwname"]
@@ -154,5 +232,14 @@ function generatems(yamlconf::Dict, delim::String, ignorerepeated::Bool, casaant
     table[:SIGMA_SPECTRUM] = ones(Float32, y, z, x)::Array{Float32, 3} 
 
     @info("Create $(yamlconf["msname"])... 🙆")
+end
 
+function generatems(yamlconf::Dict, delim::String, ignorerepeated::Bool, casaanttemplate::String)
+    if yamlconf["mode"] == "manual"
+	msfromconfig(yamlconf, delim, ignorerepeated, casaanttemplate)
+    elseif yamlconf["mode"] == "uvfits"
+	msfromuvfits(yamlconf, delim, ignorerepeated)
+    else
+	error("MS generation mode '$(yamlconf["mode"])' not recognised 🤷")
+    end
 end
