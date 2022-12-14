@@ -16,12 +16,6 @@ function create_parser()
         "config"
             help = "Input JSON file name with observation settings"
             required = true
-        "--template", "-t"
-            help = "Input CASA ANTENNA table to use as template"
-            arg_type = String
-        "--outdir", "-o"
-            help = "Directory to hold output products"
-            arg_type = String
         "--clobber", "-c"
             action = :store_true
             help = "Delete and create output directory anew"
@@ -33,46 +27,38 @@ end
 # create parser
 args = create_parser()
 
-# get absolute paths of the input files
-startdir = pwd()
+startdir = pwd() # store original working directory
 config = abspath(startdir, args["config"])
-template = abspath(startdir, args["template"])
+yamlconf = YAML.load_file(config, dicttype=Dict{String,Any}) # load input YAML file
 
-# load input YAML file
-yamlconf = YAML.load_file(config, dicttype=Dict{String,Any})
+template = abspath(startdir, yamlconf["casatemplate"]) # get absolute path of casa antenna template
 
 # create a new empty output dir if clobber==true
-if isdir(args["outdir"])
+if isdir(yamlconf["outdir"])
     if args["clobber"]
-        run(`rm -rf $(args["outdir"])`)
-	mkdir(args["outdir"])
+        run(`rm -rf $(yamlconf["outdir"])`)
+	mkdir(yamlconf["outdir"])
     else 
-	error("Output dir '$(args["outdir"])' exists but clobber=false 🤷") 
+	error("Output dir '$(yamlconf["outdir"])' exists but clobber=false 🤷") 
     end
 else
-    mkdir(args["outdir"])
+    mkdir(yamlconf["outdir"])
 end
 
-@info("Changing working directory to $(args["outdir"])")
-cd(args["outdir"])
+@info("Changing working directory to $(yamlconf["outdir"])")
+cd(yamlconf["outdir"])
 
 # create new ms
 @time generatems(yamlconf, ",", false, template) # comma-separated; do not ignore repeated delimiters
 
-# call wscean to predict visibilities -- TODO: read in hdf5 model and create fitsdir with sky models
-if yamlconf["skymodelmode"] == "fits"
-    @time runwsclean(yamlconf["msname"], yamlconf["fitssky"], yamlconf["polarized"], yamlconf["channelgroups"], yamlconf["osfactor"])
-elseif yamlconf["skymodelmode"] == "hdf5"
-    @time runwsclean(yamlconf["msname"], yamlconf["hdf5sky"], yamlconf["polarized"], yamlconf["channelgroups"], yamlconf["osfactor"])
-else
-    error("Unrecognised value \"$(yamlconf["skymodelmode"])\" for modelmode! Allowed values are 'hdf5' or 'fits'.")
-end
+# call wscean to predict visibilities
+@time predict_visibilities(yamlconf)
 
 # load ms data into custom struct
 #observation, stationinfo = loadobs(yamlconf["msname"], yamlconf["stations"], ",", false)
 @time observation = loadobs(yamlconf, ",", false)
 
-# add corruptions
+# add corruptions -- TODO currently, the stationinfo file and the MS ANTENNA table should be in the same order! Make this more flexible!!!
 addcorruptions(observation)
 
 # Change back to original working directory

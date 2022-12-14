@@ -1,4 +1,4 @@
-export runwsclean
+export predict_visibilities
 
 tb = table()
 
@@ -10,7 +10,7 @@ function copymodeltodata(msname::String)
     tb.clearlocks()
 end
 
-function runwsclean(msname::String, fitsdir::String, polarized::Bool, channelgroups::Int64, osfactor::Int64)
+function run_wsclean(msname::String, fitsdir::String, polarized::Bool, channelgroups::Int64, osfactor::Int64)
     """
     Run wsclean
     """
@@ -50,4 +50,22 @@ function runwsclean(msname::String, fitsdir::String, polarized::Bool, channelgro
 
     @info("Predict uncorrupted visibilities with WSClean... 🙆")
 
+end
+
+function predict_visibilities(yamlconf::Dict)
+    """
+    Main function to predict visibilities using wsclean
+    """
+    # check sky model mode
+    if yamlconf["skymodelmode"] == "hdf5"
+        # TODO convert h5 sky to fits directory
+	# fitsdir = assign new fits directory that was created
+    elseif yamlconf["skymodelmode"] == "fits"
+        fitsdir = yamlconf["fitssky"]
+    else
+	error("Source model must be either a directory with FITS files or an HDF5 file 🤷 (check \"skymodelmode\" keyword in config file)")
+    end
+
+    # run wsclean
+    run_wsclean(yamlconf["msname"], fitsdir, yamlconf["polarized"], yamlconf["channelgroups"], yamlconf["osfactor"])
 end
