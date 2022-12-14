@@ -2,7 +2,7 @@ export pointing
 
 using Statistics
 
-function computemispointvec(inttime::Float64, times::Vector{Float64}, pointinginterval::Float64, mispointsperscan::Int64)::Vector{Int32}
+function compute_mispointvec(times::Vector{Float64}, pointinginterval::Float64, mispointsperscan::Int64)::Vector{Int32}
     """
     compute mispoint vector that holds mispoint id per scan for indexing into pointing amplitude error matrix
     """
@@ -75,7 +75,7 @@ function pointing(obs::CjlObservation)
 	end
 
 	# compute mispointvec
-	mispointvec = computemispointvec(obs.exposure, idealtscanvec, pointinginterval, mispointsperscan)
+	mispointvec = compute_mispointvec(idealtscanvec, pointinginterval, mispointsperscan)
 
 	# TODO loop over data and apply pointing errors
         for idealtimeindex in 1:idealtscanveclen

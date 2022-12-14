@@ -16,18 +16,24 @@ function run_atm(obs::CjlObservation)::DataFrame
     dispdfvec = []
     for ant in 1:size(obs.stationinfo)[1]
 	# absorption
-	atmcommand = obs.numchan == 1 ? `absorption --freq $(obs.chanfreqvec[1]/1e9) --pwv $(obs.stationinfo.pwv_mm[ant]) --gpress $(obs.stationinfo.gpress_mb[ant]) 
-	--gtemp $(obs.stationinfo.gtemp_K[ant])` : `absorption --fmin $((first(obs.chanfreqvec)-obs.chanwidth)/1e9) --fmax $(last(obs.chanfreqvec)/1e9) --fstep $(obs.chanwidth/1e9) 
-	    --pwv $(obs.stationinfo.pwv_mm[ant]) --gpress $(obs.stationinfo.gpress_mb[ant]) --gtemp $(obs.stationinfo.gtemp_K[ant])`
+	#atmcommand = obs.numchan == 1 ? `absorption --freq $(obs.chanfreqvec[1]/1e9) --pwv $(obs.stationinfo.pwv_mm[ant]) --gpress $(obs.stationinfo.gpress_mb[ant]) 
+	#--gtemp $(obs.stationinfo.gtemp_K[ant])` : `absorption --fmin $((first(obs.chanfreqvec)-obs.chanwidth)/1e9) --fmax $(last(obs.chanfreqvec)/1e9) --fstep $(obs.chanwidth/1e9) 
+	#    --pwv $(obs.stationinfo.pwv_mm[ant]) --gpress $(obs.stationinfo.gpress_mb[ant]) --gtemp $(obs.stationinfo.gtemp_K[ant])`
+	atmcommand = obs.numchan == 1 ? `absorption --fmin $(obs.chanfreqvec[1]/1e9-1.0) --fmax $(obs.chanfreqvec[1]/1e9) --fstep 1.0 --pwv $(obs.stationinfo.pwv_mm[ant]) 
+	--gpress $(obs.stationinfo.gpress_mb[ant]) --gtemp $(obs.stationinfo.gtemp_K[ant])` : `absorption --fmin $((first(obs.chanfreqvec)-obs.chanwidth)/1e9) --fmax $(last(obs.chanfreqvec)/1e9) 
+	--fstep $(obs.chanwidth/1e9) --pwv $(obs.stationinfo.pwv_mm[ant]) --gpress $(obs.stationinfo.gpress_mb[ant]) --gtemp $(obs.stationinfo.gtemp_K[ant])`
         run(pipeline(atmcommand, stdout="absorption.csv", append=false))
 
 	# load as dataframe
 	push!(absdfvec, CSV.read("absorption.csv", DataFrame; delim=",", ignorerepeated=false, header=["Frequency", "Dry_opacity", "Wet_opacity", "Sky_brightness"], skipto=2))
 
 	# dispersive delay
-	atmcommand = obs.numchan == 1 ? `dispersive --freq $(obs.chanfreqvec[1]/1e9) --pwv $(obs.stationinfo.pwv_mm[ant]) --gpress $(obs.stationinfo.gpress_mb[ant]) 
-	--gtemp $(obs.stationinfo.gtemp_K[ant])` : `dispersive --fmin $((first(obs.chanfreqvec)-obs.chanwidth)/1e9) --fmax $(last(obs.chanfreqvec)/1e9) --fstep $(obs.chanwidth/1e9) 
-	    --pwv $(obs.stationinfo.pwv_mm[ant]) --gpress $(obs.stationinfo.gpress_mb[ant]) --gtemp $(obs.stationinfo.gtemp_K[ant])`
+	#atmcommand = obs.numchan == 1 ? `dispersive --freq $(obs.chanfreqvec[1]/1e9) --pwv $(obs.stationinfo.pwv_mm[ant]) --gpress $(obs.stationinfo.gpress_mb[ant]) 
+	#--gtemp $(obs.stationinfo.gtemp_K[ant])` : `dispersive --fmin $((first(obs.chanfreqvec)-obs.chanwidth)/1e9) --fmax $(last(obs.chanfreqvec)/1e9) --fstep $(obs.chanwidth/1e9) 
+	#    --pwv $(obs.stationinfo.pwv_mm[ant]) --gpress $(obs.stationinfo.gpress_mb[ant]) --gtemp $(obs.stationinfo.gtemp_K[ant])`
+	atmcommand = obs.numchan == 1 ? `dispersive --fmin $(obs.chanfreqvec[1]/1e9-1.0) --fmax $(obs.chanfreqvec[1]/1e9) --fstep 1.0 --pwv $(obs.stationinfo.pwv_mm[ant]) 
+	--gpress $(obs.stationinfo.gpress_mb[ant]) --gtemp $(obs.stationinfo.gtemp_K[ant])` : `dispersive --fmin $((first(obs.chanfreqvec)-obs.chanwidth)/1e9) --fmax $(last(obs.chanfreqvec)/1e9) 
+	--fstep $(obs.chanwidth/1e9) --pwv $(obs.stationinfo.pwv_mm[ant]) --gpress $(obs.stationinfo.gpress_mb[ant]) --gtemp $(obs.stationinfo.gtemp_K[ant])`
         run(pipeline(atmcommand, stdout="dispersive.csv", append=false))
 
 	# load as dataframe
