@@ -24,6 +24,7 @@ function stationgains(obs::CjlObservation)
     for scan in uniqscans
         # compute ideal ntimes per scan
         actualtscanvec = unique(getindex(obs.times, findall(obs.scanno.==scan)))
+	actualtscanveclen = length(actualtscanvec)
 	idealtscanvec = collect(first(actualtscanvec):obs.exposure:last(actualtscanvec))
 	idealtscanveclen = length(idealtscanvec)
 
@@ -36,21 +37,18 @@ function stationgains(obs::CjlObservation)
 	end
 
         # loop over time/row and apply gjones terms corresponding to each baseline
-	for idealtimeindex in 1:idealtscanveclen
-	    currenttime = idealtscanvec[idealtimeindex]
-	    if currenttime in actualtscanvec
-		# read all baselines present in a given time
-		ant1vec = getindex(obs.antenna1, findall(obs.times.==currenttime))
-		ant2vec = getindex(obs.antenna2, findall(obs.times.==currenttime))
-		for (ant1,ant2) in zip(ant1vec, ant2vec)
-		    for chan in 1:obs.numchan
-		        obs.data[:,:,chan,row] = gjonesmatrices[:,:,idealtimeindex,ant1+1]*obs.data[:,:,chan,row]*adjoint(gjonesmatrices[:,:,idealtimeindex,ant2+1])
-		    end
-		    row += 1 # increment obs.data last index i.e. row number
-	        end
-	    else
-		continue
-	    end
+	findnearest(A,x) = argmin(abs.(A .- x)) # define function to find nearest neighbour
+        for t in 1:actualtscanveclen
+            idealtimeindex = findnearest(idealtscanvec, actualtscanvec[t])
+            # read all baselines present in a given time
+            ant1vec = getindex(obs.antenna1, findall(obs.times.==actualtscanvec[t]))
+            ant2vec = getindex(obs.antenna2, findall(obs.times.==actualtscanvec[t]))
+            for (ant1,ant2) in zip(ant1vec, ant2vec)
+                for chan in 1:obs.numchan
+                    obs.data[:,:,chan,row] = gjonesmatrices[:,:,idealtimeindex,ant1+1]*obs.data[:,:,chan,row]*adjoint(gjonesmatrices[:,:,idealtimeindex,ant2+1])
+                end
+                row += 1 # increment obs.data last index i.e. row number
+            end
         end
 
 	# write to h5 file
