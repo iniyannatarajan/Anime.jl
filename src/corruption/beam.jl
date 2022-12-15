@@ -78,7 +78,7 @@ function pointing(obs::CjlObservation)
 	# compute mispointvec
 	mispointvec = compute_mispointvec(idealtscanvec, pointinginterval, mispointsperscan)
 
-	# TODO loop over data and apply pointing errors
+	# loop over data and apply pointing errors
         findnearest(A,x) = argmin(abs.(A .- x)) # define function to find nearest neighbour
         for t in 1:actualtscanveclen
             idealtimeindex = findnearest(idealtscanvec, actualtscanvec[t])

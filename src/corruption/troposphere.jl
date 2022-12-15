@@ -16,9 +16,6 @@ function run_atm(obs::CjlObservation)::DataFrame
     dispdfvec = []
     for ant in 1:size(obs.stationinfo)[1]
 	# absorption
-	#atmcommand = obs.numchan == 1 ? `absorption --freq $(obs.chanfreqvec[1]/1e9) --pwv $(obs.stationinfo.pwv_mm[ant]) --gpress $(obs.stationinfo.gpress_mb[ant]) 
-	#--gtemp $(obs.stationinfo.gtemp_K[ant])` : `absorption --fmin $((first(obs.chanfreqvec)-obs.chanwidth)/1e9) --fmax $(last(obs.chanfreqvec)/1e9) --fstep $(obs.chanwidth/1e9) 
-	#    --pwv $(obs.stationinfo.pwv_mm[ant]) --gpress $(obs.stationinfo.gpress_mb[ant]) --gtemp $(obs.stationinfo.gtemp_K[ant])`
 	atmcommand = obs.numchan == 1 ? `absorption --fmin $(obs.chanfreqvec[1]/1e9-1.0) --fmax $(obs.chanfreqvec[1]/1e9) --fstep 1.0 --pwv $(obs.stationinfo.pwv_mm[ant]) 
 	--gpress $(obs.stationinfo.gpress_mb[ant]) --gtemp $(obs.stationinfo.gtemp_K[ant])` : `absorption --fmin $((first(obs.chanfreqvec)-obs.chanwidth)/1e9) --fmax $(last(obs.chanfreqvec)/1e9) 
 	--fstep $(obs.chanwidth/1e9) --pwv $(obs.stationinfo.pwv_mm[ant]) --gpress $(obs.stationinfo.gpress_mb[ant]) --gtemp $(obs.stationinfo.gtemp_K[ant])`
@@ -28,9 +25,6 @@ function run_atm(obs::CjlObservation)::DataFrame
 	push!(absdfvec, CSV.read("absorption.csv", DataFrame; delim=",", ignorerepeated=false, header=["Frequency", "Dry_opacity", "Wet_opacity", "Sky_brightness"], skipto=2))
 
 	# dispersive delay
-	#atmcommand = obs.numchan == 1 ? `dispersive --freq $(obs.chanfreqvec[1]/1e9) --pwv $(obs.stationinfo.pwv_mm[ant]) --gpress $(obs.stationinfo.gpress_mb[ant]) 
-	#--gtemp $(obs.stationinfo.gtemp_K[ant])` : `dispersive --fmin $((first(obs.chanfreqvec)-obs.chanwidth)/1e9) --fmax $(last(obs.chanfreqvec)/1e9) --fstep $(obs.chanwidth/1e9) 
-	#    --pwv $(obs.stationinfo.pwv_mm[ant]) --gpress $(obs.stationinfo.gpress_mb[ant]) --gtemp $(obs.stationinfo.gtemp_K[ant])`
 	atmcommand = obs.numchan == 1 ? `dispersive --fmin $(obs.chanfreqvec[1]/1e9-1.0) --fmax $(obs.chanfreqvec[1]/1e9) --fstep 1.0 --pwv $(obs.stationinfo.pwv_mm[ant]) 
 	--gpress $(obs.stationinfo.gpress_mb[ant]) --gtemp $(obs.stationinfo.gtemp_K[ant])` : `dispersive --fmin $((first(obs.chanfreqvec)-obs.chanwidth)/1e9) --fmax $(last(obs.chanfreqvec)/1e9) 
 	--fstep $(obs.chanwidth/1e9) --pwv $(obs.stationinfo.pwv_mm[ant]) --gpress $(obs.stationinfo.gpress_mb[ant]) --gtemp $(obs.stationinfo.gtemp_K[ant])`
@@ -218,6 +212,7 @@ function compute_turbulence(obs::CjlObservation, atmdf::DataFrame, elevationmatr
     for scan in uniqscans
         # compute ideal ntimes per scan
         actualtscanvec = unique(getindex(obs.times, findall(obs.scanno.==scan)))
+        actualtscanveclen = length(actualtscanvec)
         idealtscanvec = collect(first(actualtscanvec):obs.exposure:last(actualtscanvec))
         idealtscanveclen = length(idealtscanvec)
 
@@ -255,22 +250,19 @@ function compute_turbulence(obs::CjlObservation, atmdf::DataFrame, elevationmatr
         end
 
         # loop over time/row and apply gjones terms corresponding to each baseline
-        for t in 1:idealtscanveclen
-            currenttime = idealtscanvec[t]
-            if currenttime in actualtscanvec
-                # read all baselines present in a given time
-                ant1vec = getindex(obs.antenna1, findall(obs.times.==currenttime))
-                ant2vec = getindex(obs.antenna2, findall(obs.times.==currenttime))
-                for (ant1,ant2) in zip(ant1vec, ant2vec)
-                    for chan in 1:obs.numchan
-                        obs.data[:,:,chan,row] .*= exp((turbulence_phasedelays[chan, t, ant1+1]-turbulence_phasedelays[chan, t, ant2+1])*im) 
-                    end
-                    row += 1 # increment obs.data last index i.e. row number
+        findnearest(A,x) = argmin(abs.(A .- x)) # define function to find nearest neighbour
+        for t in 1:actualtscanveclen
+            idealtimeindex = findnearest(idealtscanvec, actualtscanvec[t])
+            # read all baselines present in a given time
+            ant1vec = getindex(obs.antenna1, findall(obs.times.==actualtscanvec[t]))
+            ant2vec = getindex(obs.antenna2, findall(obs.times.==actualtscanvec[t]))
+            for (ant1,ant2) in zip(ant1vec, ant2vec)
+                for chan in 1:obs.numchan
+		    obs.data[:,:,chan,row] .*= exp((turbulence_phasedelays[chan,idealtimeindex,ant1+1]-turbulence_phasedelays[chan,idealtimeindex,ant2+1])*im)
                 end
-            else
-                continue
+                row += 1 # increment obs.data last index i.e. row number
             end
-        end
+        end	
 
 	g["turbulence_phasedelays_scan$(scan)"] = turbulence_phasedelays
 
