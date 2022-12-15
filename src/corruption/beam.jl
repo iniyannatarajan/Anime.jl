@@ -59,6 +59,7 @@ function pointing(obs::CjlObservation)
     for scan in uniqscans
         # compute ideal ntimes per scan
         actualtscanvec = unique(getindex(obs.times, findall(obs.scanno.==scan)))
+        actualtscanveclen = length(actualtscanvec)
         idealtscanvec = collect(first(actualtscanvec):obs.exposure:last(actualtscanvec))
         idealtscanveclen = length(idealtscanvec)
 
@@ -78,20 +79,17 @@ function pointing(obs::CjlObservation)
 	mispointvec = compute_mispointvec(idealtscanvec, pointinginterval, mispointsperscan)
 
 	# TODO loop over data and apply pointing errors
-        for idealtimeindex in 1:idealtscanveclen
-            currenttime = idealtscanvec[idealtimeindex]
-            if currenttime in actualtscanvec
-                # read all baselines present in a given time
-                ant1vec = getindex(obs.antenna1, findall(obs.times.==currenttime))
-                ant2vec = getindex(obs.antenna2, findall(obs.times.==currenttime))
-                for (ant1,ant2) in zip(ant1vec, ant2vec)
-                    for chan in 1:obs.numchan
-  		        obs.data[:,:,chan,row] = perscanpointingamperrors[mispointvec[idealtimeindex],ant1+1]*obs.data[:,:,chan,row]*perscanpointingamperrors[mispointvec[idealtimeindex],ant2+1]
-                    end
-                    row += 1 # increment obs.data last index i.e. row number
+        findnearest(A,x) = argmin(abs.(A .- x)) # define function to find nearest neighbour
+        for t in 1:actualtscanveclen
+            idealtimeindex = findnearest(idealtscanvec, actualtscanvec[t])
+            # read all baselines present in a given time
+            ant1vec = getindex(obs.antenna1, findall(obs.times.==actualtscanvec[t]))
+            ant2vec = getindex(obs.antenna2, findall(obs.times.==actualtscanvec[t]))
+            for (ant1,ant2) in zip(ant1vec, ant2vec)
+                for chan in 1:obs.numchan
+                    obs.data[:,:,chan,row] = perscanpointingamperrors[idealtimeindex,ant1+1]*obs.data[:,:,chan,row]*adjoint(perscanpointingamperrors[idealtimeindex,ant2+1])
                 end
-            else
-                continue
+                row += 1 # increment obs.data last index i.e. row number
             end
         end
 
