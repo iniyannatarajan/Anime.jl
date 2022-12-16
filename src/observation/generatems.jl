@@ -48,10 +48,11 @@ function makecasaanttable(stations::String, delim::String, ignorerepeated::Bool,
     return stationtable
 end
 
-function addweightcols(msname::String, sigmaspec::Bool, weightspec::Bool)
+function addweightcols(msname::String, mode::String, sigmaspec::Bool, weightspec::Bool)
     """
     Add WEIGHT_SPECTRUM and SIGMA_SPECTRUM columns to the MS
     """
+    # TODO get mode as arg and if it is "uvfits", delete wtspec and regenerate
     # get quantities to define array shapes
     tb.open("$(msname)::SPECTRAL_WINDOW")
     numchan = pyconvert(Int64, tb.getcol("NUM_CHAN")[0])
@@ -71,6 +72,10 @@ function addweightcols(msname::String, sigmaspec::Bool, weightspec::Bool)
 	sigsp = tb.getcol("SIGMA_SPECTRUM")
 	PyArray(sigsp)[:] .= 1.0
 	tb.putcol("SIGMA_SPECTRUM", sigsp)
+    end
+
+    if mode == "uvfits"
+        tb.removecols("WEIGHT_SPECTRUM") # remove automatically generated weight spectrum column to avoid dimension mismatch
     end
 
     if weightspec
@@ -116,7 +121,7 @@ function msfromuvfits(yamlconf::Dict, delim::String, ignorerepeated::Bool)
     tb.close()
 
     # WEIGHT_SPECTRUM is added by importuvfits; add only SIGMA_SPECTRUM manually
-    addweightcols(yamlconf["msname"], true, false)
+    addweightcols(yamlconf["msname"], yamlconf["mode"], true, true)
 end
 
 #=function setupexistingms(yamlconf::Dict, delim::String, ignorerepeated::Bool)
@@ -255,7 +260,7 @@ function msfromconfig(yamlconf::Dict, delim::String, ignorerepeated::Bool, casaa
     # clean up
     sm.close()
 
-    addweightcols(yamlconf["msname"], true, true)
+    addweightcols(yamlconf["msname"], yamlconf["mode"], true, true)
 
     @info("Create $(yamlconf["msname"])... 🙆")
 end

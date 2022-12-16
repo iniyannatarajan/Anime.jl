@@ -57,7 +57,7 @@ function addcorruptions(obs::CjlObservation)
     obs.data[isnan.(obs.data)] .= 0.0+0.0*im
 
     # compute weight columns
-    # TODO -- both thermal noise and sky noise rms values -- should they be floats or complex values?
+    # TODO -- check if the *_SPECTRUM columns are compatible in "manual" vs "uvfits" modes
     totalrmsspec = ones(Float64, 2, 2, obs.numchan, size(obs.data)[4])
     totalwtspec = ones(Float64, 2, 2, obs.numchan, size(obs.data)[4])
     computetotalrms(totalrmsspec, totalwtspec, obs)
@@ -86,5 +86,5 @@ function addcorruptions(obs::CjlObservation)
 	table[:SIGMA_SPECTRUM] = revtotalrmsspec
 	table[:WEIGHT_SPECTRUM] = revtotalwtspec
     end
-    @info("Write corrupted visibilities to disk... 🙆")
+    @info("Write arrays to disk... 🙆")
 end
