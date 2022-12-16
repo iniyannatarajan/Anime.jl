@@ -43,7 +43,7 @@ function thermalnoise(obs::CjlObservation)
     =#
 
     # compute thermal noise and add to data
-    thermalnoiserms = zeros(elemtype, size(obs.data))
+    thermalnoiserms = zeros(Float64, size(obs.data))
     thermalnoise = zeros(elemtype, size(obs.data))
     row = 1
     for t in 1:ntimes # no. of unique times
@@ -52,9 +52,13 @@ function thermalnoise(obs::CjlObservation)
         ant2vec = getindex(obs.antenna2, findall(obs.times.==uniqtimes[t]))
         for (ant1,ant2) in zip(ant1vec, ant2vec)
             for chan in 1:obs.numchan
-                thermalnoiserms[:, :, chan, row] .= (1/obs.yamlconf["correff"]) * sqrt((obs.stationinfo.sefd_Jy[ant1+1]*obs.stationinfo.sefd_Jy[ant2+1])/(2*obs.exposure*obs.chanwidth))
-                thermalnoise[:, :, chan, row] .= thermalnoiserms[:, :, chan, row]*randn(obs.rngcorrupt, elemtype, 2, 2) # thermal noise is polarized
-                obs.data[:, :, chan, row] += thermalnoise[:, :, chan, row]
+		thermalnoiserms[:, :, chan, row] .= (1/obs.yamlconf["correff"]) * sqrt((obs.stationinfo.sefd_Jy[ant1+1]*obs.stationinfo.sefd_Jy[ant2+1])/(2*obs.exposure*obs.chanwidth))
+		for jj in 1:2
+		    for ii in 1:2
+                        thermalnoise[ii, jj, chan, row] = thermalnoiserms[ii, jj, chan, row]*randn(obs.rngcorrupt, Float64) # thermal noise is polarized
+                        obs.data[ii, jj, chan, row] += thermalnoise[ii, jj, chan, row]
+		    end
+	        end
             end
             row += 1 # increment the last dimension i.e. row number
         end

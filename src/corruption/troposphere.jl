@@ -119,7 +119,7 @@ function compute_skynoise(obs::CjlObservation, atmdf::DataFrame, elevation::Arra
     end
 
     # compute sky noise and add to data
-    skynoiserms = zeros(elemtype, size(obs.data))
+    skynoiserms = zeros(Float64, size(obs.data))
     skynoise = zeros(elemtype, size(obs.data))
     row = 1
     for t in 1:size(transmission)[2] # no. of unique times
@@ -129,13 +129,18 @@ function compute_skynoise(obs::CjlObservation, atmdf::DataFrame, elevation::Arra
         for (ant1,ant2) in zip(ant1vec, ant2vec)
             for chan in 1:obs.numchan
 		skynoiserms[:, :, chan, row] .= (1/obs.yamlconf["correff"]) * sqrt((sefdarray[chan, t, ant1+1]*sefdarray[chan, t, ant2+1])/(2*obs.exposure*obs.chanwidth))
-		skynoise[:, :, chan, row] .= skynoiserms[:, :, chan, row]*randn(obs.rngtrop, elemtype, 2, 2) # sky noise is polarized
-		obs.data[:, :, chan, row] += skynoise[:, :, chan, row]
+		for jj in 1:2
+		    for ii in 1:2
+	                skynoise[ii, jj, chan, row] = skynoiserms[ii,jj, chan, row]*randn(obs.rngtrop, elemtype) # sky noise is polarized
+		        obs.data[ii, jj, chan, row] += skynoise[ii, jj, chan, row]
+		    end
+	        end
             end
             row += 1 # increment the last dimension i.e. row number
         end
     end
-    
+
+    # write to h5 file
     if !(haskey(g, "sefdarray"))
         g["sefdarray"] = sefdarray
     end
