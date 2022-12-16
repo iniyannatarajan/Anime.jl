@@ -48,6 +48,43 @@ function makecasaanttable(stations::String, delim::String, ignorerepeated::Bool,
     return stationtable
 end
 
+function addweightcols(msname::String, sigmaspec::Bool, weightspec::Bool)
+    """
+    Add WEIGHT_SPECTRUM and SIGMA_SPECTRUM columns to the MS
+    """
+    # get quantities to define array shapes
+    tb.open("$(msname)::SPECTRAL_WINDOW")
+    numchan = pyconvert(Int64, tb.getcol("NUM_CHAN")[0])
+    tb.close()
+    
+    tb.open("$(msname)::POLARIZATION")
+    numcorr = pyconvert(Int64, tb.getcol("NUM_CORR")[0])
+    tb.close()
+
+    shape = PyList([numchan, numcorr])
+
+    tb.open(msname, nomodify=false)
+    if sigmaspec
+        coldesc = pydict(Dict("valueType" => "float", "dataManagerType" => "TiledShapeStMan", "dataManagerGroup" => "TiledSigmaSpectrum", "option" => 0, "maxlen" => 0, "comment" => "Estimated rms noise for each data point", "ndim" => 2, "_c_order" => true, "keywords" => pydict(Dict()), "shape" => shape))
+        tabdesc = pydict(Dict("SIGMA_SPECTRUM" => coldesc))
+	tb.addcols(tabdesc)
+	sigsp = tb.getcol("SIGMA_SPECTRUM")
+	PyArray(sigsp)[:] .= 1.0
+	tb.putcol("SIGMA_SPECTRUM", sigsp)
+    end
+
+    if weightspec
+	coldesc = pydict(Dict("valueType" => "float", "dataManagerType" => "TiledShapeStMan", "dataManagerGroup" => "TiledWgtSpectrum", "option" => 0, "maxlen" => 0, "comment" => 
+			      "Weight for each data point", "ndim" => 2, "_c_order" => true, "keywords" => pydict(Dict()), "shape" => shape))
+	tabdesc = pydict(Dict("WEIGHT_SPECTRUM" => coldesc))
+	tb.addcols(tabdesc)
+	wtsp = tb.getcol("WEIGHT_SPECTRUM")
+	PyArray(wtsp)[:] .= 1.0
+	tb.putcol("WEIGHT_SPECTRUM", wtsp)
+    end
+    tb.close()
+end
+
 function msfromvex()
 end
 
@@ -77,6 +114,9 @@ function msfromuvfits(yamlconf::Dict, delim::String, ignorerepeated::Bool)
     tb.putcol("EXPOSURE", PyList(exposurevec))
     tb.putcol("INTERVAL", PyList(exposurevec))
     tb.close()
+
+    # WEIGHT_SPECTRUM is added by importuvfits; add only SIGMA_SPECTRUM manually
+    addweightcols(yamlconf["msname"], true, false)
 end
 
 #=function setupexistingms(yamlconf::Dict, delim::String, ignorerepeated::Bool)
@@ -215,12 +255,7 @@ function msfromconfig(yamlconf::Dict, delim::String, ignorerepeated::Bool, casaa
     # clean up
     sm.close()
 
-    # create weight and sigma spectrum columns
-    #=table = CCTable(yamlconf["msname"], CCTables.Update)
-    x = size(table[:DATA])[1]
-    y, z = size(table[:DATA][1])
-    table[:WEIGHT_SPECTRUM] = ones(Float32, y, z, x)::Array{Float32, 3} # Float32 to conform to the MSv2 specification (which WSClean expects... sometimes!)
-    table[:SIGMA_SPECTRUM] = ones(Float32, y, z, x)::Array{Float32, 3}=#
+    addweightcols(yamlconf["msname"], true, true)
 
     @info("Create $(yamlconf["msname"])... 🙆")
 end
