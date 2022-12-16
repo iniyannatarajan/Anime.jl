@@ -8,6 +8,7 @@ tb = table()
 me = measures()
 
 importuvfits = pyimport("casatasks" => "importuvfits")
+using StatsBase: mode
 
 function makecasaanttable(stations::String, delim::String, ignorerepeated::Bool, casaanttemplate::String)
     """
@@ -55,7 +56,7 @@ function msfromuvfits(yamlconf::Dict, delim::String, ignorerepeated::Bool)
     Create MS from uvfits file.
     """
     # convert uvfits to ms
-    importuvfits(fitsfile=yamlconf["uvfits"]["fitsfile"], vis=yamlconf["msname"])
+    importuvfits(fitsfile=yamlconf["uvfits"], vis=yamlconf["msname"])
 
     # compare ANTENNA table in ms with stations file
     df = CSV.read(yamlconf["stations"], DataFrame; delim=delim, ignorerepeated=ignorerepeated)
@@ -68,24 +69,14 @@ function msfromuvfits(yamlconf::Dict, delim::String, ignorerepeated::Bool)
         error("Station info file $(yamlconf["stations"]) and MS ANTENNA table do not match 🤷")
     end
    
-    # if specified, replace EXPOSURE column with user-supplied value
-    if !(yamlconf["uvfits"]["exposure"] == 0.0)
-	@info("Replacing (potentially inconsistent) EXPOSURE column in MS with user-supplied value: $(yamlconf["uvfits"]["exposure"]) s")
-        tb.open(yamlconf["msname"], nomodify=false)
-	exposurevec = yamlconf["uvfits"]["exposure"] .+ zeros(Float64, pyconvert(Int64, tb.nrows()))
-        tb.putcol("EXPOSURE", PyList(exposurevec))
-        tb.putcol("INTERVAL", PyList(exposurevec))
-	tb.close()
-    end
-
-    #= create weight and sigma spectrum columns
-    table = CCTable(yamlconf["msname"], CCTables.Update)
-    x = size(table[:DATA])[1]
-    y, z = size(table[:DATA][1])
-    table[:WEIGHT_SPECTRUM] = ones(Float32, y, z, x)::Array{Float32, 3} # Float32 to conform to the MSv2 specification (which WSClean expects... sometimes!)
-    table[:SIGMA_SPECTRUM] = ones(Float32, y, z, x)::Array{Float32, 3}
-    table = nothing
-    GC.gc()=#
+    # replace EXPOSURE column with the mode of EXPOSURE column in the ms
+    tb.open(yamlconf["msname"], nomodify=false)
+    exparr = pyconvert(PyArray, tb.getcol("EXPOSURE"))
+    @info("Replacing potentially inconsistent values in EXPOSURE column with its mode: $(mode(exparr)) s ...")
+    exposurevec = mode(exparr) .+ zeros(Float64, pyconvert(Int64, tb.nrows())) # use mode instead of mean or median to get the "most correct" exposure value
+    tb.putcol("EXPOSURE", PyList(exposurevec))
+    tb.putcol("INTERVAL", PyList(exposurevec))
+    tb.close()
 end
 
 #=function setupexistingms(yamlconf::Dict, delim::String, ignorerepeated::Bool)
@@ -225,11 +216,11 @@ function msfromconfig(yamlconf::Dict, delim::String, ignorerepeated::Bool, casaa
     sm.close()
 
     # create weight and sigma spectrum columns
-    table = CCTable(yamlconf["msname"], CCTables.Update)
+    #=table = CCTable(yamlconf["msname"], CCTables.Update)
     x = size(table[:DATA])[1]
     y, z = size(table[:DATA][1])
     table[:WEIGHT_SPECTRUM] = ones(Float32, y, z, x)::Array{Float32, 3} # Float32 to conform to the MSv2 specification (which WSClean expects... sometimes!)
-    table[:SIGMA_SPECTRUM] = ones(Float32, y, z, x)::Array{Float32, 3} 
+    table[:SIGMA_SPECTRUM] = ones(Float32, y, z, x)::Array{Float32, 3}=#
 
     @info("Create $(yamlconf["msname"])... 🙆")
 end
