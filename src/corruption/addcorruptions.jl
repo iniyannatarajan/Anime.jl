@@ -36,7 +36,7 @@ function addcorruptions(obs::CjlObservation)
     close(fid)
 
     # add tropospheric effects
-    obs.yamlconf["troposphere"]["enable"] && @time troposphere(obs)
+    obs.yamlconf["troposphere"]["enable"] && troposphere(obs)
 
     # add instrumental polarization
     obs.yamlconf["instrumentalpol"]["enable"] && @time instrumentalpol(obs)
@@ -57,7 +57,8 @@ function addcorruptions(obs::CjlObservation)
     obs.data[isnan.(obs.data)] .= 0.0+0.0*im
 
     # compute weight columns
-    # TODO -- check if the *_SPECTRUM columns are compatible in "manual" vs "uvfits" modes
+    @warn("WEIGHT_SPECTRUM and SIGMA_SPECTRUM are not filled in properly at the moment, while the code is being optimised.")
+    # TODO -- reimplement computetotalrms() once the thermal noise array format is finalised
     totalrmsspec = ones(Float32, 2, 2, obs.numchan, size(obs.data)[4])
     totalwtspec = ones(Float32, 2, 2, obs.numchan, size(obs.data)[4])
     computetotalrms(totalrmsspec, totalwtspec, obs)

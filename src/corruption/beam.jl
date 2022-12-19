@@ -52,7 +52,7 @@ function pointing(obs::CjlObservation)
     pbfwhm = obs.stationinfo.pbfwhm230_arcsec./(mean(obs.chanfreqvec)/230.0e9) # scale primary beam to centre frequency of spw
     pointinginterval = obs.yamlconf["pointing"]["interval"] == "coherencetime" ? mean(obs.stationinfo.ctime_sec) : obs.yamlconf["pointing"]["interval"]
     if pointinginterval < obs.exposure
-	@warn("Pointing interval ($pointinginterval) < integration time ($(obs.exposure)). Setting pointing interval to $(obs.exposure) s")
+	@warn("Pointing interval ($pointinginterval) < integration time ($(obs.exposure))! Setting pointing interval to $(obs.exposure) s ...")
 	pointinginterval = obs.exposure
     end
     @info("Generating new mispointings every $(pointinginterval) seconds")
