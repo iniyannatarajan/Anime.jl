@@ -51,6 +51,10 @@ function pointing(obs::CjlObservation)
 
     pbfwhm = obs.stationinfo.pbfwhm230_arcsec./(mean(obs.chanfreqvec)/230.0e9) # scale primary beam to centre frequency of spw
     pointinginterval = obs.yamlconf["pointing"]["interval"] == "coherencetime" ? mean(obs.stationinfo.ctime_sec) : obs.yamlconf["pointing"]["interval"]
+    if pointinginterval < obs.exposure
+	@warn("Pointing interval ($pointinginterval) < integration time ($(obs.exposure)). Setting pointing interval to $(obs.exposure) s")
+	pointinginterval = obs.exposure
+    end
     @info("Generating new mispointings every $(pointinginterval) seconds")
 
     # TODO calculate antenna rise and set times and mask pointing offsets? Is this really necessary? 
@@ -60,34 +64,59 @@ function pointing(obs::CjlObservation)
         # compute ideal ntimes per scan
         actualtscanvec = unique(getindex(obs.times, findall(obs.scanno.==scan)))
         actualtscanveclen = length(actualtscanvec)
-        idealtscanvec = collect(first(actualtscanvec):obs.exposure:last(actualtscanvec))
-        idealtscanveclen = length(idealtscanvec)
+        #idealtscanvec = collect(first(actualtscanvec):obs.exposure:last(actualtscanvec))
+        #idealtscanveclen = length(idealtscanvec)
+        mispointvec = collect(first(actualtscanvec):pointinginterval:last(actualtscanvec)) # 'ideal'tscanvec is actually 'pointinginterval'tscanvec
+        mispointveclen = length(mispointvec)
 
+	#=@info("last=$(last(idealtscanvec))-first=$(first(idealtscanvec))=$(last(idealtscanvec)-first(idealtscanvec)) / $pointinginterval = $((last(idealtscanvec)-first(idealtscanvec))/pointinginterval)")
 	mispointsperscan::Int64 = max(1, ceil((last(idealtscanvec)-first(idealtscanvec))/pointinginterval))
+	@info("idealtscanveclen=$idealtscanveclen, mispointsperscan=$mispointsperscan")
+	timesperpartition::Int64 = max(1, floor(idealtscanveclen/mispointsperscan))
 	perscanpointingoffsets = zeros(Float64, mispointsperscan, nant)
-	perscanpointingamperrors = zeros(Float64, mispointsperscan, nant)
+	perscanpointingamperrors = zeros(Float64, mispointsperscan, nant)=#
+	perscanpointingoffsets = zeros(Float64, mispointveclen, nant)
+	perscanpointingamperrors = zeros(Float64, mispointveclen, nant)
 
 	# loop through stations and compute offsets and amplitude errors
 	for ant in 1:nant
-	    perscanpointingoffsets[:, ant] = gentimeseries("gaussian", 0.0f0, obs.stationinfo.pointingrms_arcsec[ant], 0.0, mispointsperscan, obs.rngcorrupt)
+	    #perscanpointingoffsets[:, ant] = gentimeseries("gaussian", 0.0f0, obs.stationinfo.pointingrms_arcsec[ant], 0.0, mispointsperscan, obs.rngcorrupt)
+	    perscanpointingoffsets[:, ant] = gentimeseries("gaussian", 0.0f0, obs.stationinfo.pointingrms_arcsec[ant], 0.0, mispointveclen, obs.rngcorrupt)
 	    if obs.stationinfo.pbmodel[ant] == "gaussian"
                 perscanpointingamperrors[:, ant] = exp.(-0.5.*(perscanpointingoffsets[:, ant]./(pbfwhm[ant]/2.35)).^2)
 	    end
 	end
 
 	# compute mispointvec
-	mispointvec = compute_mispointvec(idealtscanvec, pointinginterval, mispointsperscan)
+	#mispointvec = compute_mispointvec(idealtscanvec, pointinginterval, mispointsperscan)
 
 	# loop over data and apply pointing errors
         findnearest(A,x) = argmin(abs.(A .- x)) # define function to find nearest neighbour
+
         for t in 1:actualtscanveclen
-            idealtimeindex = findnearest(idealtscanvec, actualtscanvec[t])
+	    # find the nearest value in idealtscanvec to actualtscanvec and then find the index of ptg ampl error in 'perscanpointingamperrors' that should be used
+	    #idealtimeindex = findnearest(idealtscanvec, actualtscanvec[t])
+	    mispointindex = min(mispointveclen, findnearest(mispointvec, actualtscanvec[t]))
+	    #=ptgindex = 0
+	    partition_idealtscanvec = collect(Iterators.partition(collect(1:idealtscanveclen), timesperpartition))
+	    for ind in 1:length(partition_idealtscanvec)
+		@info("partition_idealtscanvec[$ind] = $(partition_idealtscanvec[ind])")
+		if idealtimeindex in partition_idealtscanvec[ind]
+                    ptgindex = ind
+		end
+	    end
+	    if ptgindex == 0
+		ptgindex = length(partition_idealtscanvec)
+	    end=#
+	    #@info("At actualtimeindex t=$t, the neareset value to $(actualtscanvec[t]) in mispointvec ($(mispointvec[mispointindex])) is at index $mispointindex")
+	    #@info("At actualtimeindex t=$t, the neareset value to $(actualtscanvec[t]) in mispointvec ($(mispointvec[mispointindex])) is at index $mispointindex")
+
             # read all baselines present in a given time
             ant1vec = getindex(obs.antenna1, findall(obs.times.==actualtscanvec[t]))
             ant2vec = getindex(obs.antenna2, findall(obs.times.==actualtscanvec[t]))
             for (ant1,ant2) in zip(ant1vec, ant2vec)
                 for chan in 1:obs.numchan
-                    obs.data[:,:,chan,row] = perscanpointingamperrors[idealtimeindex,ant1+1]*obs.data[:,:,chan,row]*adjoint(perscanpointingamperrors[idealtimeindex,ant2+1])
+                    obs.data[:,:,chan,row] = perscanpointingamperrors[mispointindex,ant1+1]*obs.data[:,:,chan,row]*adjoint(perscanpointingamperrors[mispointindex,ant2+1])
                 end
                 row += 1 # increment obs.data last index i.e. row number
             end
