@@ -64,4 +64,4 @@ addcorruptions(observation)
 # Change back to original working directory
 @info("Changing working directory back to $(startdir)")
 cd(startdir)
-@info("Anime observation completed successfully 📡")
+@info("Anime.jl observation completed successfully 📡")

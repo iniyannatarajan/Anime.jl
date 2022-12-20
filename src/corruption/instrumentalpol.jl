@@ -46,8 +46,8 @@ function instrumentalpol(obs::CjlObservation)
 	polrotmatrices = ones(elemtype, 2, 2, obs.numchan, ntimes, size(obs.stationinfo)[1])
 
         for ant in 1:size(obs.stationinfo)[1]
-            djonesmatrices[1, 2, :, ant] = gentimeseries(obs.yamlconf["instrumentalpol"]["mode"], obs.stationinfo.d_pol1_loc[ant], obs.stationinfo.d_pol1_scale[ant], 0.0, obs.numchan, obs.rngcorrupt)
-            djonesmatrices[2, 1, :, ant] = gentimeseries(obs.yamlconf["instrumentalpol"]["mode"], obs.stationinfo.d_pol2_loc[ant], obs.stationinfo.d_pol2_scale[ant], 0.0, obs.numchan, obs.rngcorrupt)
+            gentimeseries(djonesmatrices[1, 2, :, ant], obs.yamlconf["instrumentalpol"]["mode"], obs.stationinfo.d_pol1_loc[ant], obs.stationinfo.d_pol1_scale[ant], 0.0, obs.numchan, obs.rngcorrupt)
+            gentimeseries(djonesmatrices[2, 1, :, ant], obs.yamlconf["instrumentalpol"]["mode"], obs.stationinfo.d_pol2_loc[ant], obs.stationinfo.d_pol2_scale[ant], 0.0, obs.numchan, obs.rngcorrupt)
 
 	    for t in 1:ntimes
     	        for chan in 1:obs.numchan

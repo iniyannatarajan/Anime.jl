@@ -74,12 +74,11 @@ function elevationangle(obs::CjlObservation)
     return elevationmatrix
 end
 
-function gentimeseries(mode::String, location::ComplexF32, scale::Float64, driftrate::Float64, nsamples::Int64, rng::AbstractRNG)
+function gentimeseries(series::Vector{ComplexF32}, mode::String, location::ComplexF32, scale::Float64, driftrate::Float64, nsamples::Int64, rng::AbstractRNG)
     """
     Generate complex-valued wiener series
     """
     # TODO this is a crude version of a wiener process -- to be updated
-    series = zeros(ComplexF32, nsamples)
     if mode == "wiener"
         sqrtnsamples = sqrt(nsamples)
         series[1] = location + scale*randn(rng, ComplexF32)
@@ -89,15 +88,13 @@ function gentimeseries(mode::String, location::ComplexF32, scale::Float64, drift
     elseif mode == "gaussian"
         series = location .+ scale*randn(rng, ComplexF32, nsamples)
     end
-    return series
 end
 
-function gentimeseries(mode::String, location::Float32, scale::Float64, driftrate::Float64, nsamples::Int64, rng::AbstractRNG)
+function gentimeseries(series::Vector{Float32}, mode::String, location::Float32, scale::Float64, driftrate::Float64, nsamples::Int64, rng::AbstractRNG)
     """
     Generate complex-valued wiener series
     """
     # TODO this is a crude version of a wiener process -- to be updated
-    series = zeros(Float32, nsamples)
     if mode == "wiener"
         sqrtnsamples = sqrt(nsamples)
         series[1] = location + scale*randn(rng, Float32)
@@ -107,5 +104,20 @@ function gentimeseries(mode::String, location::Float32, scale::Float64, driftrat
     elseif mode == "gaussian"
         series = location .+ scale*randn(rng, Float32, nsamples)
     end
-    return series
+end
+
+function gentimeseries(series::Vector{Float64}, mode::String, location::Float64, scale::Float64, driftrate::Float64, nsamples::Int64, rng::AbstractRNG)
+    """
+    Generate complex-valued wiener series
+    """
+    # TODO this is a crude version of a wiener process -- to be updated
+    if mode == "wiener"
+        sqrtnsamples = sqrt(nsamples)
+        series[1] = location + scale*randn(rng, Float32)
+        for ii in 2:nsamples
+            series[ii] = series[ii-1] + (scale*randn(rng, Float32)/sqrtnsamples) + driftrate*ii
+        end
+    elseif mode == "gaussian"
+        series = location .+ scale*randn(rng, Float32, nsamples)
+    end
 end
