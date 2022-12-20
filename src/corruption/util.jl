@@ -1,4 +1,4 @@
-export parallacticangle, elevationangle, gentimeseries
+export parallacticangle, elevationangle, gentimeseries!
 
 quanta = pyimport("casatools" => "quanta")
 qa = quanta()
@@ -74,7 +74,7 @@ function elevationangle(obs::CjlObservation)
     return elevationmatrix
 end
 
-function gentimeseries(series::Vector{ComplexF32}, mode::String, location::ComplexF32, scale::Float64, driftrate::Float64, nsamples::Int64, rng::AbstractRNG)
+function gentimeseries!(series::Vector{ComplexF32}, mode::String, location::ComplexF32, scale::Float64, driftrate::Float64, nsamples::Int64, rng::AbstractRNG)
     """
     Generate complex-valued wiener series
     """
@@ -88,9 +88,10 @@ function gentimeseries(series::Vector{ComplexF32}, mode::String, location::Compl
     elseif mode == "gaussian"
         series = location .+ scale*randn(rng, ComplexF32, nsamples)
     end
+    return series # return by convention
 end
 
-function gentimeseries(series::Vector{Float32}, mode::String, location::Float32, scale::Float64, driftrate::Float64, nsamples::Int64, rng::AbstractRNG)
+function gentimeseries!(series::Vector{Float32}, mode::String, location::Float32, scale::Float64, driftrate::Float64, nsamples::Int64, rng::AbstractRNG)
     """
     Generate complex-valued wiener series
     """
@@ -104,9 +105,10 @@ function gentimeseries(series::Vector{Float32}, mode::String, location::Float32,
     elseif mode == "gaussian"
         series = location .+ scale*randn(rng, Float32, nsamples)
     end
+    return series
 end
 
-function gentimeseries(series::Vector{Float64}, mode::String, location::Float64, scale::Float64, driftrate::Float64, nsamples::Int64, rng::AbstractRNG)
+function gentimeseries!(series::Vector{Float64}, mode::String, location::Float64, scale::Float64, driftrate::Float64, nsamples::Int64, rng::AbstractRNG)
     """
     Generate complex-valued wiener series
     """
@@ -120,4 +122,5 @@ function gentimeseries(series::Vector{Float64}, mode::String, location::Float64,
     elseif mode == "gaussian"
         series = location .+ scale*randn(rng, Float32, nsamples)
     end
+    return series
 end

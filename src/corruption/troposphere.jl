@@ -48,19 +48,18 @@ function run_atm(obs::CjlObservation)::DataFrame
     return absdf
 end
 
-function compute_transmission(obs::CjlObservation, atmdf::DataFrame, elevationmatrix::Array{Float64, 2}, ntimes::Int64, g::HDF5.Group)::Array{Float32, 3}
+function compute_transmission!(transmission::Array{Float64, 3}, obs::CjlObservation, atmdf::DataFrame, elevationmatrix::Array{Float64, 2}, g::HDF5.Group)::Array{Float32, 3}
     """
     Compute transmission matrix
     """
     # compute time and frequency varying transmission matrix for each station
-    transmission = zeros(Float32, obs.numchan, ntimes, size(obs.stationinfo)[1])
-    for ant in 1:size(obs.stationinfo)[1]
+    for ant in 1:size(transmission)[3]
         # get opacity at all frequencies for this station
 	opacityvec = obs.yamlconf["troposphere"]["wetonly"] ? atmdf[atmdf.Station .== obs.stationinfo.station[ant],:].Wet_opacity : 
 	             atmdf[atmdf.Station .== obs.stationinfo.station[ant],:].Dry_opacity + atmdf[atmdf.Station .== obs.stationinfo.station[ant],:].Wet_opacity
-        for t in 1:ntimes
+        for t in 1:size(transmission)[2]
             for chan in 1:obs.numchan
-                    transmission[chan, t, ant] = exp(-1*opacityvec[chan]/sin(elevationmatrix[t, ant]))
+                transmission[chan, t, ant] = exp(-1*opacityvec[chan]/sin(elevationmatrix[t, ant]))
             end
         end
     end
@@ -68,7 +67,6 @@ function compute_transmission(obs::CjlObservation, atmdf::DataFrame, elevationma
     if !(haskey(g, "transmission"))
         g["transmission"] = transmission
     end
-
     return transmission
 end
 
@@ -78,12 +76,17 @@ function attenuate(obs::CjlObservation, atmdf::DataFrame, elevationmatrix::Array
     """
     # get unique times
     uniqtimes = unique(obs.times)
+    ntimes = size(uniqtimes)[1]
 
-    transmission = compute_transmission(obs, atmdf, elevationmatrix, size(uniqtimes)[1], g)
+    # get no of stations
+    nant = size(obs.stationinfo)[1]
+
+    transmission = zeros(Float64, obs.numchan, ntimes, nant)
+    compute_transmission!(transmission, obs, atmdf, elevationmatrix, g)
 
     # attenuate visibilities
     row = 1
-    for t in 1:size(transmission)[2] # no. of unique times
+    for t in 1:ntimes # no. of unique times
 	# read all baselines present in a given time
 	ant1vec = getindex(obs.antenna1, findall(obs.times.==uniqtimes[t]))
 	ant2vec = getindex(obs.antenna2, findall(obs.times.==uniqtimes[t]))
@@ -106,12 +109,18 @@ function compute_skynoise(obs::CjlObservation, atmdf::DataFrame, elevation::Arra
 
     # get unique times
     uniqtimes = unique(obs.times)
+    ntimes = size(uniqtimes)[1]
 
-    transmission = compute_transmission(obs, atmdf, elevation, size(uniqtimes)[1], g)
-    sefdarray = zeros(Float64, obs.numchan, size(uniqtimes)[1], size(obs.stationinfo)[1])
-    for ant in 1:size(obs.stationinfo)[1]
+    # get no of stations
+    nant = size(obs.stationinfo)[1]
+
+    transmission = zeros(Float64, obs.numchan, ntimes, nant)
+    compute_transmission!(transmission, obs, atmdf, elevation, g) # populate transmission matrix
+
+    sefdarray = zeros(Float64, obs.numchan, ntimes, nant)
+    for ant in 1:nant
         skytempvec = atmdf[atmdf.Station .== obs.stationinfo.station[ant],:].Sky_brightness
-        for t in 1:size(uniqtimes)[1]
+        for t in 1:ntimes
             for chan in 1:obs.numchan
                 sefdarray[chan, t, ant] = 2*Boltzmann/(obs.stationinfo.aperture_eff[ant]*pi*((obs.stationinfo.dishdiameter_m[ant]/2.0)^2))*(1e26*skytempvec[chan]*(1.0 - transmission[chan, t, ant]))
             end
@@ -119,22 +128,18 @@ function compute_skynoise(obs::CjlObservation, atmdf::DataFrame, elevation::Arra
     end
 
     # compute sky noise and add to data
-    skynoiserms = zeros(Float64, size(obs.data))
+    skynoiserms = zeros(Float64, (size(obs.data)[3], size(obs.data)[4]))
     skynoise = zeros(elemtype, size(obs.data))
     row = 1
-    for t in 1:size(transmission)[2] # no. of unique times
+    for t in 1:ntimes # no. of unique times
         # read all baselines present in a given time
         ant1vec = getindex(obs.antenna1, findall(obs.times.==uniqtimes[t]))
         ant2vec = getindex(obs.antenna2, findall(obs.times.==uniqtimes[t]))
         for (ant1,ant2) in zip(ant1vec, ant2vec)
             for chan in 1:obs.numchan
-		skynoiserms[:, :, chan, row] .= (1/obs.yamlconf["correff"]) * sqrt((sefdarray[chan, t, ant1+1]*sefdarray[chan, t, ant2+1])/(2*obs.exposure*obs.chanwidth))
-		for jj in 1:2
-		    for ii in 1:2
-	                skynoise[ii, jj, chan, row] = skynoiserms[ii,jj, chan, row]*randn(obs.rngtrop, elemtype) # sky noise is polarized
-		        obs.data[ii, jj, chan, row] += skynoise[ii, jj, chan, row]
-		    end
-	        end
+		skynoiserms[chan, row] = (1/obs.yamlconf["correff"]) * sqrt((sefdarray[chan, t, ant1+1]*sefdarray[chan, t, ant2+1])/(2*obs.exposure*obs.chanwidth))
+	                skynoise[:, :, chan, row] = skynoiserms[chan, row]*randn(obs.rngtrop, elemtype, 2, 2) # sky noise is polarized
+		        obs.data[:, :, chan, row] += skynoise[:, :, chan, row]
             end
             row += 1 # increment the last dimension i.e. row number
         end

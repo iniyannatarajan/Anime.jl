@@ -73,7 +73,7 @@ function pointing(obs::CjlObservation)
 
 	# loop through stations and compute offsets and amplitude errors
 	for ant in 1:nant
-	    gentimeseries(perscanpointingoffsets[:, ant], "gaussian", 0.0, obs.stationinfo.pointingrms_arcsec[ant], 0.0, mispointveclen, obs.rngcorrupt)
+	    gentimeseries!(perscanpointingoffsets[:, ant], "gaussian", 0.0, obs.stationinfo.pointingrms_arcsec[ant], 0.0, mispointveclen, obs.rngcorrupt)
 	    if obs.stationinfo.pbmodel[ant] == "gaussian"
                 perscanpointingamperrors[:, ant] = exp.(-0.5.*(perscanpointingoffsets[:, ant]./(pbfwhm[ant]/2.35)).^2)
 	    end

@@ -61,7 +61,7 @@ function addcorruptions(obs::CjlObservation)
     # TODO -- reimplement computetotalrms() once the thermal noise array format is finalised
     totalrmsspec = ones(Float32, 2, 2, obs.numchan, size(obs.data)[4])
     totalwtspec = ones(Float32, 2, 2, obs.numchan, size(obs.data)[4])
-    computetotalrms(totalrmsspec, totalwtspec, obs)
+    #computetotalrms(totalrmsspec, totalwtspec, obs)
 
     # convert the sigma_spec, weight_spec and data arrays to the format required by Casacore.jl
     revtotalrmsspec3dres = permutedims(totalrmsspec, (2,1,3,4))

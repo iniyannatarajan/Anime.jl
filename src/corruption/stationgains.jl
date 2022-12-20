@@ -32,8 +32,8 @@ function stationgains(obs::CjlObservation)
 	gjonesmatrices = zeros(elemtype, 2, 2, idealtscanveclen, size(obs.stationinfo)[1]) # 2 x 2 x ntimes x nant
 
 	for ant in 1:size(obs.stationinfo)[1]
-	   gentimeseries(gjonesmatrices[1, 1, :, ant], obs.yamlconf["stationgains"]["mode"], obs.stationinfo.g_pol1_loc[ant], obs.stationinfo.g_pol1_scale[ant], 0.0, idealtscanveclen, obs.rngcorrupt)
-	   gentimeseries(gjonesmatrices[2, 2, :, ant], obs.yamlconf["stationgains"]["mode"], obs.stationinfo.g_pol2_loc[ant], obs.stationinfo.g_pol2_scale[ant], 0.0, idealtscanveclen, obs.rngcorrupt)
+	   gentimeseries!(gjonesmatrices[1, 1, :, ant], obs.yamlconf["stationgains"]["mode"], obs.stationinfo.g_pol1_loc[ant], obs.stationinfo.g_pol1_scale[ant], 0.0, idealtscanveclen, obs.rngcorrupt)
+	   gentimeseries!(gjonesmatrices[2, 2, :, ant], obs.yamlconf["stationgains"]["mode"], obs.stationinfo.g_pol2_loc[ant], obs.stationinfo.g_pol2_scale[ant], 0.0, idealtscanveclen, obs.rngcorrupt)
 	end
 
         # loop over time/row and apply gjones terms corresponding to each baseline
