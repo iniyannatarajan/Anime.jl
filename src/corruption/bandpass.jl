@@ -21,7 +21,7 @@ function bandpass(obs::CjlObservation)
     # create empty array of dims 2 x 2 x nchannels x nant
     bjonesmatrices = zeros(elemtype, 2, 2, obs.numchan, size(obs.stationinfo)[1]) # 2 x 2 x ntimes x nant
 
-    for station in 1:size(obs.stationinfo)[1]
+    for station in eachindex(obs.stationinfo.station)
 	# read in bandpass info from the input bandpass file
 	freqvec = bpinfo[(bpinfo[!,:station].==obs.stationinfo.station[station]),:freq_Hz].*1e9
 	pol1amp = bpinfo[(bpinfo[!,:station].==obs.stationinfo.station[station]),:pol1_amp]
@@ -45,12 +45,10 @@ function bandpass(obs::CjlObservation)
 	bjonespol2phase = rand(obs.rngcorrupt, Uniform(-pol2phaserange, pol2phaserange), obs.numchan)
 
         # populate the bjones matrices
-        for ant in 1:size(obs.stationinfo)[1]
-	    for chan in 1:obs.numchan
-		bjonesmatrices[1, 1, chan, ant] = bjonespol1amp[chan]*exp(deg2rad(bjonespol1phase[chan])*im)
-		bjonesmatrices[2, 2, chan, ant] = bjonespol2amp[chan]*exp(deg2rad(bjonespol2phase[chan])*im)
-	    end
-        end
+	for chan in 1:obs.numchan
+	    bjonesmatrices[1, 1, chan, station] = bjonespol1amp[chan]*exp(deg2rad(bjonespol1phase[chan])*im)
+	    bjonesmatrices[2, 2, chan, station] = bjonespol2amp[chan]*exp(deg2rad(bjonespol2phase[chan])*im)
+	end
     end
 
     # apply bandpass to data

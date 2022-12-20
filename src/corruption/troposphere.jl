@@ -14,7 +14,7 @@ function run_atm(obs::CjlObservation)::DataFrame
     # loop through stations
     absdfvec = []
     dispdfvec = []
-    for ant in 1:size(obs.stationinfo)[1]
+    for ant in eachindex(obs.stationinfo.station)
 	# absorption
 	atmcommand = obs.numchan == 1 ? `absorption --fmin $(obs.chanfreqvec[1]/1e9-1.0) --fmax $(obs.chanfreqvec[1]/1e9) --fstep 1.0 --pwv $(obs.stationinfo.pwv_mm[ant]) 
 	--gpress $(obs.stationinfo.gpress_mb[ant]) --gtemp $(obs.stationinfo.gtemp_K[ant])` : `absorption --fmin $((first(obs.chanfreqvec)-obs.chanwidth)/1e9) --fmax $(last(obs.chanfreqvec)/1e9) 
