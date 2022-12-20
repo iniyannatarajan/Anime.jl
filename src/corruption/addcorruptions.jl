@@ -13,7 +13,7 @@ function computetotalrms(totalrmsspec::Array{Float32, 4}, totalwtspec::Array{Flo
     Compute total rms (sigma) values from independent noise sources
     """
     fid = h5open(obs.yamlconf["hdf5corruptions"], "r")
-    if haskey(fid, "thermalnoiserms")
+    if haskey(fid, "thermalnoise") && haskey(fid["thermalnoise"], "thermalnoiserms")
         totalrmsspec = read(fid["thermalnoise"]["thermalnoiserms"]).^2
     end
     if haskey(fid, "troposphere") && haskey(fid["troposphere"], "skynoiserms")
@@ -57,11 +57,11 @@ function addcorruptions(obs::CjlObservation)
     obs.data[isnan.(obs.data)] .= 0.0+0.0*im
 
     # compute weight columns
-    @warn("WEIGHT_SPECTRUM and SIGMA_SPECTRUM are not filled in properly at the moment, while the code is being optimised.")
+    #@warn("WEIGHT_SPECTRUM and SIGMA_SPECTRUM are not filled in properly at the moment, while the code is being optimised.")
     # TODO -- reimplement computetotalrms() once the thermal noise array format is finalised
     totalrmsspec = ones(Float32, 2, 2, obs.numchan, size(obs.data)[4])
     totalwtspec = ones(Float32, 2, 2, obs.numchan, size(obs.data)[4])
-    #computetotalrms(totalrmsspec, totalwtspec, obs)
+    computetotalrms(totalrmsspec, totalwtspec, obs)
 
     # convert the sigma_spec, weight_spec and data arrays to the format required by Casacore.jl
     revtotalrmsspec3dres = permutedims(totalrmsspec, (2,1,3,4))

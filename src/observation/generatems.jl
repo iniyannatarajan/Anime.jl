@@ -179,7 +179,7 @@ function msfromconfig(yamlconf::Dict, delim::String, ignorerepeated::Bool, casaa
     stationtable = ""
     if isfile(yamlconf["stations"])
 	# check if template is specified
-	casaanttemplate == nothing && error("$(yamlconf["stations"]) is a CSV file but template CASA ANTENNA table not specified 🤷")
+	casaanttemplate === nothing && error("$(yamlconf["stations"]) is a CSV file but template CASA ANTENNA table not specified 🤷")
 	stationtable = makecasaanttable(yamlconf["stations"], delim, ignorerepeated, casaanttemplate)
 	@info("Creating new ANTENNA table from CSV station info file...")
     elseif isdir(yamlconf["stations"])

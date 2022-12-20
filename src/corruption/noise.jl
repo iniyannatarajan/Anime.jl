@@ -22,25 +22,29 @@ function thermalnoise(obs::CjlObservation)
     uniqant2 = unique(obs.antenna2)
 
     # loop through each baseline pair and compute and apply thermal noise to obs.data
+    thermalnoiserms = zeros(Float64, size(obs.data))
+    thermalnoise = zeros(elemtype, size(obs.data))
     for a1 in uniqant1
-	for a2 in uniqant2
-	    if a2>a1
-		# compute sigma per baseline
-		sigmaperbl = (1/obs.yamlconf["correff"]) * sqrt((obs.stationinfo.sefd_Jy[a1+1]*obs.stationinfo.sefd_Jy[a2+1])
+	    for a2 in uniqant2
+	        if a2>a1
+  		        # compute sigma per baseline
+                indices = intersect(findall(obs.antenna1.==a1), findall(obs.antenna2.==a2))
+		        #sigmaperbl = (1/obs.yamlconf["correff"]) * sqrt((obs.stationinfo.sefd_Jy[a1+1]*obs.stationinfo.sefd_Jy[a2+1])
+				#				/(2*obs.exposure*obs.chanwidth))
+                thermalnoiserms[:, :, :, indices] .= sigmaperbl = (1/obs.yamlconf["correff"]) * sqrt((obs.stationinfo.sefd_Jy[a1+1]*obs.stationinfo.sefd_Jy[a2+1])
 								/(2*obs.exposure*obs.chanwidth))
-		indices = intersect(findall(obs.antenna1.==a1), findall(obs.antenna2.==a2))
-
                 # compute and add thermal noise to data
-		thermalvec = sigmaperbl*randn(obs.rngcorrupt, elemtype, size(obs.data[:,:,1,indices]))
-		for chan in 1:obs.numchan
-	 	    obs.data[:,:,chan,indices] = obs.data[:,:,chan,indices] + thermalvec
-	        end
+		        #thermalvec = sigmaperbl*randn(obs.rngcorrupt, elemtype, size(obs.data[:,:,1,indices]))
+		        #for chan in 1:obs.numchan
+                    thermalnoise[:, :, :, indices] = sigmaperbl*randn(obs.rngcorrupt, elemtype, size(obs.data[:,:,:,indices]))
+	 	            obs.data[:, :, :, indices] = obs.data[:, :, :, indices] + thermalnoise[:, :, :, indices] #thermalvec
+	            #end
 
                 # write as individual dataset within the group created above in the h5 file
-                g["$(obs.stationinfo.station[a1+1])-$(obs.stationinfo.station[a2+1])_rms"] = sigmaperbl
-                g["$(obs.stationinfo.station[a1+1])-$(obs.stationinfo.station[a2+1])_noise"] = thermalvec #reduce((x,y) -> cat(x, y, dims=3), thermalvec)
+                #g["$(obs.stationinfo.station[a1+1])-$(obs.stationinfo.station[a2+1])_rms"] = sigmaperbl
+                #g["$(obs.stationinfo.station[a1+1])-$(obs.stationinfo.station[a2+1])_noise"] = thermalvec #reduce((x,y) -> cat(x, y, dims=3), thermalvec)
+	        end
 	    end
-	end
     end
     
     #= # compute thermal noise and add to data
@@ -84,12 +88,12 @@ function thermalnoise(obs::CjlObservation)
     end=#
 
     # write to h5 file
-    #=if !(haskey(g, "thermalnoiserms"))
+    if !(haskey(g, "thermalnoiserms"))
         g["thermalnoiserms"] = thermalnoiserms
     end
     if !(haskey(g, "thermalnoise"))
         g["thermalnoise"] = thermalnoise
-    end=#
+    end
 
     # add datatype attribute
     attributes(g)["datatype"] = string(typeof(read(g[keys(g)[1]])))
