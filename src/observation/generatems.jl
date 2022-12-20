@@ -10,7 +10,7 @@ me = measures()
 importuvfits = pyimport("casatasks" => "importuvfits")
 using StatsBase: mode
 
-function makecasaanttable(stations::String, delim::String, ignorerepeated::Bool, casaanttemplate::String)
+function makecasaanttable(stations::String, casaanttemplate::String; delim::String=",", ignorerepeated::Bool=false)
     """
     Generate a CASA antenna table from CSV station info file in the current working directory.
     """
@@ -180,7 +180,7 @@ function msfromconfig(yamlconf::Dict, delim::String, ignorerepeated::Bool, casaa
     if isfile(yamlconf["stations"])
 	# check if template is specified
 	casaanttemplate === nothing && error("$(yamlconf["stations"]) is a CSV file but template CASA ANTENNA table not specified 🤷")
-	stationtable = makecasaanttable(yamlconf["stations"], delim, ignorerepeated, casaanttemplate)
+	stationtable = makecasaanttable(yamlconf["stations"], casaanttemplate)
 	@info("Creating new ANTENNA table from CSV station info file...")
     elseif isdir(yamlconf["stations"])
 	stationtable = yamlconf["stations"]

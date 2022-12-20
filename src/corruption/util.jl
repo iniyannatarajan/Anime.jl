@@ -70,7 +70,7 @@ function elevationangle(obs::CjlObservation)
         elevationmatrix[:,ant] = asin.(sin(latitude)*sin(obs.phasedir[2]).+cos(latitude)*cos(obs.phasedir[2]).*cos.(hourangle))
     end
 
-    elevationmatrix[elevationmatrix .< 0] .= NaN # set all negative values to NaN
+    elevationmatrix[elevationmatrix .< 0] .= 0.0 # set all -ve values to 0.0 instead of NaN # set all negative values to NaN
     return elevationmatrix
 end
 

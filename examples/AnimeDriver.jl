@@ -5,7 +5,8 @@ using YAML
 using Random
 using Logging
 
-include("../src/Anime.jl")
+@info("Including Anime.jl ...")
+@time include("../src/Anime.jl")
 using .Anime
 
 # create argument parser
@@ -14,7 +15,7 @@ function create_parser()
 
     @add_arg_table s begin
         "config"
-            help = "Input JSON file name with observation settings"
+            help = "Input YAML file name with observation configuration"
             required = true
         "--clobber", "-c"
             action = :store_true
@@ -56,7 +57,7 @@ cd(yamlconf["outdir"])
 
 # load ms data into custom struct
 #observation, stationinfo = loadobs(yamlconf["msname"], yamlconf["stations"], ",", false)
-@time observation = loadobs(yamlconf, ",", false)
+@time observation = loadobs(yamlconf, delim=",", ignorerepeated=false)
 
 # add corruptions -- TODO currently, the stationinfo file and the MS ANTENNA table should be in the same order! Make this more flexible!!!
 addcorruptions(observation)

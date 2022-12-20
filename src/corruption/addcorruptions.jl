@@ -8,23 +8,27 @@ include(joinpath("stationgains.jl"))
 include(joinpath("bandpass.jl"))
 include(joinpath("noise.jl"))
 
-function computetotalrms(totalrmsspec::Array{Float32, 4}, totalwtspec::Array{Float32, 4}, obs::CjlObservation)
+function computeweights!(totalrmsspec::Array{Float32, 4}, totalwtspec::Array{Float32, 4}, obs::CjlObservation)
     """
     Compute total rms (sigma) values from independent noise sources
     """
     fid = h5open(obs.yamlconf["hdf5corruptions"], "r")
     if haskey(fid, "thermalnoise") && haskey(fid["thermalnoise"], "thermalnoiserms")
-        totalrmsspec = read(fid["thermalnoise"]["thermalnoiserms"]).^2
+        totalrmsspec[:,:,:,:] = read(fid["thermalnoise"]["thermalnoiserms"]).^2
+        #@info(totalrmsspec[:,:,1,1], totalrmsspec[:,:,1,end])
     end
     if haskey(fid, "troposphere") && haskey(fid["troposphere"], "skynoiserms")
-        totalrmsspec += read(fid["troposphere"]["skynoiserms"]).^2
+        totalrmsspec[:,:,:,:] = totalrmsspec[:,:,:,:] + read(fid["troposphere"]["skynoiserms"]).^2
     end
 
     # compute sigma_spectrum
-    totalrmsspec = sqrt.(totalrmsspec)
+    totalrmsspec[:,:,:,:] = sqrt.(totalrmsspec[:,:,:,:])
+    #@info(totalrmsspec[:,:,1,1], totalrmsspec[:,:,1,end])
 
     # compute weight_spectrum
-    totalwtspec = 1 ./totalrmsspec.^2
+    totalwtspec[:,:,:,:] = 1 ./(totalrmsspec[:,:,:,:].^2)
+
+    return totalrmsspec, totalwtspec
 end
 
 function addcorruptions(obs::CjlObservation)
@@ -58,12 +62,13 @@ function addcorruptions(obs::CjlObservation)
 
     # compute weight columns
     #@warn("WEIGHT_SPECTRUM and SIGMA_SPECTRUM are not filled in properly at the moment, while the code is being optimised.")
-    # TODO -- reimplement computetotalrms() once the thermal noise array format is finalised
-    totalrmsspec = ones(Float32, 2, 2, obs.numchan, size(obs.data)[4])
-    totalwtspec = ones(Float32, 2, 2, obs.numchan, size(obs.data)[4])
-    computetotalrms(totalrmsspec, totalwtspec, obs)
+    totalrmsspec = zeros(Float32, 2, 2, obs.numchan, size(obs.data)[4]) # noise rms zero by default
+    totalwtspec = ones(Float32, 2, 2, obs.numchan, size(obs.data)[4]) # weights unity by default
 
-    # convert the sigma_spec, weight_spec and data arrays to the format required by Casacore.jl
+    @info("Computing weight and sigma spectrum arrays...")
+    @time computeweights!(totalrmsspec, totalwtspec, obs)
+
+    # convert the sigma_spec and weight_spec arrays to the format required by Casacore.jl
     revtotalrmsspec3dres = permutedims(totalrmsspec, (2,1,3,4))
     revtotalrmsspec3d = reshape(revtotalrmsspec3dres, 4, size(revtotalrmsspec3dres)[3], :)
     revtotalrmsspec = [Matrix{Float32}(revtotalrmsspec3d[:,:,i]) for i in 1:size(revtotalrmsspec3d)[3]]
@@ -72,6 +77,16 @@ function addcorruptions(obs::CjlObservation)
     revtotalwtspec3d = reshape(revtotalwtspec3dres, 4, size(revtotalwtspec3dres)[3], :)
     revtotalwtspec = [Matrix{Float32}(revtotalwtspec3d[:,:,i]) for i in 1:size(revtotalwtspec3d)[3]]
 
+    # compute channel averaged weight and sigma column values
+    revtotalrms = Vector{Vector{Float32}}()
+    revtotalwt = Vector{Vector{Float32}}()
+    for row in 1:size(obs.data)[4] # nrows
+        tmpvec = dropdims(mean(revtotalrmsspec[row], dims=2), dims=2)
+        push!(revtotalrms, tmpvec) # average the sigma values
+        push!(revtotalwt, 1 ./tmpvec.^2)
+    end
+
+    # reshape data array for Casacore.jl
     revdata3dres = permutedims(obs.data, (2,1,3,4))
     revdata3d = reshape(revdata3dres, 4, size(revdata3dres)[3], :)
     revdata = [Matrix{ComplexF32}(revdata3d[:,:,i]) for i in 1:size(revdata3d)[3]]
@@ -79,13 +94,10 @@ function addcorruptions(obs::CjlObservation)
     # when all the corruptions have been applied, write the above columns to ms
     table = CCTable(obs.yamlconf["msname"], CCTables.Update)
     table[:DATA] = revdata # Float32 to conform to the MSv2 specification (which WSClean expects... sometimes!)
+    table[:SIGMA_SPECTRUM] = revtotalrmsspec
+	table[:WEIGHT_SPECTRUM] = revtotalwtspec
+    table[:SIGMA] = revtotalrms
+	table[:WEIGHT] = revtotalwt
 
-    if obs.yamlconf["mode"] == "manual"
-	table[:SIGMA_SPECTRUM] = revtotalrmsspec
-	table[:WEIGHT_SPECTRUM] = revtotalwtspec
-    elseif obs.yamlconf["mode"] == "uvfits"
-	table[:SIGMA_SPECTRUM] = revtotalrmsspec
-	table[:WEIGHT_SPECTRUM] = revtotalwtspec
-    end
     @info("Write arrays to disk... 🙆")
 end

@@ -33,7 +33,7 @@ Tables.columnaccess(::Type{<:CjlObservation}) = true
 Tables.columns(m::CjlObservation) = m
 
 # define loadobs function
-function loadobs(yamlconf::Dict, delim::String, ignorerepeated::Bool)
+function loadobs(yamlconf::Dict; delim::String=",", ignorerepeated::Bool=false)
     """
     load data and metadata from ms and station table
     """
