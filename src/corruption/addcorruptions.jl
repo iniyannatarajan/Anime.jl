@@ -15,7 +15,6 @@ function computeweights!(totalrmsspec::Array{Float32, 4}, totalwtspec::Array{Flo
     fid = h5open(obs.yamlconf["hdf5corruptions"], "r")
     if haskey(fid, "thermalnoise") && haskey(fid["thermalnoise"], "thermalnoiserms")
         totalrmsspec[:,:,:,:] = read(fid["thermalnoise"]["thermalnoiserms"]).^2
-        #@info(totalrmsspec[:,:,1,1], totalrmsspec[:,:,1,end])
     end
     if haskey(fid, "troposphere") && haskey(fid["troposphere"], "skynoiserms")
         totalrmsspec[:,:,:,:] = totalrmsspec[:,:,:,:] + read(fid["troposphere"]["skynoiserms"]).^2
@@ -23,7 +22,6 @@ function computeweights!(totalrmsspec::Array{Float32, 4}, totalwtspec::Array{Flo
 
     # compute sigma_spectrum
     totalrmsspec[:,:,:,:] = sqrt.(totalrmsspec[:,:,:,:])
-    #@info(totalrmsspec[:,:,1,1], totalrmsspec[:,:,1,end])
 
     # compute weight_spectrum
     totalwtspec[:,:,:,:] = 1 ./(totalrmsspec[:,:,:,:].^2)
@@ -36,6 +34,7 @@ function addcorruptions(obs::CjlObservation)
     Main fn to add corruptions
     """
     # create HDF5 file to store all corruptions
+    @info("Initialising empty HDF5 file to store propagation path effects")
     fid = h5open(obs.yamlconf["hdf5corruptions"], "w") # using mode "w" to destroy existing contents
     close(fid)
 
@@ -91,9 +90,9 @@ function addcorruptions(obs::CjlObservation)
     revdata3d = reshape(revdata3dres, 4, size(revdata3dres)[3], :)
     revdata = [Matrix{ComplexF32}(revdata3d[:,:,i]) for i in 1:size(revdata3d)[3]]
 
-    # when all the corruptions have been applied, write the above columns to ms
+    # when all the corruptions have been applied, write the above columns back to disk
     table = CCTable(obs.yamlconf["msname"], CCTables.Update)
-    table[:DATA] = revdata # Float32 to conform to the MSv2 specification (which WSClean expects... sometimes!)
+    table[:DATA] = revdata
     table[:SIGMA_SPECTRUM] = revtotalrmsspec
 	table[:WEIGHT_SPECTRUM] = revtotalwtspec
     table[:SIGMA] = revtotalrms

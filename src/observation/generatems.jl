@@ -93,7 +93,7 @@ end
 function msfromvex()
 end
 
-function msfromuvfits(yamlconf::Dict, delim::String, ignorerepeated::Bool)
+function msfromuvfits(yamlconf::Dict; delim::String=",", ignorerepeated::Bool=false)
     """
     Create MS from uvfits file.
     """
@@ -165,7 +165,7 @@ end
     @info("Set up existing dataset at $(yamlconf["existingms"]["msname"]) as $(yamlconf["msname"])... 🙆")
 end=#
 
-function msfromconfig(yamlconf::Dict, delim::String, ignorerepeated::Bool, casaanttemplate::String)
+function msfromconfig(yamlconf::Dict, casaanttemplate::String; delim::String=",", ignorerepeated::Bool=false)
     """
     Main function to generate MS.
     """
@@ -265,12 +265,13 @@ function msfromconfig(yamlconf::Dict, delim::String, ignorerepeated::Bool, casaa
     @info("Create $(yamlconf["msname"])... 🙆")
 end
 
-function generatems(yamlconf::Dict, delim::String, ignorerepeated::Bool, casaanttemplate::String)
+function generatems(config::String; delim::String=",", ignorerepeated::Bool=false)
+    yamlconf = YAML.load_file(config, dicttype=Dict{String,Any})
     if yamlconf["mode"] == "manual"
-	msfromconfig(yamlconf, delim, ignorerepeated, casaanttemplate)
+	    msfromconfig(yamlconf, yamlconf["casatemplate"], delim=",", ignorerepeated=false)
     elseif yamlconf["mode"] == "uvfits"
-	msfromuvfits(yamlconf, delim, ignorerepeated)
+	    msfromuvfits(yamlconf, delim=",", ignorerepeated=false)
     else
-	error("MS generation mode '$(yamlconf["mode"])' not recognised 🤷")
+	    error("MS generation mode '$(yamlconf["mode"])' not recognised 🤷")
     end
 end

@@ -39,8 +39,8 @@ function run_wsclean(msname::String, fitsdir::String, polarized::Bool, channelgr
     # loop through FITS models (polarised or unpolarised)
     @info("Inverting source models to visibilities...")
     for fitsindex in 0:nmodels-1
-	infits = "$(fitsdir)/t$(lpad(fitsindex, 4, "0"))"
-	polarized ? run(`wsclean -channels-out $channelgroups -predict -name $infits -interval $startrow $endrow -pol I,Q,U,V -no-reorder -oversampling $osfactor -no-small-inversion $msname`) : run(`wsclean -channels-out $channelgroups -predict -name $infits -interval $startrow $endrow -oversampling $osfactor -no-small-inversion $msname`)
+	    infits = "$(fitsdir)/t$(lpad(fitsindex, 4, "0"))"
+	    polarized ? run(`wsclean -channels-out $channelgroups -predict -name $infits -interval $startrow $endrow -pol I,Q,U,V -no-reorder -oversampling $osfactor -no-small-inversion $msname`) : run(`wsclean -channels-out $channelgroups -predict -name $infits -interval $startrow $endrow -oversampling $osfactor -no-small-inversion $msname`)
         startrow = endrow
         fitsindex == nmodels-2 ? endrow += 2*rows_per_modelimg : endrow += rows_per_modelimg
     end
@@ -52,18 +52,19 @@ function run_wsclean(msname::String, fitsdir::String, polarized::Bool, channelgr
 
 end
 
-function predict_visibilities(yamlconf::Dict)
+function predict_visibilities(config::String)
     """
     Main function to predict visibilities using wsclean
     """
+    yamlconf = YAML.load_file(config, dicttype=Dict{String,Any})
     # check sky model mode
     if yamlconf["skymodelmode"] == "hdf5"
         # TODO convert h5 sky to fits directory
-	# fitsdir = assign new fits directory that was created
+	    # fitsdir = assign new fits directory that was created
     elseif yamlconf["skymodelmode"] == "fits"
         fitsdir = yamlconf["fitssky"]
     else
-	error("Source model must be either a directory with FITS files or an HDF5 file 🤷 (check \"skymodelmode\" keyword in config file)")
+	    error("Source model must be either a directory with FITS files or an HDF5 file 🤷 (check \"skymodelmode\" keyword in config file)")
     end
 
     # run wsclean

@@ -5,7 +5,6 @@
 
 mode: "uvfits"                                       # "vex", "uvfits", "manual" are the only allowed values
 msname: "eht.ms"                                  # name of output ms 
-outdir: "output"                                     # directory to hold output products
 telescopename: "VLBA"                                # preset telescope known to casa (not important since CASA is not used for predict; just an argument required for setconfig)
 stations: "/home/iniyan/software/dev/Anime.jl/data/eht_2017.stations"     # CSV file with station parameters
 casatemplate: "/home/iniyan/software/dev/Anime.jl/data/antenna_table.template"                 # Input CASA ANTENNA table to use as template
@@ -54,10 +53,10 @@ corruptseed: 456                                     # seed to be used for gener
 troposphere:                                         # add troposphere
   enable: true
   wetonly: false                                     # add only the wet component
-  attenuate: false                                   # signal attenuation due to opacity
+  attenuate: true                                   # signal attenuation due to opacity
   skynoise: true                                    # add tropospheric contribution to sky noise
-  turbulence: false                                  # add turbulent phases
-  meandelays: false                                   # add mean delays
+  turbulence: true                                  # add turbulent phases
+  meandelays: true                                   # add mean delays
   fixdelays: false                                   # add fixed delays 
   tropseed: 821                                      # independent seed for generating random variables for troposphere
 
@@ -98,4 +97,4 @@ bandpass:
 # noise settings
 
 thermalnoise: 
-  enable: false                                      # toggle thermal noise
+  enable: true                                      # toggle thermal noise

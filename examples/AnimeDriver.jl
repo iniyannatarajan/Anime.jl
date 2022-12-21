@@ -1,8 +1,6 @@
 ENV["JULIA_CONDAPKG_BACKEND"] = "Null" # never install Conda packages; run script after activating the correct Conda environment externally
 
 using ArgParse
-using YAML
-using Random
 using Logging
 
 @info("Including Anime.jl ...")
@@ -17,6 +15,9 @@ function create_parser()
         "config"
             help = "Input YAML file name with observation configuration"
             required = true
+        "outdir"
+            help = "Directory to hold output products"
+            required = true
         "--clobber", "-c"
             action = :store_true
             help = "Delete and create output directory anew"
@@ -28,41 +29,38 @@ end
 # create parser
 args = create_parser()
 
+# change working directory to the user-specified output directory
 startdir = pwd() # store original working directory
 config = abspath(startdir, args["config"])
-yamlconf = YAML.load_file(config, dicttype=Dict{String,Any}) # load input YAML file
+outdir = abspath(startdir, args["outdir"])
 
-template = abspath(startdir, yamlconf["casatemplate"]) # get absolute path of casa antenna template
-
-# create a new empty output dir if clobber==true
-if isdir(yamlconf["outdir"])
+# create a new empty output directory
+if isdir(outdir)
     if args["clobber"]
-        run(`rm -rf $(yamlconf["outdir"])`)
-	mkdir(yamlconf["outdir"])
+        run(`rm -rf $(outdir)`)
+	mkdir(outdir)
     else 
-	error("Output dir '$(yamlconf["outdir"])' exists but clobber=false 🤷") 
+	error("$outdir exists but -c option is not given 🤷") 
     end
 else
-    mkdir(yamlconf["outdir"])
+    mkdir(outdir)
 end
-
-@info("Changing working directory to $(yamlconf["outdir"])")
-cd(yamlconf["outdir"])
+@info("Changing working directory to $outdir")
+cd(outdir)
 
 # create new ms
-@time generatems(yamlconf, ",", false, template) # comma-separated; do not ignore repeated delimiters
+@time generatems(config, delim=",", ignorerepeated=false) # comma-separated; do not ignore repeated delimiters
 
 # call wscean to predict visibilities
-@time predict_visibilities(yamlconf)
+@time predict_visibilities(config)
 
 # load ms data into custom struct
-#observation, stationinfo = loadobs(yamlconf["msname"], yamlconf["stations"], ",", false)
-@time observation = loadobs(yamlconf, delim=",", ignorerepeated=false)
+@time observation = loadobs(config, delim=",", ignorerepeated=false)
 
-# add corruptions -- TODO currently, the stationinfo file and the MS ANTENNA table should be in the same order! Make this more flexible!!!
+# add corruptions
 addcorruptions(observation)
 
 # Change back to original working directory
-@info("Changing working directory back to $(startdir)")
+@info("Changing working directory back to $startdir")
 cd(startdir)
 @info("Anime.jl observation completed successfully 📡")
