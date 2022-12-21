@@ -1,0 +1,13 @@
+name = "Anime"
+uuid = "628eb91b-9d1c-424a-81d5-cd7fa5d7294a"
+authors = ["Iniyan Natarajan <iniyannatarajan@gmail.com> and contributors"]
+version = "0.1.0"
+
+[compat]
+julia = "1.8.1"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
