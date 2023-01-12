@@ -75,6 +75,22 @@ jobs:
   docs:
     name: Setup documentation
     runs-on: ubuntu-latest
+
+    # defines matrix with a bunch of options
+    strategy:
+      matrix:
+        version:
+          - '1'
+        os:
+          - ubuntu-latest
+        arch:
+          - x64
+        python-version:
+          - '3.8'
+        exclude:
+          - os: macOS-latest
+          - arch: x86
+
     steps:
       - uses: actions/checkout@v3
 
@@ -95,7 +111,7 @@ jobs:
       - name: Setup Julia v1
         uses: julia-actions/setup-julia@v1
         with:
-          version: '1'
+          version: ${{ matrix.version }}
 
       - run: |
           julia --project=docs -e '
