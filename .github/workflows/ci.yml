@@ -32,7 +32,6 @@ jobs:
           - x64
         python-version:
           - '3.8'
-          - '3.9'
         exclude:
           - os: macOS-latest
           - arch: x86
