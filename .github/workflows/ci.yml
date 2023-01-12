@@ -33,7 +33,6 @@ jobs:
         python-version:
           - '3.8'
           - '3.9'
-          - '3.10'
         exclude:
           - os: macOS-latest
           - arch: x86
