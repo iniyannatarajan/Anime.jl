@@ -25,4 +25,5 @@ makedocs(;
 deploydocs(;
     repo="github.com/iniyannatarajan/Anime.jl",
     devbranch="main",
+    branch="gh-pages",
 )
