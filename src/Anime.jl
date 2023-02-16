@@ -1,3 +1,7 @@
+# SPDX-License-Identifier: MIT
+
+# Anime - Atmospheric aNd Instrumental models in the Measurement Equation
+
 module Anime
 
 using CSV

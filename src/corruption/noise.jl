@@ -1,9 +1,11 @@
 export thermalnoise
 
+"""
+    thermalnoise(obs::CjlObservation)
+
+This function computes the per-baseline thermal noise in the visibility domain and applies it to the data. The actual numerical values are serialized.
+"""
 function thermalnoise(obs::CjlObservation)
-    """
-    Add thermal noise to visibilities
-    """
     # get matrix type and size to be created -- data is a 4d array
     elemtype = typeof(obs.data[1])
 

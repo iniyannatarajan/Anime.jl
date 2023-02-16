@@ -32,11 +32,13 @@ Tables.istable(::Type{<:CjlObservation}) = true
 Tables.columnaccess(::Type{<:CjlObservation}) = true
 Tables.columns(m::CjlObservation) = m
 
-# define loadobs function
+"""
+    loadobs(config::String; delim::String=",", ignorerepeated::Bool=false)
+
+This loads data and metadata from ms and station table and returns a CjlObservation object.
+"""
 function loadobs(config::String; delim::String=",", ignorerepeated::Bool=false)
-    """
-    load data and metadata from ms and station table
-    """
+
     yamlconf = YAML.load_file(config, dicttype=Dict{String,Any})
     tab = CCTable(yamlconf["msname"], CCTables.Old)
 

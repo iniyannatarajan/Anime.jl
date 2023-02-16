@@ -1,7 +1,7 @@
 export addcorruptions
 
 include(joinpath("troposphere.jl"))
-#include(joinpath("ionosphere.jl"))
+include(joinpath("ionosphere.jl"))
 include(joinpath("beam.jl"))
 include(joinpath("instrumentalpol.jl"))
 include(joinpath("stationgains.jl"))
@@ -29,10 +29,12 @@ function computeweights!(totalrmsspec::Array{Float32, 4}, totalwtspec::Array{Flo
     return totalrmsspec, totalwtspec
 end
 
+"""
+    addcorruptions(obs::CjlObservation)
+
+This function is a wrapper that applies the instrument model to the source coherency.
+"""
 function addcorruptions(obs::CjlObservation)
-    """
-    Main fn to add corruptions
-    """
     # create HDF5 file to store all corruptions
     @info("Initialising empty HDF5 file to store propagation path effects")
     fid = h5open(obs.yamlconf["hdf5corruptions"], "w") # using mode "w" to destroy existing contents

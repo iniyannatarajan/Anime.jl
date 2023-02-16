@@ -31,6 +31,11 @@ end
 function longtermpointing()
 end
 
+"""
+    pointing(obs::CjlObservation)
+
+This function computes the pointing model and applies it to the data. The actual numerical values are serialized.
+"""
 function pointing(obs::CjlObservation)
     """
     Compute pointing errors and apply to data

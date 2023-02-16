@@ -52,10 +52,12 @@ function run_wsclean(msname::String, fitsdir::String, polarized::Bool, channelgr
 
 end
 
+"""
+    predict_visibilities(config::String)
+
+This predicts the uncorrupted visibilities with the parameters obtained from config file.
+"""
 function predict_visibilities(config::String)
-    """
-    Main function to predict visibilities using wsclean
-    """
     yamlconf = YAML.load_file(config, dicttype=Dict{String,Any})
     # check sky model mode
     if yamlconf["skymodelmode"] == "hdf5"

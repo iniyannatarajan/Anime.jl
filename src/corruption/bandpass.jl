@@ -2,10 +2,12 @@ export bandpass
 
 using Interpolations
 
+"""
+    bandpass(obs::CjlObservation)
+
+This function computes the bandpass model and applies it to the data. The actual numerical values are serialized.
+"""
 function bandpass(obs::CjlObservation)
-    """
-    create, apply, and store bandpasses
-    """
     # get element type to be used
     elemtype = typeof(obs.data[1][1])
 

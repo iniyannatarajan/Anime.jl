@@ -2,10 +2,12 @@ export stationgains
 
 include(joinpath("util.jl"))
 
+"""
+    stationgains(obs::CjlObservation)
+
+This function computes time-variable station gains and applies it to the data. The actual numerical values are serialized.
+"""
 function stationgains(obs::CjlObservation)
-    """
-    Add time-variable station gains to visibilities
-    """
     # get element type to be used
     elemtype = typeof(obs.data[1][1])
 

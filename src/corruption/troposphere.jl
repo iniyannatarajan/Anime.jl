@@ -287,10 +287,12 @@ function compute_turbulence(obs::CjlObservation, atmdf::DataFrame, elevationmatr
     @info("Introduce turbulence in the troposphere... 🙆")
 end
 
+"""
+    troposphere(obs::CjlObservation)
+
+This function computes various tropospheric effects and applies them to the data. The actual numerical values are serialized.
+"""
 function troposphere(obs::CjlObservation)
-    """
-    Add tropospheric effects
-    """
     @info("Computing tropospheric effects...")
 
     # open h5 file for writing

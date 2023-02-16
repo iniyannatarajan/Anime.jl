@@ -1,3 +1,6 @@
 [deps]
 Anime = "628eb91b-9d1c-424a-81d5-cd7fa5d7294a"
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+
+[compat]
+Documenter = "0.27"

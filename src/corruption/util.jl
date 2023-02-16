@@ -5,10 +5,12 @@ qa = quanta()
 
 me = measures()
 
+"""
+    parallacticangle(obs::CjlObservation)
+
+This function computes the parallactic angle for all stations for all times.
+"""
 function parallacticangle(obs::CjlObservation)
-    """
-    Compute parallactic angle for each antenna for all times
-    """
     # get unique times
     uniqtimes = unique(obs.times)
 
@@ -39,10 +41,13 @@ function parallacticangle(obs::CjlObservation)
     return parallacticanglematrix
 end
 
+"""
+    elevationangle(obs::CjlObservation)
+
+This function computes the elevation angle for all stations for all times.
+
+"""
 function elevationangle(obs::CjlObservation)
-    """
-    Compute elevation angle for each antenna for all times
-    """
     # get unique times
     uniqtimes = unique(obs.times)
 
@@ -74,10 +79,12 @@ function elevationangle(obs::CjlObservation)
     return elevationmatrix
 end
 
+"""
+    gentimeseries!(series::Vector{ComplexF32}, mode::String, location::ComplexF32, scale::Float64, driftrate::Float64, nsamples::Int64, rng::AbstractRNG)
+
+This function generates a complex-valued Gaussian process time-series of length nsamples with the given location, scale, and driftrate parameters.
+"""
 function gentimeseries!(series::Vector{ComplexF32}, mode::String, location::ComplexF32, scale::Float64, driftrate::Float64, nsamples::Int64, rng::AbstractRNG)
-    """
-    Generate complex-valued wiener series
-    """
     # TODO this is a crude version of a wiener process -- to be updated
     if mode == "wiener"
         sqrtnsamples = sqrt(nsamples)
@@ -91,10 +98,12 @@ function gentimeseries!(series::Vector{ComplexF32}, mode::String, location::Comp
     return series # return by convention
 end
 
+"""
+    gentimeseries!(series::Vector{Float32}, mode::String, location::Float32, scale::Float64, driftrate::Float64, nsamples::Int64, rng::AbstractRNG)
+
+This function generates a complex-valued Gaussian process time-series of length nsamples with the given location, scale, and driftrate parameters.
+"""
 function gentimeseries!(series::Vector{Float32}, mode::String, location::Float32, scale::Float64, driftrate::Float64, nsamples::Int64, rng::AbstractRNG)
-    """
-    Generate complex-valued wiener series
-    """
     # TODO this is a crude version of a wiener process -- to be updated
     if mode == "wiener"
         sqrtnsamples = sqrt(nsamples)
@@ -108,10 +117,12 @@ function gentimeseries!(series::Vector{Float32}, mode::String, location::Float32
     return series
 end
 
+"""
+    gentimeseries!(series::Vector{Float64}, mThis function generates a complex-valued Gaussian process time-series of length nsamples with the given location, scale, and driftrate parameters.ode::String, location::Float64, scale::Float64, driftrate::Float64, nsamples::Int64, rng::AbstractRNG)
+
+This function generates a complex-valued Gaussian process time-series of length nsamples with the given location, scale, and driftrate parameters.
+"""
 function gentimeseries!(series::Vector{Float64}, mode::String, location::Float64, scale::Float64, driftrate::Float64, nsamples::Int64, rng::AbstractRNG)
-    """
-    Generate complex-valued wiener series
-    """
     # TODO this is a crude version of a wiener process -- to be updated
     if mode == "wiener"
         sqrtnsamples = sqrt(nsamples)

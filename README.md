@@ -1,13 +1,6 @@
 # Anime
 
-Atmospheric aNd Instrumental models in the Measurement Equation
-
-Instructions to install on Ubuntu
-
-- install Julia and some dependent libraries
-- install the appropriate python environment (preferably using conda) and casatools for interaction with PythonCall.jl
-- install wsclean from ubuntu repository
-- install aatm (https://www.mrao.cam.ac.uk/~bn204/alma/atmomodel.html#aatm-download)
+**A**tmospheric a**N**d **I**nstrumental models in the **M**easurement **E**quation
 
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://iniyannatarajan.github.io/Anime.jl/stable/)
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://iniyannatarajan.github.io/Anime.jl/dev/)
