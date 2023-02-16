@@ -8,6 +8,7 @@ CurrentModule = Anime
 
 ```@contents
 Pages = [
+    "index.md",
     "install.md",
     "execute.md",
     "inputfiles.md",
