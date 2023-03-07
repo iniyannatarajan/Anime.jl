@@ -13,6 +13,8 @@ The Radio Interferometer Measurement Equation (RIME)[^HBS][^OMS] lies at the hea
 
 where the summation is carried out over all the sources $s$, and $\boldsymbol{E}_{sp}$ and $\boldsymbol{G}_p$ denote generic direction-dependent effects (DDEs) and direction-independent effects (DIEs) respectively. Each term is a $2\times2$ *Jones* matrix that describes any linear transformation acting on the incoming wave, and $H$ is the Hermitian conjugate.
 
+More detailed discussion of instrumental models to follow ...
+
 ### References
 [^HBS]: Hamaker J.P, Bregman J.D., Sault R.J. (1996) [https://articles.adsabs.harvard.edu/pdf/1996A%26AS..117..137H]  
 [^OMS]: Smirnov O.M (2011) [https://www.aanda.org/articles/aa/pdf/2011/03/aa16082-10.pdf]

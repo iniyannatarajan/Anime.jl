@@ -11,6 +11,7 @@ Pages = [
     "index.md",
     "install.md",
     "insmodelling.md",
+    "examples.md"
     "api.md"
 ]
 ```
