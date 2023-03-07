@@ -1,6 +1,6 @@
 # Anime
 
-**A**tmospheric a**N**d **I**nstrument models in the **M**easurement **E**quation
+**A**tmospheric a**N**d **I**nstrumental models in the **M**easurement **E**quation
 
 ## Documentation
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://iniyannatarajan.github.io/Anime.jl/stable/)
@@ -14,7 +14,7 @@ Anime.jl can be installed using Julia's package manager by entering the Julia RE
 using Pkg
 Pkg.add("Anime")
 ```
-or by entering package mode by tpying `]` in the Julia REPL and typing
+or by entering package mode by tpying `]` in the Julia REPL and then typing
 ```julia
 add Anime
 ```

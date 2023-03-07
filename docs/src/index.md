@@ -10,9 +10,7 @@ CurrentModule = Anime
 Pages = [
     "index.md",
     "install.md",
-    "execute.md",
-    "inputfiles.md",
-    "examples.md",
+    "insmodelling.md",
     "api.md"
 ]
 ```
