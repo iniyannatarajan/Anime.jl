@@ -34,7 +34,7 @@ end
 """
     pointing(obs::CjlObservation)
 
-This function computes the pointing model and applies it to the data. The actual numerical values are serialized.
+Compute the pointing model and apply to data. The actual numerical values are serialized as HDF5.
 """
 function pointing(obs::CjlObservation)
     """

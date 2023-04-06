@@ -5,7 +5,7 @@ using Interpolations
 """
     bandpass(obs::CjlObservation)
 
-This function computes the bandpass model and applies it to the data. The actual numerical values are serialized.
+Compute the bandpass model and apply to data. The actual numerical values are serialized as HDF5.
 """
 function bandpass(obs::CjlObservation)
     # get element type to be used

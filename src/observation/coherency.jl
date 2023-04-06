@@ -53,9 +53,18 @@ function run_wsclean(msname::String, fitsdir::String, polarized::Bool, channelgr
 end
 
 """
+    run_ducc0(msname::String, fitsdir::String, polarized::Bool, channelgroups::Int64, osfactor::Int64)
+
+Predict uncorrupted visibilities using the ducc0 wgridder (experimental)
+"""
+function run_ducc0(msname::String, fitsdir::String, polarized::Bool, channelgroups::Int64, osfactor::Int64)
+
+end
+
+"""
     predict_visibilities(config::String)
 
-This predicts the uncorrupted visibilities with the parameters obtained from config file.
+Predict uncorrupted visibilities with the parameters obtained from config file.
 """
 function predict_visibilities(config::String)
     yamlconf = YAML.load_file(config, dicttype=Dict{String,Any})

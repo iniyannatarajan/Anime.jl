@@ -268,7 +268,7 @@ end
 """
     generatems(config::String; delim::String=",", ignorerepeated::Bool=false)
 
-This calls the appropriate MS creation function based on the input parameters in the config file.
+Call the appropriate MS creation function based on the input parameters in the config file.
 """
 function generatems(config::String; delim::String=",", ignorerepeated::Bool=false)
     yamlconf = YAML.load_file(config, dicttype=Dict{String,Any})

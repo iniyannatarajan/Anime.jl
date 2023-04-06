@@ -3,7 +3,7 @@ export thermalnoise
 """
     thermalnoise(obs::CjlObservation)
 
-This function computes the per-baseline thermal noise in the visibility domain and applies it to the data. The actual numerical values are serialized.
+Compute per-baseline thermal noise in visibility domain and apply to data. The actual numerical values are serialized as HDF5.
 """
 function thermalnoise(obs::CjlObservation)
     # get matrix type and size to be created -- data is a 4d array

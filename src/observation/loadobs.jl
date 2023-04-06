@@ -35,7 +35,7 @@ Tables.columns(m::CjlObservation) = m
 """
     loadobs(config::String; delim::String=",", ignorerepeated::Bool=false)
 
-This loads data and metadata from ms and station table and returns a CjlObservation object.
+Load data and metadata from ms and station table and return a CjlObservation object.
 """
 function loadobs(config::String; delim::String=",", ignorerepeated::Bool=false)
 

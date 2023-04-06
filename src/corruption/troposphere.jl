@@ -290,7 +290,7 @@ end
 """
     troposphere(obs::CjlObservation)
 
-This function computes various tropospheric effects and applies them to the data. The actual numerical values are serialized.
+Compute various tropospheric effects and apply to data. The actual numerical values are serialized as HDF5.
 """
 function troposphere(obs::CjlObservation)
     @info("Computing tropospheric effects...")

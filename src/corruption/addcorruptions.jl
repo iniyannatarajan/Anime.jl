@@ -32,7 +32,7 @@ end
 """
     addcorruptions(obs::CjlObservation)
 
-This function is a wrapper that applies the instrument model to the source coherency.
+Wrapper function to apply the user-requested instrument models to the source coherency / uncoorupted visibilities.
 """
 function addcorruptions(obs::CjlObservation)
     # create HDF5 file to store all corruptions
