@@ -1,7 +1,5 @@
 export stationgains
 
-include(joinpath("util.jl"))
-
 """
     stationgains(obs::CjlObservation)
 

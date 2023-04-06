@@ -2,9 +2,9 @@
 
 using ArgParse
 using Logging
+using HDF5
 
-@info("Including Anime.jl ...")
-@time include("../src/Anime.jl")
+include("../src/Anime.jl")
 using .Anime
 
 # create argument parser
@@ -55,10 +55,35 @@ cd(outdir)
 @time predict_visibilities(config)
 
 # load ms data into custom struct
-@time observation = loadobs(config, delim=",", ignorerepeated=false)
+@time obs = loadobs(config, delim=",", ignorerepeated=false)
 
 # add corruptions
-addcorruptions(observation)
+#addcorruptions(obs)
+# create HDF5 file to store all corruptions
+@info("Initialising empty HDF5 file to store propagation path effects")
+fid = h5open(obs.yamlconf["hdf5corruptions"], "w") # using mode "w" to destroy existing contents
+close(fid)
+
+# add tropospheric effects
+obs.yamlconf["troposphere"]["enable"] && troposphere(obs)
+
+# add instrumental polarization
+obs.yamlconf["instrumentalpol"]["enable"] && instrumentalpol(obs)
+
+# add pointing errors
+obs.yamlconf["pointing"]["enable"] && pointing(obs)
+
+# add station gains
+obs.yamlconf["stationgains"]["enable"] && stationgains(obs)
+
+# add bandpasses
+obs.yamlconf["bandpass"]["enable"] && bandpass(obs)
+
+# add thermal noise
+obs.yamlconf["thermalnoise"]["enable"] && thermalnoise(obs)
+
+# compute weights and write everything to disk
+postprocessms(obs)
 
 # Change back to original working directory
 @info("Changing working directory back to $startdir")

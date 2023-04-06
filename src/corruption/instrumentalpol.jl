@@ -1,7 +1,5 @@
 export instrumentalpol
 
-include(joinpath("util.jl"))
-
 """
     instrumentalpol(obs::CjlObservation)
 

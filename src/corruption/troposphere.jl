@@ -1,6 +1,5 @@
 export troposphere
 
-include(joinpath("util.jl"))
 using LazyGrids
 using LinearAlgebra
 
