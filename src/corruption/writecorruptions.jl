@@ -1,12 +1,4 @@
-export addcorruptions
-
-include(joinpath("troposphere.jl"))
-include(joinpath("ionosphere.jl"))
-include(joinpath("beam.jl"))
-include(joinpath("instrumentalpol.jl"))
-include(joinpath("stationgains.jl"))
-include(joinpath("bandpass.jl"))
-include(joinpath("noise.jl"))
+export postprocessms
 
 function computeweights!(totalrmsspec::Array{Float32, 4}, totalwtspec::Array{Float32, 4}, obs::CjlObservation)
     """
@@ -29,35 +21,13 @@ function computeweights!(totalrmsspec::Array{Float32, 4}, totalwtspec::Array{Flo
     return totalrmsspec, totalwtspec
 end
 
+
 """
-    addcorruptions(obs::CjlObservation)
+    postprocessms(obs::CjlObservation)
 
-This function is a wrapper that applies the instrument model to the source coherency.
+Add weights and sigma matrices, update data matrix, reshape them all and write to MS
 """
-function addcorruptions(obs::CjlObservation)
-    # create HDF5 file to store all corruptions
-    @info("Initialising empty HDF5 file to store propagation path effects")
-    fid = h5open(obs.yamlconf["hdf5corruptions"], "w") # using mode "w" to destroy existing contents
-    close(fid)
-
-    # add tropospheric effects
-    obs.yamlconf["troposphere"]["enable"] && troposphere(obs)
-
-    # add instrumental polarization
-    obs.yamlconf["instrumentalpol"]["enable"] && @time instrumentalpol(obs)
-
-    # add pointing errors
-    obs.yamlconf["pointing"]["enable"] && @time pointing(obs)
-
-    # add station gains
-    obs.yamlconf["stationgains"]["enable"] && @time stationgains(obs)
-
-    # add bandpasses
-    obs.yamlconf["bandpass"]["enable"] && @time bandpass(obs)
-
-    # add thermal noise
-    obs.yamlconf["thermalnoise"]["enable"] && @time thermalnoise(obs)
-
+function postprocessms(obs::CjlObservation)
     # replace NaNs with zeros
     obs.data[isnan.(obs.data)] .= 0.0+0.0*im
 

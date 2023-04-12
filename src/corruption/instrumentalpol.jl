@@ -1,11 +1,9 @@
 export instrumentalpol
 
-include(joinpath("util.jl"))
-
 """
     instrumentalpol(obs::CjlObservation)
 
-This function computes the instrumental polarization (leakage, or "D-Jones" terms) and applies it to the data. The actual numerical values are serialized.
+Compute instrumental polarization (leakage, or "D-Jones" terms) and apply to data. The actual numerical values are serialized as HDF5.
 """
 function instrumentalpol(obs::CjlObservation)
     # get element type to be used for the Jones matrices

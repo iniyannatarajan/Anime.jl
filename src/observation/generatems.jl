@@ -29,10 +29,13 @@ function makecasaanttable(stations::String, casaanttemplate::String; delim::Stri
     tb.open(stationtable, nomodify=false)
     for ii in 1:length(df.station)-1
         tb.copyrows(stationtable, nrow=1)
+        tb.putcol("STATION", String(df.station[ii]), startrow=ii-1, nrow=1)
+        tb.putcol("NAME", String(df.station[ii]), startrow=ii-1, nrow=1)
+        tb.putcol("MOUNT", String(df.mount[ii]), startrow=ii-1, nrow=1)
     end
-    tb.putcol("STATION", PyList(string.(df.station)))
-    tb.putcol("NAME", PyList(string.(df.station))) # same as station names
-    tb.putcol("MOUNT", PyList(string.(df.mount)))
+    #tb.putcol("STATION", PyList(string.(df.station)))
+    #tb.putcol("NAME", PyList(string.(df.station))) # same as station names
+    #tb.putcol("MOUNT", PyList(string.(df.mount)))
     tb.putcol("DISH_DIAMETER", PyList(df.dishdiameter_m))
     #for jj in 1:length(df.station)
     #	tb.putcell("POSITION", jj-1, PyList(parse.(Float64, split.(df.xyzpos_m,',')[jj])))
@@ -165,7 +168,7 @@ end
     @info("Set up existing dataset at $(yamlconf["existingms"]["msname"]) as $(yamlconf["msname"])... 🙆")
 end=#
 
-function msfromconfig(yamlconf::Dict, casaanttemplate::String; delim::String=",", ignorerepeated::Bool=false)
+function msfromconfig(yamlconf::Dict; delim::String=",", ignorerepeated::Bool=false)
     """
     Main function to generate MS.
     """
@@ -175,17 +178,15 @@ function msfromconfig(yamlconf::Dict, casaanttemplate::String; delim::String=","
     # set autocorr
     Bool(yamlconf["autocorr"]) ? sm.setauto(autocorrwt=1.0) : sm.setauto(autocorrwt=0.0)
     
-    # set antenna config -- optionally create a new CASA ANTENNA table if the station info is in a CSV file
-    stationtable = ""
-    if isfile(yamlconf["stations"])
-	# check if template is specified
-	casaanttemplate === nothing && error("$(yamlconf["stations"]) is a CSV file but template CASA ANTENNA table not specified 🤷")
-	stationtable = makecasaanttable(yamlconf["stations"], casaanttemplate)
-	@info("Creating new ANTENNA table from CSV station info file...")
-    elseif isdir(yamlconf["stations"])
-	stationtable = yamlconf["stations"]
+    # set antenna config -- create a new CASA ANTENNA table if the station info is in a CSV file
+    #stationtable = ""
+    if isfile(yamlconf["stations"]) && isdir(yamlconf["casaanttemplate"])
+	    # check if template is specified
+	    #casaanttemplate === nothing && error("$(yamlconf["stations"]) is a CSV file but template CASA ANTENNA table not specified 🤷")
+        @info("Creating new ANTENNA table from CSV station info file...")
+	    stationtable = makecasaanttable(yamlconf["stations"], yamlconf["casaanttemplate"]; delim=",", ignorerepeated=false)
     else
-        error("$(yamlconf["stations"]) does not exist 🤷")
+        error("Verify if both $(yamlconf["stations"]) and $(yamlconf["casaanttemplate"]) exist 🤷")
     end
 
     # station locations are contained in a casa antenna table
@@ -268,12 +269,12 @@ end
 """
     generatems(config::String; delim::String=",", ignorerepeated::Bool=false)
 
-This calls the appropriate MS creation function based on the input parameters in the config file.
+Call the appropriate MS creation function based on the input parameters in the config file.
 """
 function generatems(config::String; delim::String=",", ignorerepeated::Bool=false)
     yamlconf = YAML.load_file(config, dicttype=Dict{String,Any})
     if yamlconf["mode"] == "manual"
-	    msfromconfig(yamlconf, yamlconf["casatemplate"], delim=",", ignorerepeated=false)
+	    msfromconfig(yamlconf; delim=",", ignorerepeated=false)
     elseif yamlconf["mode"] == "uvfits"
 	    msfromuvfits(yamlconf, delim=",", ignorerepeated=false)
     else

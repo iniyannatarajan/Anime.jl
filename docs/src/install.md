@@ -1,14 +1,7 @@
 # Installation
 
-
 ## Pre-requisites
-
-Anime uses the python package `casatools` to handle the creation and manipulation of [CASA Measurement Sets](https://casa.nrao.edu/Memos/229.html).
-You can install `casatools` using
-```bash
-pip install casatools
-```
-At the time of writing, `casatools` does not have a release candidate for python versions higher than 3.8. If this is not your default python environment, you may want to use `pip` in a python virtual environment or a `conda` environment that runs python 3.8 (since `casatools` does not have a `conda` installation candidate either).
+Anime.jl uses the python package `casatools` to handle the creation and manipulation of [CASA Measurement Sets](https://casa.nrao.edu/Memos/229.html). If you install Anime.jl using Julia's package manager, `casatools` will be automatically installed.
 
 Install [`WSClean`](https://wsclean.readthedocs.io/en/latest/) for predicting uncorrupted visibilities. On Ubuntu, this can be done via the Ubuntu package manager.
 
@@ -21,14 +14,12 @@ Install [`AATM`](https://www.mrao.cam.ac.uk/~bn204/alma/atmomodel.html#aatm-down
     The use of `AATM` will be deprecated soon as more advance atmospheric modelling frameworks are integrated into Anime.
 
 ## Installing Anime
-
-If using `conda`, activate the appropriate environment and set the following environment variable in the shell before installing/using Anime
-```bash
-export JULIA_CONDAPKG_BACKEND="Null"
-```
-
-Anime can be installed using Julia's package manager. In the Julia REPL, type
+Anime.jl can be installed using Julia's package manager by entering the Julia REPL and typing
 ```julia
-import Pkg
+using Pkg
 Pkg.add("Anime")
+```
+or by entering package mode by typing `]` in the Julia REPL and then typing
+```julia
+add Anime
 ```

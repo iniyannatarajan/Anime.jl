@@ -1,3 +1,5 @@
 docs/build
+/Manifest.toml
+.CondaPkg
 # Jupyter Notebook
 .ipynb_checkpoints

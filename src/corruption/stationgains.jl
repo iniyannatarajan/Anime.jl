@@ -1,11 +1,9 @@
 export stationgains
 
-include(joinpath("util.jl"))
-
 """
     stationgains(obs::CjlObservation)
 
-This function computes time-variable station gains and applies it to the data. The actual numerical values are serialized.
+Compute time-variable station gains and apply to data. The actual numerical values are serialized as HDF5.
 """
 function stationgains(obs::CjlObservation)
     # get element type to be used
