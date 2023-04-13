@@ -86,13 +86,13 @@ Generate a complex-valued Gaussian process time-series of length nsamples with t
 """
 function gentimeseries!(series::Vector{ComplexF32}, mode::String, location::ComplexF32, scale::Float64, driftrate::Float64, nsamples::Int64, rng::AbstractRNG)
     # TODO this is a crude version of a wiener process -- to be updated
-    if mode == "wiener"
+    if mode == "gp"
         sqrtnsamples = sqrt(nsamples)
         series[1] = location + scale*randn(rng, ComplexF32)
         for ii in 2:nsamples
             series[ii] = series[ii-1] + (scale*randn(rng, ComplexF32)/sqrtnsamples) + driftrate*ii
         end
-    elseif mode == "gaussian"
+    elseif mode == "normal"
         series = location .+ scale*randn(rng, ComplexF32, nsamples)
     end
     return series # return by convention
@@ -105,13 +105,13 @@ Generate a complex-valued Gaussian process time-series of length nsamples with t
 """
 function gentimeseries!(series::Vector{Float32}, mode::String, location::Float32, scale::Float64, driftrate::Float64, nsamples::Int64, rng::AbstractRNG)
     # TODO this is a crude version of a wiener process -- to be updated
-    if mode == "wiener"
+    if mode == "gp"
         sqrtnsamples = sqrt(nsamples)
         series[1] = location + scale*randn(rng, Float32)
         for ii in 2:nsamples
             series[ii] = series[ii-1] + (scale*randn(rng, Float32)/sqrtnsamples) + driftrate*ii
         end
-    elseif mode == "gaussian"
+    elseif mode == "normal"
         series = location .+ scale*randn(rng, Float32, nsamples)
     end
     return series
@@ -124,13 +124,13 @@ Generate a complex-valued Gaussian process time-series of length nsamples with t
 """
 function gentimeseries!(series::Vector{Float64}, mode::String, location::Float64, scale::Float64, driftrate::Float64, nsamples::Int64, rng::AbstractRNG)
     # TODO this is a crude version of a wiener process -- to be updated
-    if mode == "wiener"
+    if mode == "gp"
         sqrtnsamples = sqrt(nsamples)
         series[1] = location + scale*randn(rng, Float32)
         for ii in 2:nsamples
             series[ii] = series[ii-1] + (scale*randn(rng, Float32)/sqrtnsamples) + driftrate*ii
         end
-    elseif mode == "gaussian"
+    elseif mode == "normal"
         series = location .+ scale*randn(rng, Float32, nsamples)
     end
     return series
