@@ -14,7 +14,7 @@ Anime.jl can be installed using Julia's package manager by entering the Julia RE
 using Pkg
 Pkg.add("Anime")
 ```
-or by entering package mode by tpying `]` in the Julia REPL and then typing
+or by entering package mode by typing `]` in the Julia REPL and then typing
 ```julia
 add Anime
 ```

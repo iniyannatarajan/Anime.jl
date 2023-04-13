@@ -33,9 +33,6 @@ function makecasaanttable(stations::String, casaanttemplate::String; delim::Stri
         tb.putcol("NAME", String(df.station[ii]), startrow=ii-1, nrow=1)
         tb.putcol("MOUNT", String(df.mount[ii]), startrow=ii-1, nrow=1)
     end
-    #tb.putcol("STATION", PyList(string.(df.station)))
-    #tb.putcol("NAME", PyList(string.(df.station))) # same as station names
-    #tb.putcol("MOUNT", PyList(string.(df.mount)))
     tb.putcol("DISH_DIAMETER", PyList(df.dishdiameter_m))
     #for jj in 1:length(df.station)
     #	tb.putcell("POSITION", jj-1, PyList(parse.(Float64, split.(df.xyzpos_m,',')[jj])))
