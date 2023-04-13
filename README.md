@@ -1,4 +1,5 @@
-# Anime
+
+![Anime](https://github.com/iniyannatarajan/Anime.jl/raw/main/anime_logo.png)
 
 **A**tmospheric a**N**d **I**nstrumental models in the **M**easurement **E**quation
 
