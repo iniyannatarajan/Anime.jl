@@ -81,7 +81,7 @@ function attenuate(obs::CjlObservation, atmdf::DataFrame, elevationmatrix::Array
     nant = size(obs.stationinfo)[1]
 
     transmission = zeros(Float64, obs.numchan, ntimes, nant)
-    compute_transmission!(transmission, obs, atmdf, elevationmatrix, g)
+    transmission = compute_transmission!(transmission, obs, atmdf, elevationmatrix, g)
 
     # attenuate visibilities
     row = 1
@@ -114,7 +114,7 @@ function compute_skynoise(obs::CjlObservation, atmdf::DataFrame, elevation::Arra
     nant = size(obs.stationinfo)[1]
 
     transmission = zeros(Float64, obs.numchan, ntimes, nant)
-    compute_transmission!(transmission, obs, atmdf, elevation, g) # populate transmission matrix
+    transmission = compute_transmission!(transmission, obs, atmdf, elevation, g) # populate transmission matrix
 
     sefdarray = zeros(Float64, obs.numchan, ntimes, nant)
     for ant in 1:nant
