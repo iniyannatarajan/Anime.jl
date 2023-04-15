@@ -10,10 +10,12 @@ me = measures()
 importuvfits = pyimport("casatasks" => "importuvfits")
 using StatsBase: mode
 
+"""
+    makecasaanttable(stations::String, casaanttemplate::String; delim::String=",", ignorerepeated::Bool=false)
+
+Generate a CASA antenna table from CSV station info file in the current working directory.
+"""
 function makecasaanttable(stations::String, casaanttemplate::String; delim::String=",", ignorerepeated::Bool=false)
-    """
-    Generate a CASA antenna table from CSV station info file in the current working directory.
-    """
     # read in the stations CSV file
     df = CSV.read(stations, DataFrame; delim=delim, ignorerepeated=ignorerepeated)
     
@@ -48,10 +50,12 @@ function makecasaanttable(stations::String, casaanttemplate::String; delim::Stri
     return stationtable
 end
 
+"""
+    addweightcols(msname::String, mode::String, sigmaspec::Bool, weightspec::Bool)
+
+Add WEIGHT_SPECTRUM and SIGMA_SPECTRUM columns to the MS
+"""
 function addweightcols(msname::String, mode::String, sigmaspec::Bool, weightspec::Bool)
-    """
-    Add WEIGHT_SPECTRUM and SIGMA_SPECTRUM columns to the MS
-    """
     # TODO get mode as arg and if it is "uvfits", delete wtspec and regenerate
     # get quantities to define array shapes
     tb.open("$(msname)::SPECTRAL_WINDOW")
@@ -90,13 +94,22 @@ function addweightcols(msname::String, mode::String, sigmaspec::Bool, weightspec
     tb.close()
 end
 
+
+"""
+    msfromvex()
+
+Extract config parameters from VEX schedule and call msfromconfig() to generate MS
+"""
 function msfromvex()
 end
 
+
+"""
+    msfromuvfits(yamlconf::Dict; delim::String=",", ignorerepeated::Bool=false)
+
+Generate MS from existing UVFITS
+"""
 function msfromuvfits(yamlconf::Dict; delim::String=",", ignorerepeated::Bool=false)
-    """
-    Create MS from uvfits file.
-    """
     # convert uvfits to ms
     importuvfits(fitsfile=yamlconf["uvfits"], vis=yamlconf["msname"])
 
@@ -165,10 +178,13 @@ end
     @info("Set up existing dataset at $(yamlconf["existingms"]["msname"]) as $(yamlconf["msname"])... 🙆")
 end=#
 
+
+"""
+    msfromconfig(yamlconf::Dict; delim::String=",", ignorerepeated::Bool=false)
+
+Generate MS from the MS-relevant parameters in the config file.
+"""
 function msfromconfig(yamlconf::Dict; delim::String=",", ignorerepeated::Bool=false)
-    """
-    Main function to generate MS.
-    """
     # open new MS
     sm.open(yamlconf["msname"])
 
@@ -262,6 +278,7 @@ function msfromconfig(yamlconf::Dict; delim::String=",", ignorerepeated::Bool=fa
 
     @info("Create $(yamlconf["msname"])... 🙆")
 end
+
 
 """
     generatems(config::String; delim::String=",", ignorerepeated::Bool=false)
