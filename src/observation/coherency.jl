@@ -40,7 +40,7 @@ function run_wsclean(msname::String, fitsdir::String, polarized::Bool, channelgr
     @info("Inverting source models to visibilities...")
     for fitsindex in 0:nmodels-1
 	    infits = "$(fitsdir)/t$(lpad(fitsindex, 4, "0"))"
-	    polarized ? run(`wsclean -channels-out $channelgroups -predict -name $infits -interval $startrow $endrow -pol I,Q,U,V -no-reorder -oversampling $osfactor -no-small-inversion $msname`) : run(`wsclean -channels-out $channelgroups -predict -name $infits -interval $startrow $endrow -oversampling $osfactor -no-small-inversion $msname`)
+	    polarized ? run(`wsclean -channels-out $channelgroups -predict -name $infits -interval $startrow $endrow -pol I,Q,U,V -reorder -oversampling $osfactor -no-small-inversion $msname`) : run(`wsclean -channels-out $channelgroups -predict -name $infits -interval $startrow $endrow -oversampling $osfactor -no-small-inversion $msname`)
         startrow = endrow
         fitsindex == nmodels-2 ? endrow += 2*rows_per_modelimg : endrow += rows_per_modelimg
     end
