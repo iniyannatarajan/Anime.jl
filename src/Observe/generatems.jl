@@ -1,13 +1,5 @@
 export generatems
 
-# import python libraries
-simulator = pyimport("casatools" => "simulator")
-sm = simulator()
-
-tb = table()
-me = measures()
-
-importuvfits = pyimport("casatasks" => "importuvfits")
 using StatsBase: mode
 
 """
@@ -96,6 +88,21 @@ end
 
 
 """
+    setup_polarization(msname::String, stationtable::String)
+
+Set up all polarization subtables in the MS based on the station feed types
+"""
+function setup_polarization(msname::String, stationtable::String)
+    # get the feed types from the stationtable
+    df = CSV.read(yamlconf["stations"], DataFrame; delim=delim, ignorerepeated=ignorerepeated)
+    feedtypes = df["feed"]
+
+    # modify DATA_DESCRIPTION, POLARIZATION, FEED subtables
+
+end
+
+
+"""
     msfromvex()
 
 Extract config parameters from VEX schedule and call msfromconfig() to generate MS
@@ -124,6 +131,9 @@ function msfromuvfits(yamlconf::Dict; delim::String=",", ignorerepeated::Bool=fa
         error("Station info file $(yamlconf["stations"]) and MS ANTENNA table do not match 🤷")
     end
    
+    # setup polarization info
+    #setup_polarization(yamlconf["msname"], yamlconf["stations"])
+
     # replace EXPOSURE column with the mode of EXPOSURE column in the ms
     tb.open(yamlconf["msname"], nomodify=false)
     exparr = pyconvert(PyArray, tb.getcol("EXPOSURE"))
@@ -136,47 +146,6 @@ function msfromuvfits(yamlconf::Dict; delim::String=",", ignorerepeated::Bool=fa
     # WEIGHT_SPECTRUM is added by importuvfits; add only SIGMA_SPECTRUM manually
     addweightcols(yamlconf["msname"], yamlconf["mode"], true, true)
 end
-
-#=function setupexistingms(yamlconf::Dict, delim::String, ignorerepeated::Bool)
-    """
-    Perform some sanity checks on an existing MS.
-    """
-    # symlink existing ms to output directory
-    symlink = `ln -s $(yamlconf["existingms"]["msname"]) $(yamlconf["msname"])`
-    run(symlink)
-
-    # compare ANTENNA table in existing ms with stations file
-    df = CSV.read(yamlconf["stations"], DataFrame; delim=delim, ignorerepeated=ignorerepeated)
-
-    tb.open("$(yamlconf["msname"])::ANTENNA")
-    msstations = string.(tb.getcol("STATION"))
-    tb.close()
-
-    if !(issetequal(msstations, df.station))
-        error("Station info file $(yamlconf["stations"]) and MS ANTENNA table do not match 🤷")
-    end
-
-    # zero all values in DATA and MODEL_DATA
-    #=tb.open(yamlconf["msname"], nomodify=false)
-    nrows = pyconvert(Int64, tb.nrows())
-    cell = pyconvert(Tuple, tb.getcell("DATA", rownr=0).shape)=#
-    table = CCTable(yamlconf["msname"], CCTables.Update)
-    data = table[:DATA][:]
-    zmat = zeros(typeof(data[1][1,1]), size(data[1]))
-    zdata = [data[ii] = zmat for ii in 1:length(data)]
-    table[:DATA] = zdata
-
-    # if MODEL_DATA does not exist, create it and fill it with zeros (using Casacore.jl implicit construction)
-    table[:MODEL_DATA] = zdata
-
-    # if specified, replace EXPOSURE column with user-supplied value
-    if !(yamlconf["existingms"]["exposure"] == 0.0)
-	@info("Replacing (potentially inconsistent) EXPOSURE column in MS with user-supplied value: $(yamlconf["existingms"]["exposure"]) s")
-	table[:EXPOSURE] = yamlconf["existingms"]["exposure"] .+ zeros(Float64, length(data))
-    end
-    
-    @info("Set up existing dataset at $(yamlconf["existingms"]["msname"]) as $(yamlconf["msname"])... 🙆")
-end=#
 
 
 """
@@ -295,3 +264,45 @@ function generatems(config::String; delim::String=",", ignorerepeated::Bool=fals
 	    error("MS generation mode '$(yamlconf["mode"])' not recognised 🤷")
     end
 end
+
+
+#=function setupexistingms(yamlconf::Dict, delim::String, ignorerepeated::Bool)
+    """
+    Perform some sanity checks on an existing MS.
+    """
+    # symlink existing ms to output directory
+    symlink = `ln -s $(yamlconf["existingms"]["msname"]) $(yamlconf["msname"])`
+    run(symlink)
+
+    # compare ANTENNA table in existing ms with stations file
+    df = CSV.read(yamlconf["stations"], DataFrame; delim=delim, ignorerepeated=ignorerepeated)
+
+    tb.open("$(yamlconf["msname"])::ANTENNA")
+    msstations = string.(tb.getcol("STATION"))
+    tb.close()
+
+    if !(issetequal(msstations, df.station))
+        error("Station info file $(yamlconf["stations"]) and MS ANTENNA table do not match 🤷")
+    end
+
+    # zero all values in DATA and MODEL_DATA
+    #=tb.open(yamlconf["msname"], nomodify=false)
+    nrows = pyconvert(Int64, tb.nrows())
+    cell = pyconvert(Tuple, tb.getcell("DATA", rownr=0).shape)=#
+    table = CCTable(yamlconf["msname"], CCTables.Update)
+    data = table[:DATA][:]
+    zmat = zeros(typeof(data[1][1,1]), size(data[1]))
+    zdata = [data[ii] = zmat for ii in 1:length(data)]
+    table[:DATA] = zdata
+
+    # if MODEL_DATA does not exist, create it and fill it with zeros (using Casacore.jl implicit construction)
+    table[:MODEL_DATA] = zdata
+
+    # if specified, replace EXPOSURE column with user-supplied value
+    if !(yamlconf["existingms"]["exposure"] == 0.0)
+	@info("Replacing (potentially inconsistent) EXPOSURE column in MS with user-supplied value: $(yamlconf["existingms"]["exposure"]) s")
+	table[:EXPOSURE] = yamlconf["existingms"]["exposure"] .+ zeros(Float64, length(data))
+    end
+    
+    @info("Set up existing dataset at $(yamlconf["existingms"]["msname"]) as $(yamlconf["msname"])... 🙆")
+end=#

@@ -1,11 +1,11 @@
-export stationgains
+export stationgains, plotstationgains
 
 """
-    stationgains(obs::CjlObservation)
+    stationgains(obs::CjlObservation; draw=true)
 
 Compute time-variable station gains and apply to data. The actual numerical values are serialized as HDF5.
 """
-function stationgains(obs::CjlObservation)
+function stationgains(obs::CjlObservation; draw=true)
     # get element type to be used
     elemtype = typeof(obs.data[1][1])
 
@@ -61,5 +61,8 @@ function stationgains(obs::CjlObservation)
     # close h5 file
     close(fid)
 
+    if draw
+        println("drawing...")
+    end
     @info("Compute and apply station gains... 🙆")
 end

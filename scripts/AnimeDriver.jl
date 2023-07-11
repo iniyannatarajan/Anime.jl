@@ -5,7 +5,7 @@ using Logging
 using HDF5
 
 include("../src/Anime.jl")
-using .Anime
+using .Anime: Observe, ModelInstrument
 
 # create argument parser
 function create_parser()
@@ -49,13 +49,13 @@ end
 cd(outdir)
 
 # create new ms
-@time generatems(config, delim=",", ignorerepeated=false) # comma-separated; do not ignore repeated delimiters
-
+@time Observe.generatems(config, delim=",", ignorerepeated=false) # comma-separated; do not ignore repeated delimiters
+#exit()
 # call wscean to predict visibilities
-@time predict_visibilities(config)
+@time Observe.predict_visibilities(config)
 
 # load ms data into custom struct
-@time obs = loadobs(config, delim=",", ignorerepeated=false)
+@time obs = Observe.loadobs(config, delim=",", ignorerepeated=false)
 
 # add corruptions
 #addcorruptions(obs)
@@ -65,25 +65,25 @@ fid = h5open(obs.yamlconf["hdf5corruptions"], "w") # using mode "w" to destroy e
 close(fid)
 
 # add tropospheric effects
-obs.yamlconf["troposphere"]["enable"] && troposphere(obs)
+obs.yamlconf["troposphere"]["enable"] && ModelInstrument.troposphere(obs)
 
 # add instrumental polarization
-obs.yamlconf["instrumentalpol"]["enable"] && instrumentalpol(obs)
+obs.yamlconf["instrumentalpol"]["enable"] && ModelInstrument.instrumentalpol(obs)
 
 # add pointing errors
-obs.yamlconf["pointing"]["enable"] && pointing(obs)
+obs.yamlconf["pointing"]["enable"] && ModelInstrument.pointing(obs)
 
 # add station gains
-obs.yamlconf["stationgains"]["enable"] && stationgains(obs)
+obs.yamlconf["stationgains"]["enable"] && ModelInstrument.stationgains(obs; draw=true)
 
 # add bandpasses
-obs.yamlconf["bandpass"]["enable"] && bandpass(obs)
+obs.yamlconf["bandpass"]["enable"] && ModelInstrument.bandpass(obs)
 
 # add thermal noise
-obs.yamlconf["thermalnoise"]["enable"] && thermalnoise(obs)
+obs.yamlconf["thermalnoise"]["enable"] && ModelInstrument.thermalnoise(obs)
 
 # compute weights and write everything to disk
-postprocessms(obs)
+ModelInstrument.postprocessms(obs)
 
 # Change back to original working directory
 @info("Changing working directory back to $startdir")

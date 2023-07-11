@@ -1,10 +1,5 @@
 export parallacticangle, elevationangle, gentimeseries!
 
-quanta = pyimport("casatools" => "quanta")
-qa = quanta()
-
-me = measures()
-
 """
     parallacticangle(obs::CjlObservation)
 
