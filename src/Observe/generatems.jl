@@ -134,10 +134,11 @@ function msfromuvfits(yamlconf::Dict; delim::String=",", ignorerepeated::Bool=fa
     # setup polarization info
     #setup_polarization(yamlconf["msname"], yamlconf["stations"])
 
-    # replace EXPOSURE column with the mode of EXPOSURE column in the ms
+    # replace EXPOSURE column with the mode of EXPOSURE column in the ms to avoid slight differences
+    # in recorded exposure times in uvfits output by eht-imaging (the most likely origin of a uvfits file)
     tb.open(yamlconf["msname"], nomodify=false)
     exparr = pyconvert(PyArray, tb.getcol("EXPOSURE"))
-    @info("Replacing potentially inconsistent values in EXPOSURE column with its mode: $(mode(exparr)) s ...")
+    @info("Replacing potentially inconsistent values in EXPOSURE and INTERVAL columns with mode(EXPOSURE): $(mode(exparr)) s")
     exposurevec = mode(exparr) .+ zeros(Float64, pyconvert(Int64, tb.nrows())) # use mode instead of mean or median to get the "most correct" exposure value
     tb.putcol("EXPOSURE", PyList(exposurevec))
     tb.putcol("INTERVAL", PyList(exposurevec))
@@ -243,9 +244,8 @@ function msfromconfig(yamlconf::Dict; delim::String=",", ignorerepeated::Bool=fa
     # clean up
     sm.close()
 
-    addweightcols(yamlconf["msname"], yamlconf["mode"], true, true)
+    addweightcols(yamlconf["msname"], yamlconf["mode"], true, true) # add weight columns
 
-    @info("Create $(yamlconf["msname"])... 🙆")
 end
 
 
@@ -263,6 +263,7 @@ function generatems(config::String; delim::String=",", ignorerepeated::Bool=fals
     else
 	    error("MS generation mode '$(yamlconf["mode"])' not recognised 🤷")
     end
+    @info("$(yamlconf["msname"]) generation complete 🙆")
 end
 
 

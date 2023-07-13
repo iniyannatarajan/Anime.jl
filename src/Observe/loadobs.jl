@@ -98,6 +98,6 @@ function loadobs(config::String; delim::String=",", ignorerepeated::Bool=false)
     #					  numchan,chanfreqvec,chanwidth,phasedir,pos,stationinfo,yamlconf,rngcorrupt,rngtrop)
     observation = CjlObservation{Float64}(data3dresandperm,antenna1,antenna2,times,exposure,scanno,numchan,chanfreqvec,chanwidth,phasedir,pos,stationinfo,yamlconf,rngcorrupt,rngtrop)
 
-    @info("Load observation and metadata into memory for processing... 🙆")
+    @info("Load data for processing 🙆")
     return observation
 end

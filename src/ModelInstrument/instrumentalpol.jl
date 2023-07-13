@@ -23,7 +23,7 @@ function instrumentalpol(obs::CjlObservation)
     attributes(g)["dims"] = "2 x 2 x nchannels x nant" #for each scan, a 4d array of 2 x 2 x nchan x nant is stored
 
     # compute necessary quantities
-    elevationmatrix = elevationangle(obs)
+    elevationmatrix = elevationangle(obs.times, obs.phasedir, obs.stationinfo, obs.pos)
     parallacticanglematrix = parallacticangle(obs)
 
     if !(haskey(g, "elevation"))

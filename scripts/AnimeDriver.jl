@@ -5,7 +5,7 @@ using Logging
 using HDF5
 
 include("../src/Anime.jl")
-using .Anime: Observe, ModelInstrument
+using .Anime
 
 # create argument parser
 function create_parser()
@@ -49,41 +49,41 @@ end
 cd(outdir)
 
 # create new ms
-@time Observe.generatems(config, delim=",", ignorerepeated=false) # comma-separated; do not ignore repeated delimiters
-#exit()
+Anime.Observe.generatems(config, delim=",", ignorerepeated=false) # comma-separated; do not ignore repeated delimiters
+
 # call wscean to predict visibilities
-@time Observe.predict_visibilities(config)
+Anime.Observe.computecoherency(config)
 
 # load ms data into custom struct
-@time obs = Observe.loadobs(config, delim=",", ignorerepeated=false)
+obs = Anime.Observe.loadobs(config, delim=",", ignorerepeated=false)
 
 # add corruptions
 #addcorruptions(obs)
 # create HDF5 file to store all corruptions
-@info("Initialising empty HDF5 file to store propagation path effects")
+@info("Initialising empty HDF5 file to store propagation path effects...")
 fid = h5open(obs.yamlconf["hdf5corruptions"], "w") # using mode "w" to destroy existing contents
 close(fid)
 
 # add tropospheric effects
-obs.yamlconf["troposphere"]["enable"] && ModelInstrument.troposphere(obs)
+obs.yamlconf["troposphere"]["enable"] && Anime.ModelInstrument.troposphere(obs)
 
 # add instrumental polarization
-obs.yamlconf["instrumentalpol"]["enable"] && ModelInstrument.instrumentalpol(obs)
+obs.yamlconf["instrumentalpol"]["enable"] && Anime.ModelInstrument.instrumentalpol(obs)
 
 # add pointing errors
-obs.yamlconf["pointing"]["enable"] && ModelInstrument.pointing(obs)
+obs.yamlconf["pointing"]["enable"] && Anime.ModelInstrument.pointing(obs)
 
 # add station gains
-obs.yamlconf["stationgains"]["enable"] && ModelInstrument.stationgains(obs; draw=true)
+obs.yamlconf["stationgains"]["enable"] && Anime.ModelInstrument.stationgains(obs; draw=true)
 
 # add bandpasses
-obs.yamlconf["bandpass"]["enable"] && ModelInstrument.bandpass(obs)
+obs.yamlconf["bandpass"]["enable"] && Anime.ModelInstrument.bandpass(obs)
 
 # add thermal noise
-obs.yamlconf["thermalnoise"]["enable"] && ModelInstrument.thermalnoise(obs)
+obs.yamlconf["thermalnoise"]["enable"] && Anime.ModelInstrument.thermalnoise(obs)
 
 # compute weights and write everything to disk
-ModelInstrument.postprocessms(obs)
+Anime.ModelInstrument.postprocessms(obs)
 
 # Change back to original working directory
 @info("Changing working directory back to $startdir")

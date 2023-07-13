@@ -43,11 +43,11 @@ function run_atm(obs::CjlObservation)::DataFrame
     CSV.write("atm.csv", absdf) # write all to a single csv file
     run(`rm absorption.csv dispersive.csv`) # remove clutter
 
-    @info("Running ATM to compute absorption by and dispersive delay in the troposphere...")
+    @info("Compute absorption by and dispersive delay in the troposphere using ATM 🙆")
     return absdf
 end
 
-function compute_transmission!(transmission::Array{Float64, 3}, obs::CjlObservation, atmdf::DataFrame, elevationmatrix::Array{Float64, 2}, g::HDF5.Group)::Array{Float32, 3}
+function compute_transmission!(transmission::Array{Float64, 3}, obs::CjlObservation, atmdf::DataFrame, elevationmatrix::Array{Float64, 2}, g::HDF5.Group)
     """
     Compute transmission matrix
     """
@@ -69,40 +69,38 @@ function compute_transmission!(transmission::Array{Float64, 3}, obs::CjlObservat
     return transmission
 end
 
-function attenuate(obs::CjlObservation, atmdf::DataFrame, elevationmatrix::Array{Float64, 2}, g::HDF5.Group)
-    """
-    Compute signal attenuation due to opacity
-    """
+"""
+    attenuate(times::Vector{Float64}, antenna1::Vector{Int}, antenna2::Vector{Int}, numchan::Int64, data::Array{Complex{Float32},4}, transmission::Array{Float64, 2})
+
+Compute attenuation due to troposphere
+"""
+function attenuate(times::Vector{Float64}, antenna1::Vector{Int}, antenna2::Vector{Int}, numchan::Int64, data::Array{Complex{Float32},4}, transmission::Array{Float64, 3})
     # get unique times
-    uniqtimes = unique(obs.times)
+    uniqtimes = unique(times)
     ntimes = size(uniqtimes)[1]
-
-    # get no of stations
-    nant = size(obs.stationinfo)[1]
-
-    transmission = zeros(Float64, obs.numchan, ntimes, nant)
-    transmission = compute_transmission!(transmission, obs, atmdf, elevationmatrix, g)
 
     # attenuate visibilities
     row = 1
     for t in 1:ntimes # no. of unique times
 	# read all baselines present in a given time
-	ant1vec = getindex(obs.antenna1, findall(obs.times.==uniqtimes[t]))
-	ant2vec = getindex(obs.antenna2, findall(obs.times.==uniqtimes[t]))
+	ant1vec = getindex(antenna1, findall(times.==uniqtimes[t]))
+	ant2vec = getindex(antenna2, findall(times.==uniqtimes[t]))
 	for (ant1,ant2) in zip(ant1vec, ant2vec)
-            for chan in 1:obs.numchan
-		obs.data[:, :, chan, row] = sqrt(transmission[chan, t, ant1+1]*transmission[chan, t, ant2+1]) .* abs.(obs.data[:, :, chan, row]) .* exp.(angle.(obs.data[:, :, chan, row])*im)
+            for chan in 1:numchan
+		data[:, :, chan, row] = sqrt(transmission[chan, t, ant1+1]*transmission[chan, t, ant2+1]) .* abs.(data[:, :, chan, row]) .* exp.(angle.(data[:, :, chan, row])*im)
 	    end
 	    row += 1 # increment the last dimension i.e. row number
         end
     end
-    @info("Apply attenuation due to opacity... 🙆")
+    @info("Apply attenuation due to opacity 🙆")
 end
 
-function compute_skynoise(obs::CjlObservation, atmdf::DataFrame, elevation::Array{Float64, 2}, g::HDF5.Group)
-    """
-    Use ATM (Pardo et al. 2001) to compute atmospheric contribution to temperature
-    """
+"""
+    compute_skynoise(obs::CjlObservation, atmdf::DataFrame, transmission::Array{Float64, 3}, g::HDF5.Group)
+
+Compute sky noise contribution
+"""
+function compute_skynoise(obs::CjlObservation, atmdf::DataFrame, transmission::Array{Float64, 3}, g::HDF5.Group)
     # get matrix type and size to be created -- data is a 4d array
     elemtype = typeof(obs.data[1])
 
@@ -112,9 +110,6 @@ function compute_skynoise(obs::CjlObservation, atmdf::DataFrame, elevation::Arra
 
     # get no of stations
     nant = size(obs.stationinfo)[1]
-
-    transmission = zeros(Float64, obs.numchan, ntimes, nant)
-    transmission = compute_transmission!(transmission, obs, atmdf, elevation, g) # populate transmission matrix
 
     sefdarray = zeros(Float64, obs.numchan, ntimes, nant)
     for ant in 1:nant
@@ -155,7 +150,7 @@ function compute_skynoise(obs::CjlObservation, atmdf::DataFrame, elevation::Arra
         g["skynoise"] = skynoise
     end
 
-    @info("Apply tropospheric noise... 🙆")
+    @info("Apply tropospheric noise 🙆")
 end
 
 function compute_meandelays(obs::CjlObservation, atmdf::DataFrame, elevationmatrix::Array{Float64, 2}, g::HDF5.Group)
@@ -201,7 +196,7 @@ function compute_meandelays(obs::CjlObservation, atmdf::DataFrame, elevationmatr
         end
     end
 
-    @info("Apply mean delays due to troposphere... 🙆")    
+    @info("Apply mean delays due to troposphere 🙆")    
 
 end
 
@@ -283,7 +278,7 @@ function compute_turbulence(obs::CjlObservation, atmdf::DataFrame, elevationmatr
     # add datatype attribute
     attributes(g)["datatype"] = string(typeof(read(g[keys(g)[1]])))
 
-    @info("Introduce turbulence in the troposphere... 🙆")
+    @info("Introduce turbulence in the troposphere 🙆")
 end
 
 """
@@ -300,28 +295,33 @@ function troposphere(obs::CjlObservation)
     attributes(g)["desc"] = "all tropospheric signal corruptions"
     attributes(g)["dims"] = "various"
     
-    @time atmdf = run_atm(obs)
+    atmdf = run_atm(obs) # compute necessary atmospheric quantities using atm
 
-    elevationmatrix = elevationangle(obs) # compute elevation angle for all stations
-
+    elevationmatrix = elevationangle(obs.times, obs.phasedir, obs.stationinfo, obs.pos) # compute elevation angle for all stations
     if !(haskey(g, "elevation"))
         g["elevation"] = elevationmatrix
     end
 
+    transmission = nothing
+    if obs.yamlconf["troposphere"]["attenuate"] || obs.yamlconf["troposphere"]["skynoise"]
+        transmission = zeros(Float64, obs.numchan, size(unique(obs.times))[1], size(obs.stationinfo)[1])
+        transmission = compute_transmission!(transmission, obs, atmdf, elevationmatrix, g)
+    end
+
     # attenuate
-    obs.yamlconf["troposphere"]["attenuate"] && @time attenuate(obs, atmdf, elevationmatrix, g)
+    obs.yamlconf["troposphere"]["attenuate"] && attenuate(obs.times, obs.antenna1, obs.antenna2, obs.numchan, obs.data, transmission)
 
     # skynoise
-    obs.yamlconf["troposphere"]["skynoise"] && @time compute_skynoise(obs, atmdf, elevationmatrix, g)
+    obs.yamlconf["troposphere"]["skynoise"] && compute_skynoise(obs, atmdf, transmission, g)
 
     # meandelays
-    obs.yamlconf["troposphere"]["meandelays"] && @time compute_meandelays(obs, atmdf, elevationmatrix, g)
+    obs.yamlconf["troposphere"]["meandelays"] && compute_meandelays(obs, atmdf, elevationmatrix, g)
 
     # turbulence
-    obs.yamlconf["troposphere"]["turbulence"] && @time compute_turbulence(obs, atmdf, elevationmatrix, g)
+    obs.yamlconf["troposphere"]["turbulence"] && compute_turbulence(obs, atmdf, elevationmatrix, g)
 
     # close h5 file
     close(fid)
 
-    @info("Finish propagating signal through troposphere... 🙆")
+    @info("Finish propagating signal through troposphere 🙆")
 end

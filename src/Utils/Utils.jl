@@ -1,6 +1,7 @@
 module Utils
 
 using Random
+using DataFrames
 using Casacore.Tables: Tables as CCTables, Table as CCTable
 using PythonCall
 

@@ -37,7 +37,7 @@ function run_wsclean(msname::String, fitsdir::String, polarized::Bool, channelgr
     endrow = rows_per_modelimg
 
     # loop through FITS models (polarised or unpolarised)
-    @info("Inverting source models to visibilities...")
+    @info("Computing source coherency with WSClean...")
     for fitsindex in 0:nmodels-1
 	    infits = "$(fitsdir)/t$(lpad(fitsindex, 4, "0"))"
 	    polarized ? run(`wsclean -channels-out $channelgroups -predict -name $infits -interval $startrow $endrow -pol I,Q,U,V -reorder -oversampling $osfactor -no-small-inversion $msname`) : run(`wsclean -channels-out $channelgroups -predict -name $infits -interval $startrow $endrow -oversampling $osfactor -no-small-inversion $msname`)
@@ -48,7 +48,7 @@ function run_wsclean(msname::String, fitsdir::String, polarized::Bool, channelgr
     # copy MODEL_DATA to DATA -- all corruptions will be added to DATA
     copymodeltodata(msname)
 
-    @info("Predict uncorrupted visibilities with WSClean... 🙆")
+    @info("Compute source coherency with WSClean 🙆")
 
 end
 
@@ -62,11 +62,11 @@ function run_ducc0(msname::String, fitsdir::String, polarized::Bool, channelgrou
 end
 
 """
-    predict_visibilities(config::String)
+    computecoherency(config::String)
 
 Predict uncorrupted visibilities with the parameters obtained from config file.
 """
-function predict_visibilities(config::String)
+function computecoherency(config::String)
     yamlconf = YAML.load_file(config, dicttype=Dict{String,Any})
     # check sky model mode
     if yamlconf["skymodelmode"] == "hdf5"
