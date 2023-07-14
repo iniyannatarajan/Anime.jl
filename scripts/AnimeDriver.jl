@@ -49,13 +49,22 @@ end
 cd(outdir)
 
 # create new ms
-Anime.Observe.generatems(config, delim=",", ignorerepeated=false) # comma-separated; do not ignore repeated delimiters
+generatems(config, delim=",", ignorerepeated=false) # comma-separated; do not ignore repeated delimiters
 
 # call wscean to predict visibilities
-Anime.Observe.computecoherency(config)
+computecoherency(config)
 
 # load ms data into custom struct
-obs = Anime.Observe.loadobs(config, delim=",", ignorerepeated=false)
+obs = loadobs(config, delim=",", ignorerepeated=false)
+
+println(typeof(obs.data))
+println(size(obs.data[1,1,:,:]))
+
+# make diagnostic plots of uncorrupted data
+if obs.yamlconf["diagnostics"]
+    @info("Generating diagnostic plots...")
+    plotcoherencyvis(obs)
+end
 
 # add corruptions
 #addcorruptions(obs)
@@ -65,25 +74,31 @@ fid = h5open(obs.yamlconf["hdf5corruptions"], "w") # using mode "w" to destroy e
 close(fid)
 
 # add tropospheric effects
-obs.yamlconf["troposphere"]["enable"] && Anime.ModelInstrument.troposphere(obs)
+obs.yamlconf["troposphere"]["enable"] && troposphere(obs)
 
 # add instrumental polarization
-obs.yamlconf["instrumentalpol"]["enable"] && Anime.ModelInstrument.instrumentalpol(obs)
+obs.yamlconf["instrumentalpol"]["enable"] && instrumentalpol(obs)
 
 # add pointing errors
-obs.yamlconf["pointing"]["enable"] && Anime.ModelInstrument.pointing(obs)
+obs.yamlconf["pointing"]["enable"] && pointing(obs)
 
 # add station gains
-obs.yamlconf["stationgains"]["enable"] && Anime.ModelInstrument.stationgains(obs)
+obs.yamlconf["stationgains"]["enable"] && stationgains(obs)
 
 # add bandpasses
-obs.yamlconf["bandpass"]["enable"] && Anime.ModelInstrument.bandpass(obs)
+obs.yamlconf["bandpass"]["enable"] && bandpass(obs)
 
 # add thermal noise
-obs.yamlconf["thermalnoise"]["enable"] && Anime.ModelInstrument.thermalnoise(obs)
+obs.yamlconf["thermalnoise"]["enable"] && thermalnoise(obs)
+
+# make diagnostic plots
+if obs.yamlconf["diagnostics"]
+    @info("Generating diagnostic plots...")
+    #Anime.Utils.plotdata(obs)
+end
 
 # compute weights and write everything to disk
-Anime.ModelInstrument.postprocessms(obs)
+postprocessms(obs)
 
 # Change back to original working directory
 @info("Changing working directory back to $startdir")

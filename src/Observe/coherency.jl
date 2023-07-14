@@ -1,4 +1,4 @@
-export predict_visibilities
+export computecoherency
 
 tb = table()
 

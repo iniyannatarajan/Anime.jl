@@ -7,6 +7,7 @@ struct CjlObservation{T} <: AbstractObservation{T}
     data::Array{Complex{Float32},4}
     antenna1::Vector{Int}
     antenna2::Vector{Int}
+    uvw::Matrix{Float64}
     times::Vector{Float64}
     exposure::Float64
     scanno::Vector{Int}
@@ -46,6 +47,7 @@ function loadobs(config::String; delim::String=",", ignorerepeated::Bool=false)
     data::Vector{Matrix{ComplexF32}} = tab[:DATA][:]
     antenna1::Vector{Int32} = tab[:ANTENNA1][:]
     antenna2::Vector{Int32} = tab[:ANTENNA2][:]
+    uvw::Matrix{Float64} = tab[:UVW][:,:]
     times::Vector{Float64} = tab[:TIME][:]
     exposure::Float64 = tab[:EXPOSURE][1]
     scanno::Vector{Int32} = tab[:SCAN_NUMBER][:]
@@ -96,7 +98,7 @@ function loadobs(config::String; delim::String=",", ignorerepeated::Bool=false)
     # construct CjlObservation object
     #observation = CjlObservation{Float64}(data3dresandperm,antenna1,antenna2,times,exposure,scanno,weight,weightspec,sigma,sigmaspec,
     #					  numchan,chanfreqvec,chanwidth,phasedir,pos,stationinfo,yamlconf,rngcorrupt,rngtrop)
-    observation = CjlObservation{Float64}(data3dresandperm,antenna1,antenna2,times,exposure,scanno,numchan,chanfreqvec,chanwidth,phasedir,pos,stationinfo,yamlconf,rngcorrupt,rngtrop)
+    observation = CjlObservation{Float64}(data3dresandperm,antenna1,antenna2,uvw,times,exposure,scanno,numchan,chanfreqvec,chanwidth,phasedir,pos,stationinfo,yamlconf,rngcorrupt,rngtrop)
 
     @info("Load data for processing 🙆")
     return observation

@@ -6,10 +6,10 @@
 mode: "manual"                                       # "vex", "uvfits", "manual" are the only allowed values
 msname: "eht_perfectrl_rrrllrll.ms"                                  # name of output ms 
 telescopename: "VLBA"                                # preset telescope known to casa (not important since CASA is not used for predict; just an argument required for setconfig)
-stations: "/home/iniyan/software/dev/Anime.jl/data/eht_2017.stations"     # CSV file with station parameters
-casaanttemplate: "/home/iniyan/software/dev/Anime.jl/data/antenna_table.template"                 # Input CASA ANTENNA table to use as template
-vex: "/home/iniyan/software/dev/Anime.jl/data/vexfiles/e17e11.vex"    # name of the VEX schedule to use for observing
-uvfits: "/home/iniyan/software/dev/Anime.jl/data/uvfitsfiles/hops_lo_3601_M87+zbl-dtcal_selfcal.uvfits" # name of uvfits file to convert to ms
+stations: "/home/iniyan/software/dev/Anime.jl/inputs/eht_2017.stations"     # CSV file with station parameters
+casaanttemplate: "/home/iniyan/software/dev/Anime.jl/inputs/antenna_table.template"                 # Input CASA ANTENNA table to use as template
+vex: "/home/iniyan/software/dev/Anime.jl/inputs/vexfiles/e17e11.vex"    # name of the VEX schedule to use for observing
+uvfits: "/home/iniyan/software/dev/Anime.jl/inputs/uvfitsfiles/hops_lo_3601_M87+zbl-dtcal_selfcal.uvfits" # name of uvfits file to convert to ms
 autocorr: false                                      # toggle whether to include autocorrelations
 feed: "perfect R L"                                  # "perfect R L" or "perfect X Y"
 shadowlimit: 1e-6                                    # maximum fraction of geometrically shadowed area before flagging occurs
@@ -35,8 +35,8 @@ starttime: "UTC,2021/04/28/00:00:00.00"              # starting time of the firs
 
 osfactor: 8191                                       # oversampling factor
 skymodelmode: "fits"                                 # "fits" or "hdf5"
-hdf5sky: "/home/iniyan/software/dev/Anime.jl/data/sspot_freq_230e9.hdf5"       # name of HDF5 file
-fitssky: "/home/iniyan/software/dev/Anime.jl/data/sourcemodels/grmhdpol"       # directory containing FITS sky models
+hdf5sky: "/home/iniyan/software/dev/Anime.jl/inputs/sspot_freq_230e9.hdf5"       # name of HDF5 file
+fitssky: "/home/iniyan/software/dev/Anime.jl/inputs/sourcemodels/grmhdpol"       # directory containing FITS sky models
 polarized: true                                     # toggle source model polarization
 channelgroups: 1                                     # number of groups to divide the channels into
 
@@ -46,6 +46,7 @@ channelgroups: 1                                     # number of groups to divid
 correff: 0.88                                      # correlator efficiency for 2 quantization bits (use 0.636 for 1-bit)
 hdf5corruptions: "allcorruptions.h5"                 # HDF5 filename to store all corruptions; will be created in whatever output directory the user designates
 corruptseed: 456                                     # seed to be used for generating random variables for corruptions (except for troposphere)
+diagnostics: true                                  # generate diagnostic plots and logs
 
 ####################################################
 # settings for atmospheric corruptions
@@ -87,14 +88,14 @@ instrumentalpol:
 # settings for gains
 
 stationgains: 
-  enable: true                                      # add antenna gains
+  enable: false                                      # add antenna gains
   mode: "gp"                                     # "gp" or "normal"
 bandpass: 
-  enable: true                                      # add bandpass effects 
-  bandpassfile: "/home/iniyan/software/dev/Anime.jl/data/eht_2017.bandpass" # csv file containing bandpass information for all stations
+  enable: false                                      # add bandpass effects 
+  bandpassfile: "/home/iniyan/software/dev/Anime.jl/inputs/eht_2017.bandpass" # csv file containing bandpass information for all stations
 
 ####################################################
 # noise settings
 
 thermalnoise: 
-  enable: true                                      # toggle thermal noise
+  enable: false                                      # toggle thermal noise
