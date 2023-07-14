@@ -47,7 +47,7 @@ function run_atm(obs::CjlObservation)::DataFrame
     return absdf
 end
 
-function compute_transmission!(transmission::Array{Float64, 3}, obs::CjlObservation, atmdf::DataFrame, elevationmatrix::Array{Float64, 2}, g::HDF5.Group)
+function compute_transmission!(transmission::Array{Float64, 3}, obs::CjlObservation, atmdf::DataFrame, elevationmatrix::Array{Float64, 2}, g::HDF5.Group)::Array{Float64, 3}
     """
     Compute transmission matrix
     """
@@ -70,24 +70,24 @@ function compute_transmission!(transmission::Array{Float64, 3}, obs::CjlObservat
 end
 
 """
-    attenuate(times::Vector{Float64}, antenna1::Vector{Int}, antenna2::Vector{Int}, numchan::Int64, data::Array{Complex{Float32},4}, transmission::Array{Float64, 2})
+    attenuate(obs::CjlObservation, transmission::Array{Float64, 3})
 
 Compute attenuation due to troposphere
 """
-function attenuate(times::Vector{Float64}, antenna1::Vector{Int}, antenna2::Vector{Int}, numchan::Int64, data::Array{Complex{Float32},4}, transmission::Array{Float64, 3})
+function attenuate(obs::CjlObservation, transmission::Array{Float64, 3})
     # get unique times
-    uniqtimes = unique(times)
+    uniqtimes = unique(obs.times)
     ntimes = size(uniqtimes)[1]
 
     # attenuate visibilities
     row = 1
     for t in 1:ntimes # no. of unique times
 	# read all baselines present in a given time
-	ant1vec = getindex(antenna1, findall(times.==uniqtimes[t]))
-	ant2vec = getindex(antenna2, findall(times.==uniqtimes[t]))
+	ant1vec = getindex(obs.antenna1, findall(obs.times.==uniqtimes[t]))
+	ant2vec = getindex(obs.antenna2, findall(obs.times.==uniqtimes[t]))
 	for (ant1,ant2) in zip(ant1vec, ant2vec)
-            for chan in 1:numchan
-		data[:, :, chan, row] = sqrt(transmission[chan, t, ant1+1]*transmission[chan, t, ant2+1]) .* abs.(data[:, :, chan, row]) .* exp.(angle.(data[:, :, chan, row])*im)
+            for chan in 1:obs.numchan
+		obs.data[:, :, chan, row] = sqrt(transmission[chan, t, ant1+1]*transmission[chan, t, ant2+1]) .* abs.(obs.data[:, :, chan, row]) .* exp.(angle.(obs.data[:, :, chan, row])*im)
 	    end
 	    row += 1 # increment the last dimension i.e. row number
         end
@@ -153,10 +153,12 @@ function compute_skynoise(obs::CjlObservation, atmdf::DataFrame, transmission::A
     @info("Apply tropospheric noise 🙆")
 end
 
+"""
+    compute_meandelays(obs::CjlObservation, atmdf::DataFrame, elevationmatrix::Array{Float64, 2}, g::HDF5.Group)
+
+Compute mean delays
+"""
 function compute_meandelays(obs::CjlObservation, atmdf::DataFrame, elevationmatrix::Array{Float64, 2}, g::HDF5.Group)
-    """
-    Use ATM (Pardo et al. 2001) to compute mean delays
-    """
     # get element type to be used
     elemtype = typeof(obs.data[1][1])
 
@@ -200,10 +202,12 @@ function compute_meandelays(obs::CjlObservation, atmdf::DataFrame, elevationmatr
 
 end
 
+"""
+    compute_turbulence(obs::CjlObservation, atmdf::DataFrame, elevationmatrix::Array{Float64, 2}, g::HDF5.Group)
+
+Compute turbulent phases
+"""
 function compute_turbulence(obs::CjlObservation, atmdf::DataFrame, elevationmatrix::Array{Float64, 2}, g::HDF5.Group)
-    """
-    Use ATM (Pardo et al. 2001) to compute turbulent phases
-    """
     beta::Float64 = 5/3 # power law index
 
     # get element type to be used
@@ -309,7 +313,7 @@ function troposphere(obs::CjlObservation)
     end
 
     # attenuate
-    obs.yamlconf["troposphere"]["attenuate"] && attenuate(obs.times, obs.antenna1, obs.antenna2, obs.numchan, obs.data, transmission)
+    obs.yamlconf["troposphere"]["attenuate"] && attenuate(obs, transmission)
 
     # skynoise
     obs.yamlconf["troposphere"]["skynoise"] && compute_skynoise(obs, atmdf, transmission, g)

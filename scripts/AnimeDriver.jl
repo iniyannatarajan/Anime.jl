@@ -74,7 +74,7 @@ obs.yamlconf["instrumentalpol"]["enable"] && Anime.ModelInstrument.instrumentalp
 obs.yamlconf["pointing"]["enable"] && Anime.ModelInstrument.pointing(obs)
 
 # add station gains
-obs.yamlconf["stationgains"]["enable"] && Anime.ModelInstrument.stationgains(obs; draw=true)
+obs.yamlconf["stationgains"]["enable"] && Anime.ModelInstrument.stationgains(obs)
 
 # add bandpasses
 obs.yamlconf["bandpass"]["enable"] && Anime.ModelInstrument.bandpass(obs)

@@ -66,5 +66,5 @@ function bandpass(obs::CjlObservation)
     # close h5 file
     close(fid)
 
-    @info("Compute and apply bandpass gains... 🙆")
+    @info("Compute and apply bandpass gains 🙆")
 end

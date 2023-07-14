@@ -4,7 +4,7 @@
 # settings to generate a new ms
 
 mode: "manual"                                       # "vex", "uvfits", "manual" are the only allowed values
-msname: "eht_perfectxy_rrrllrll.ms"                                  # name of output ms 
+msname: "eht_perfectrl_rrrllrll.ms"                                  # name of output ms 
 telescopename: "VLBA"                                # preset telescope known to casa (not important since CASA is not used for predict; just an argument required for setconfig)
 stations: "/home/iniyan/software/dev/Anime.jl/data/eht_2017.stations"     # CSV file with station parameters
 casaanttemplate: "/home/iniyan/software/dev/Anime.jl/data/antenna_table.template"                 # Input CASA ANTENNA table to use as template
@@ -51,13 +51,13 @@ corruptseed: 456                                     # seed to be used for gener
 # settings for atmospheric corruptions
 
 troposphere:                                         # add troposphere
-  enable: true
+  enable: false
   wetonly: false                                     # add only the wet component
-  attenuate: true                                   # signal attenuation due to opacity
-  skynoise: true                                    # add tropospheric contribution to sky noise
-  turbulence: false                                  # add turbulent phases
-  meandelays: false                                   # add mean delays
+  attenuate: false                                   # signal attenuation due to opacity
+  skynoise: false                                    # add tropospheric contribution to sky noise
+  meandelays: true                                   # add mean delays
   fixdelays: false                                   # add fixed delays 
+  turbulence: true                                  # add turbulent phases
   tropseed: 821                                      # independent seed for generating random variables for troposphere
 
 ionosphere:                                          # add ionosphere
@@ -80,21 +80,21 @@ pointing:
 
 instrumentalpol: 
   enable: false                                       # add instrumental polarization
-  mode: "gp"                                     # "gp" or "normal"
+  mode: "gp"                                     # "gp" (Gaussian processes) or "normal" (Gaussian)
   visibilityframe: "sky"                             # "sky" or "antenna"; "sky" frame is used by default
 
 ####################################################
 # settings for gains
 
 stationgains: 
-  enable: false                                      # add antenna gains
+  enable: true                                      # add antenna gains
   mode: "gp"                                     # "gp" or "normal"
 bandpass: 
-  enable: false                                      # add bandpass effects 
+  enable: true                                      # add bandpass effects 
   bandpassfile: "/home/iniyan/software/dev/Anime.jl/data/eht_2017.bandpass" # csv file containing bandpass information for all stations
 
 ####################################################
 # noise settings
 
 thermalnoise: 
-  enable: false                                      # toggle thermal noise
+  enable: true                                      # toggle thermal noise

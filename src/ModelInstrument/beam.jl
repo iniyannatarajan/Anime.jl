@@ -2,10 +2,12 @@ export pointing
 
 using Statistics
 
+"""
+    compute_mispointvec(times::Vector{Float64}, pointinginterval::Float64, mispointsperscan::Int64)::Vector{Int32}
+
+Compute mispoint vector that holds mispoint id per scan for indexing into pointing amplitude error matrix
+"""
 function compute_mispointvec(times::Vector{Float64}, pointinginterval::Float64, mispointsperscan::Int64)::Vector{Int32}
-    """
-    compute mispoint vector that holds mispoint id per scan for indexing into pointing amplitude error matrix
-    """
     # derive some quantities
     ntimes = size(times)[1]
     mispointvec = zeros(Int32, ntimes)
@@ -28,6 +30,11 @@ function compute_mispointvec(times::Vector{Float64}, pointinginterval::Float64, 
     return mispointvec
 end
 
+"""
+    longtermpointing()
+
+Compute long-term pointing errors
+"""
 function longtermpointing()
 end
 
@@ -37,9 +44,6 @@ end
 Compute the pointing model and apply to data. The actual numerical values are serialized as HDF5.
 """
 function pointing(obs::CjlObservation)
-    """
-    Compute pointing errors and apply to data
-    """
     @info("Computing pointing errors...")
     # get element type to be used
     elemtype = typeof(obs.data[1][1])
