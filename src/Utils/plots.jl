@@ -5,7 +5,7 @@ export plotvisamp_vs_pbs
 
 Plot visibility amplitudes against projected baseline separation
 """
-function plotvisamp_vs_pbs(data::Array{Complex{Float32},4}, flag::Array{Bool,4}, uvw::Matrix{Float64}, chanfreqvec::Array{Float64,1}, numchan::Int64)
+function plotvisamp_vs_pbs(data::Array{Complex{Float32},4}, flag::Array{Bool,4}, uvw::Matrix{Float64}, chanfreqvec::Array{Float64,1}, numchan::Int64; saveas="01_coherencyamplitude_vs_projectedbaseline.png")
     uvwave = sqrt.(uvw[1,:].^2 .+ uvw[2,:].^2) / (299792458.0/mean(chanfreqvec)) / 1e9 # in units of Gλ
 
     maskindices = findall(isequal(true), flag)
@@ -27,7 +27,7 @@ function plotvisamp_vs_pbs(data::Array{Complex{Float32},4}, flag::Array{Bool,4},
     end
 
     plot!(p, xlabel="Projected baseline separation (Gλ)", ylabel="Source coherency amplitude (Jy)") #, legend=:outerbottom, legendcolumns=4)
-    savefig(p, "01_coherencyamplitude_vs_projectedbaseline.png")
+    savefig(p, saveas)
 end
 
 """
