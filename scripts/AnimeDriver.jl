@@ -57,9 +57,6 @@ computecoherency(config)
 # load ms data into custom struct
 obs = loadobs(config, delim=",", ignorerepeated=false)
 
-println(typeof(obs.data))
-println(size(obs.data[1,1,:,:]))
-
 # make diagnostic plots of uncorrupted data
 if obs.yamlconf["diagnostics"]
     @info("Generating diagnostic plots...")
