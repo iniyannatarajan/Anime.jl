@@ -5,6 +5,7 @@ abstract type AbstractObservation{T} end
 # TODO the entire data structure to hold MS data needs to be rewritten
 struct CjlObservation{T} <: AbstractObservation{T}
     data::Array{Complex{Float32},4}
+    flag::Array{Bool,4}
     antenna1::Vector{Int}
     antenna2::Vector{Int}
     uvw::Matrix{Float64}
@@ -45,6 +46,7 @@ function loadobs(config::String; delim::String=",", ignorerepeated::Bool=false)
 
     # read values from ms
     data::Vector{Matrix{ComplexF32}} = tab[:DATA][:]
+    flag::Vector{Matrix{Bool}} = tab[:FLAG][:]
     antenna1::Vector{Int32} = tab[:ANTENNA1][:]
     antenna2::Vector{Int32} = tab[:ANTENNA2][:]
     uvw::Matrix{Float64} = tab[:UVW][:,:]
@@ -72,9 +74,9 @@ function loadobs(config::String; delim::String=",", ignorerepeated::Bool=false)
     data3dres = reshape(data3d, 2, 2, size(data[1])[2], :) # get nchan as 3rd dim and all rows as 4th dim
     data3dresandperm = permutedims(data3dres, (2,1,3,4))
 
-    #=flag3d = reduce((x,y) -> cat(x, y, dims=3), flag)
+    flag3d = reduce((x,y) -> cat(x, y, dims=3), flag)
     flag3dres = reshape(flag3d, 2, 2, size(flag[1])[2], :) # get nchan as 3rd dim and all rows as 4th dim
-    flag3dresandperm = permutedims(flag3dres, (2,1,3,4))=#
+    flag3dresandperm = permutedims(flag3dres, (2,1,3,4))
 
     # read values from station info csv file
     stationinfo = CSV.read(yamlconf["stations"], DataFrame; delim=delim, ignorerepeated=ignorerepeated)
@@ -98,7 +100,7 @@ function loadobs(config::String; delim::String=",", ignorerepeated::Bool=false)
     # construct CjlObservation object
     #observation = CjlObservation{Float64}(data3dresandperm,antenna1,antenna2,times,exposure,scanno,weight,weightspec,sigma,sigmaspec,
     #					  numchan,chanfreqvec,chanwidth,phasedir,pos,stationinfo,yamlconf,rngcorrupt,rngtrop)
-    observation = CjlObservation{Float64}(data3dresandperm,antenna1,antenna2,uvw,times,exposure,scanno,numchan,chanfreqvec,chanwidth,phasedir,pos,stationinfo,yamlconf,rngcorrupt,rngtrop)
+    observation = CjlObservation{Float64}(data3dresandperm,flag3dresandperm,antenna1,antenna2,uvw,times,exposure,scanno,numchan,chanfreqvec,chanwidth,phasedir,pos,stationinfo,yamlconf,rngcorrupt,rngtrop)
 
     @info("Load data for processing 🙆")
     return observation

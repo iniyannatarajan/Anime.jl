@@ -60,7 +60,7 @@ obs = loadobs(config, delim=",", ignorerepeated=false)
 # make diagnostic plots of uncorrupted data
 if obs.yamlconf["diagnostics"]
     @info("Generating diagnostic plots...")
-    plotcoherencyvis(obs)
+    plotvisamp_vs_pbs(obs.data, obs.flag, obs.uvw, obs.chanfreqvec, obs.numchan)
 end
 
 # add corruptions
