@@ -6,7 +6,7 @@ export thermalnoise
 Compute per-baseline thermal noise in visibility domain and apply to data. The actual numerical values are serialized as HDF5.
 """
 function thermalnoise(obs::CjlObservation)
-    # get matrix type and size to be created -- data is a 4d array
+    # get type and size of the matrix to be created -- data is a 4d array
     elemtype = typeof(obs.data[1])
 
     # get unique times
@@ -31,63 +31,14 @@ function thermalnoise(obs::CjlObservation)
 	        if a2>a1
   		        # compute sigma per baseline
                 indices = intersect(findall(obs.antenna1.==a1), findall(obs.antenna2.==a2))
-		        #sigmaperbl = (1/obs.yamlconf["correff"]) * sqrt((obs.stationinfo.sefd_Jy[a1+1]*obs.stationinfo.sefd_Jy[a2+1])
-				#				/(2*obs.exposure*obs.chanwidth))
                 thermalnoiserms[:, :, :, indices] .= sigmaperbl = (1/obs.yamlconf["correff"]) * sqrt((obs.stationinfo.sefd_Jy[a1+1]*obs.stationinfo.sefd_Jy[a2+1])
 								/(2*obs.exposure*obs.chanwidth))
                 # compute and add thermal noise to data
-		        #thermalvec = sigmaperbl*randn(obs.rngcorrupt, elemtype, size(obs.data[:,:,1,indices]))
-		        #for chan in 1:obs.numchan
-                    thermalnoise[:, :, :, indices] = sigmaperbl*randn(obs.rngcorrupt, elemtype, size(obs.data[:,:,:,indices]))
-	 	            obs.data[:, :, :, indices] = obs.data[:, :, :, indices] + thermalnoise[:, :, :, indices] #thermalvec
-	            #end
-
-                # write as individual dataset within the group created above in the h5 file
-                #g["$(obs.stationinfo.station[a1+1])-$(obs.stationinfo.station[a2+1])_rms"] = sigmaperbl
-                #g["$(obs.stationinfo.station[a1+1])-$(obs.stationinfo.station[a2+1])_noise"] = thermalvec #reduce((x,y) -> cat(x, y, dims=3), thermalvec)
-	        end
+                thermalnoise[:, :, :, indices] = sigmaperbl*randn(obs.rngcorrupt, elemtype, size(obs.data[:,:,:,indices]))
+	 	        obs.data[:, :, :, indices] = obs.data[:, :, :, indices] + thermalnoise[:, :, :, indices]
+            end
 	    end
     end
-    
-    #= # compute thermal noise and add to data
-    thermalnoiserms = zeros(Float64, size(obs.data))
-    thermalnoise = zeros(elemtype, size(obs.data))
-    row = 1
-    for t in 1:ntimes # no. of unique times
-        # read all baselines present in a given time
-        ant1vec = getindex(obs.antenna1, findall(obs.times.==uniqtimes[t]))
-        ant2vec = getindex(obs.antenna2, findall(obs.times.==uniqtimes[t]))
-        for (ant1,ant2) in zip(ant1vec, ant2vec)
-            for chan in 1:obs.numchan
-		thermalnoiserms[:, :, chan, row] .= (1/obs.yamlconf["correff"]) * sqrt((obs.stationinfo.sefd_Jy[ant1+1]*obs.stationinfo.sefd_Jy[ant2+1])/(2*obs.exposure*obs.chanwidth))
-		for jj in 1:2
-		    for ii in 1:2
-                        thermalnoise[ii, jj, chan, row] = thermalnoiserms[ii, jj, chan, row]*randn(obs.rngcorrupt, Float64) # thermal noise is polarized
-                        obs.data[ii, jj, chan, row] += thermalnoise[ii, jj, chan, row]
-		    end
-	        end
-            end
-            row += 1 # increment the last dimension i.e. row number
-        end
-    end=#
-
-    #= # compute thermal noise and add to data
-    thermalnoiserms = zeros(Float64, size(obs.data)[4])
-    thermalnoise = zeros(elemtype, (2, 2, size(obs.data)[4]))
-    row = 1
-    for t in 1:ntimes # no. of unique times
-        # read all baselines present in a given time
-        ant1vec = getindex(obs.antenna1, findall(obs.times.==uniqtimes[t]))
-        ant2vec = getindex(obs.antenna2, findall(obs.times.==uniqtimes[t]))
-        for (ant1,ant2) in zip(ant1vec, ant2vec)
-            thermalnoiserms[row] = (1/obs.yamlconf["correff"]) * sqrt((obs.stationinfo.sefd_Jy[ant1+1]*obs.stationinfo.sefd_Jy[ant2+1])/(2*obs.exposure*obs.chanwidth))
-            thermalnoise[:, :, row] = thermalnoiserms[row]*randn(obs.rngcorrupt, Float64, 2, 2) # thermal noise is polarized
-	    for chan in 1:obs.numchan
-                obs.data[:, :, chan, row] += thermalnoise[:, :, row]
-	    end
-            row += 1 # increment the last dimension i.e. row number
-        end
-    end=#
 
     # write to h5 file
     if !(haskey(g, "thermalnoiserms"))
