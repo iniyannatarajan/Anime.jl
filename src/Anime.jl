@@ -5,7 +5,7 @@
 """
 module Anime
 
-using Plots
+using Plots, ColorSchemes
 using Tables
 using Logging
 using CSV

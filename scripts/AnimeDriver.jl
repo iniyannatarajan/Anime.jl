@@ -58,10 +58,7 @@ computecoherency(config)
 obs = loadobs(config, delim=",", ignorerepeated=false)
 
 # make diagnostic plots of uncorrupted data
-if obs.yamlconf["diagnostics"]
-    @info("Generating diagnostic plots...")
-    plotvisamp_vs_pbs(obs.data, obs.flag, obs.uvw, obs.chanfreqvec, obs.numchan, saveas="beforepropagation.png")
-end
+#obs.yamlconf["diagnostics"] && plotvisamp_vs_pbs(obs.data, obs.flag, obs.uvw, obs.chanfreqvec, obs.numchan, saveas="visampbeforepropagation.png")
 
 # add corruptions
 #addcorruptions(obs)
@@ -81,6 +78,7 @@ obs.yamlconf["pointing"]["enable"] && pointing(obs)
 
 # add station gains
 obs.yamlconf["stationgains"]["enable"] && stationgains(obs)
+obs.yamlconf["diagnostics"] && plotstationgains(obs)
 
 # add bandpasses
 obs.yamlconf["bandpass"]["enable"] && bandpass(obs)
@@ -89,10 +87,7 @@ obs.yamlconf["bandpass"]["enable"] && bandpass(obs)
 obs.yamlconf["thermalnoise"]["enable"] && thermalnoise(obs)
 
 # make diagnostic plots
-if obs.yamlconf["diagnostics"]
-    @info("Generating diagnostic plots...")
-    plotvisamp_vs_pbs(obs.data, obs.flag, obs.uvw, obs.chanfreqvec, obs.numchan, saveas="afterpropagation.png")
-end
+#obs.yamlconf["diagnostics"] && plotvisamp_vs_pbs(obs.data, obs.flag, obs.uvw, obs.chanfreqvec, obs.numchan, saveas="visampafterpropagation.png")
 
 # compute weights and write everything to disk
 postprocessms(obs)
