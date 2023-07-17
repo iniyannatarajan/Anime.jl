@@ -68,7 +68,7 @@ ionosphere:                                          # add ionosphere
 # beam and pointing settings
 
 pointing:
-  enable: true
+  enable: false
   mode: "gp"                                         # "gp" (Gaussian processes) or "normal" (Gaussian)
   interval: "coherencetime"                          # time interval (in seconds) after which to generate new pointing errors (or "coherencetime")
   longterm:
