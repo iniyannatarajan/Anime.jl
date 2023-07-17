@@ -1,4 +1,4 @@
-export plotvisamp_vs_pbs, plotstationgains
+export plotvisamp_vs_pbs, plotstationgains, plotbandpass
 
 """
     plotvisamp_vs_pbs(data::Array{Complex{Float32},4}, flag::Array{Bool,4}, uvw::Matrix{Float64}, chanfreqvec::Array{Float64,1}, numchan::Int64)
@@ -67,7 +67,36 @@ function plotstationgains(obs; saveas="stationgainsvstime.png")
     end
     plot!(p, xlabel="Time offset from start of observation (s)", ylabel="Gain amplitudes", legend=:outertop, legendcolumns=6)
     savefig(p, saveas)
+    close(fid)
+    @info("Done 🙆")
+end
 
+"""
+    plotstationgains(obs; saveas="bandpassgains.png")
+
+Plot bandpass gains against time
+"""
+function plotbandpass(obs; saveas="bandpassgains.png")
+    @info("Plotting bandpass gains against time...")
+    fid = h5open(obs.yamlconf["hdf5corruptions"], "r")
+
+    b = read(fid["bandpass"]["bjonesmatrices"])
+
+    p1 = plot()
+    for ant in eachindex(obs.stationinfo.station)
+        plot!(p1, obs.chanfreqvec./1e9, abs.(b[1, 1, :, ant]), lw=1, lc=ColorSchemes.mk_15[ant], label="")
+    end
+    plot!(p1, title="Station bandpass gain amplitudes", ylabel="Pol1 gain amp") #, legend=:outertop, legendcolumns=6)
+
+    p2 = plot()
+    for ant in eachindex(obs.stationinfo.station)
+        plot!(p2, obs.chanfreqvec./1e9, abs.(b[2, 2, :, ant]), lw=1, lc=ColorSchemes.mk_15[ant], label=obs.stationinfo.station[ant])
+    end
+    plot!(p2, xlabel="Channel frequency (GHz)", ylabel="Pol2 gain amp") # legend=:outertop, legendcolumns=6)
+
+    p = plot(p1, p2, layout=(2, 1))
+    plot!(p, legend=:outertop, legendcolumns=6)
+    savefig(p, saveas)
     close(fid)
     @info("Done 🙆")
 end
