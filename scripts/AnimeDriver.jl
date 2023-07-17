@@ -74,7 +74,10 @@ obs.yamlconf["troposphere"]["enable"] && troposphere(obs)
 obs.yamlconf["instrumentalpol"]["enable"] && instrumentalpol(obs)
 
 # add pointing errors
-obs.yamlconf["pointing"]["enable"] && pointing(obs)
+if obs.yamlconf["pointing"]["enable"]
+    pointing(obs)
+    obs.yamlconf["diagnostics"] && plotpointingerrors(obs)
+end
 
 # add station gains
 if obs.yamlconf["stationgains"]["enable"]

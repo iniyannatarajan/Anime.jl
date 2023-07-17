@@ -77,14 +77,14 @@ function pointing(obs::CjlObservation)
         mispointveclen = length(mispointvec)
 
 	    #mispointsperscan::Int64 = max(1, ceil((last(idealtscanvec)-first(idealtscanvec))/pointinginterval))
-    	perscanpointingoffsets = zeros(Float64, mispointveclen, nant)
-	    perscanpointingamperrors = zeros(Float64, mispointveclen, nant)
+    	perscanoffsets = zeros(Float64, mispointveclen, nant)
+	    perscanamperrors = zeros(Float64, mispointveclen, nant)
 
 	    # loop through stations and compute offsets and amplitude errors
 	    for ant in 1:nant
-	        perscanpointingoffsets[:, ant] = gentimeseries!(perscanpointingoffsets[:, ant], obs.yamlconf["pointing"]["mode"], 0.0, obs.stationinfo.pointingrms_arcsec[ant], 0.0, mispointveclen, obs.rngcorrupt)
+	        perscanoffsets[:, ant] = gentimeseries!(perscanoffsets[:, ant], obs.yamlconf["pointing"]["mode"], 0.0, obs.stationinfo.pointingrms_arcsec[ant], 0.0, mispointveclen, obs.rngcorrupt)
 	        if obs.stationinfo.pbmodel[ant] == "gaussian"
-                perscanpointingamperrors[:, ant] = exp.(-0.5.*(perscanpointingoffsets[:, ant]./(pbfwhm[ant]/2.35)).^2)
+                perscanamperrors[:, ant] = exp.(-0.5.*(perscanoffsets[:, ant]./(pbfwhm[ant]/2.35)).^2)
 	        end
 	    end
 
@@ -94,7 +94,7 @@ function pointing(obs::CjlObservation)
         findnearest(A,x) = argmin(abs.(A .- x)) # define function to find nearest neighbour
 
         for t in 1:actualtscanveclen
-	        # find the nearest value in idealtscanvec to actualtscanvec and then find the index of ptg ampl error in 'perscanpointingamperrors' that should be used
+	        # find the nearest value in idealtscanvec to actualtscanvec and then find the index of ptg ampl error in 'perscanamperrors' that should be used
 	        mispointindex = min(mispointveclen, findnearest(mispointvec, actualtscanvec[t]))
 
             # read all baselines present in a given time
@@ -102,14 +102,15 @@ function pointing(obs::CjlObservation)
             ant2vec = getindex(obs.antenna2, findall(obs.times.==actualtscanvec[t]))
             for (ant1,ant2) in zip(ant1vec, ant2vec)
                 for chan in 1:obs.numchan
-                    obs.data[:,:,chan,row] = perscanpointingamperrors[mispointindex,ant1+1]*obs.data[:,:,chan,row]*adjoint(perscanpointingamperrors[mispointindex,ant2+1])
+                    obs.data[:,:,chan,row] = perscanamperrors[mispointindex,ant1+1]*obs.data[:,:,chan,row]*adjoint(perscanamperrors[mispointindex,ant2+1])
                 end
                 row += 1 # increment obs.data last index i.e. row number
             end
         end
 
         # write to h5 file
-        g["perscanamperr_scan$(scan)"] = perscanpointingamperrors
+        g["perscanoffsets_scan$(scan)"] = perscanoffsets
+        g["perscanamperrors_scan$(scan)"] = perscanamperrors
     end
 
     # add datatype attribute

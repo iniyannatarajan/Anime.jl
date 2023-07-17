@@ -1,4 +1,4 @@
-export plotvisamp_vs_pbs, plotstationgains, plotbandpass
+export plotvisamp_vs_pbs, plotstationgains, plotbandpass, plotpointingerrors
 
 """
     plotvisamp_vs_pbs(data::Array{Complex{Float32},4}, flag::Array{Bool,4}, uvw::Matrix{Float64}, chanfreqvec::Array{Float64,1}, numchan::Int64)
@@ -27,7 +27,7 @@ function plotvisamp_vs_pbs(data::Array{Complex{Float32},4}, flag::Array{Bool,4},
         plot!(p, uvwave, abs.(maskeddata[2,2,2:end,:]'), seriestype=:scatter, ls=:dot, ms=1, mc=:green, markerstrokecolor=:green, label="")
     end
 
-    plot!(p, xlabel="Projected baseline separation (Gλ)", ylabel="Source coherency amplitude (Jy)") #, legend=:outerbottom, legendcolumns=4)
+    plot!(p, xlabel="Projected baseline separation (Gλ)", ylabel="Complex visibility amplitude (Jy)", legend=:outertop, legendcolumns=4)
     savefig(p, saveas)
     @info("Done 🙆")
 end
@@ -72,7 +72,7 @@ function plotstationgains(obs; saveas="stationgainsvstime.png")
 end
 
 """
-    plotstationgains(obs; saveas="bandpassgains.png")
+    plotbandpass(obs; saveas="bandpassgains.png")
 
 Plot bandpass gains against time
 """
@@ -97,6 +97,53 @@ function plotbandpass(obs; saveas="bandpassgains.png")
     p = plot(p1, p2, layout=(2, 1))
     plot!(p, legend=:outertop, legendcolumns=6)
     savefig(p, saveas)
+    close(fid)
+    @info("Done 🙆")
+end
+
+"""
+    plotpointingerrors(obs)
+
+Plot pointing errors
+"""
+function plotpointingerrors(obs)
+    @info("Plotting pointing errors...")
+    fid = h5open(obs.yamlconf["hdf5corruptions"], "r")
+
+    # get unique scan numbers
+    uniqscans = unique(obs.scanno)
+
+    # get unique times
+    #uniqtimes = unique(obs.times)
+    #x = uniqtimes .- first(uniqtimes)
+
+    p_off = plot()
+    p_amperr = plot()
+    indexstart = 1
+    indexend = 0
+    for scan in uniqscans
+        offsetarr = read(fid["pointingerrors"]["perscanoffsets_scan$(scan)"])
+        amperrarr = read(fid["pointingerrors"]["perscanamperrors_scan$(scan)"])
+        indexend = indexend + size(offsetarr)[1] # both arrays have same dimensions
+
+        for ant in eachindex(obs.stationinfo.station)
+            if scan == 1
+                plot!(p_off, 1:indexend, offsetarr[:,ant], lw=1, lc=ColorSchemes.mk_15[ant], label=obs.stationinfo.station[ant])
+                plot!(p_amperr, 1:indexend, amperrarr[:,ant], lw=1, lc=ColorSchemes.mk_15[ant], label=obs.stationinfo.station[ant])
+            else
+                plot!(p_off, indexstart:indexend, offsetarr[:,ant], lw=1, lc=ColorSchemes.mk_15[ant], label="")
+                plot!(p_amperr, indexstart:indexend, amperrarr[:,ant], lw=1, lc=ColorSchemes.mk_15[ant], label="")
+            end
+        end
+        indexstart = indexend + 1
+       
+    end
+    plot!(p_off, xlabel="Time (mispointing number)", ylabel="Pointing offsets (arcsec)", legend=:outertop, legendcolumns=6)
+    savefig(p_off, "pointingoffsets.png")
+
+    plot!(p_amperr, xlabel="Time (mispointing number)", ylabel="Primary beam response", legend=:outertop, legendcolumns=6)
+    savefig(p_amperr, "pointingamplitudeerrors.png")
+    
     close(fid)
     @info("Done 🙆")
 end
