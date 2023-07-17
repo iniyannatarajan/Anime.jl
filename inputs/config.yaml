@@ -68,8 +68,9 @@ ionosphere:                                          # add ionosphere
 # beam and pointing settings
 
 pointing:
-  enable: false
-  interval: "coherencetime"                          # time interval after which to realise new pointing errors in seconds (or "coherencetime")
+  enable: true
+  mode: "gp"                                         # "gp" (Gaussian processes) or "normal" (Gaussian)
+  interval: "coherencetime"                          # time interval (in seconds) after which to generate new pointing errors (or "coherencetime")
   longterm:
     enable: false                                    # enable longterm, multiscan pointing drifts
     nscan: 5                                         # no. of scans after which to reset long term pointing drift
@@ -91,7 +92,7 @@ stationgains:
   enable: false                                      # add antenna gains
   mode: "gp"                                     # "gp" or "normal"
 bandpass: 
-  enable: true                                      # add bandpass effects 
+  enable: false                                      # add bandpass effects 
   bandpassfile: "/home/iniyan/software/dev/Anime.jl/inputs/eht_2017.bandpass" # csv file containing bandpass information for all stations
 
 ####################################################

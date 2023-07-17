@@ -61,10 +61,10 @@ function pointing(obs::CjlObservation)
     pbfwhm = obs.stationinfo.pbfwhm230_arcsec./(mean(obs.chanfreqvec)/230.0e9) # scale primary beam to centre frequency of spw
     pointinginterval = obs.yamlconf["pointing"]["interval"] == "coherencetime" ? mean(obs.stationinfo.ctime_sec) : obs.yamlconf["pointing"]["interval"]
     if pointinginterval < obs.exposure
-	@warn("Pointing interval ($pointinginterval) < integration time ($(obs.exposure))! Setting pointing interval to $(obs.exposure) s ...")
-	pointinginterval = obs.exposure
+        @warn("Pointing interval ($pointinginterval) < integration time ($(obs.exposure))! Setting pointing interval to $(obs.exposure) s ...")
+        pointinginterval = obs.exposure
     end
-    @info("Generating new mispointings every $(pointinginterval) seconds")
+    @info("Generating new mispointings every $(pointinginterval) seconds...")
 
     # TODO calculate antenna rise and set times and mask pointing offsets? Is this really necessary? 
     # If the source is not above horizon, the antenna would automatically be flagged; shouldn't make a difference
@@ -76,26 +76,26 @@ function pointing(obs::CjlObservation)
         mispointvec = collect(first(actualtscanvec):pointinginterval:last(actualtscanvec)) # 'ideal'tscanvec is actually 'pointinginterval'tscanvec
         mispointveclen = length(mispointvec)
 
-	#mispointsperscan::Int64 = max(1, ceil((last(idealtscanvec)-first(idealtscanvec))/pointinginterval))
-	perscanpointingoffsets = zeros(Float64, mispointveclen, nant)
-	perscanpointingamperrors = zeros(Float64, mispointveclen, nant)
+	    #mispointsperscan::Int64 = max(1, ceil((last(idealtscanvec)-first(idealtscanvec))/pointinginterval))
+    	perscanpointingoffsets = zeros(Float64, mispointveclen, nant)
+	    perscanpointingamperrors = zeros(Float64, mispointveclen, nant)
 
-	# loop through stations and compute offsets and amplitude errors
-	for ant in 1:nant
-	    perscanpointingoffsets[:, ant] = gentimeseries!(perscanpointingoffsets[:, ant], "gaussian", 0.0, obs.stationinfo.pointingrms_arcsec[ant], 0.0, mispointveclen, obs.rngcorrupt)
-	    if obs.stationinfo.pbmodel[ant] == "gaussian"
+	    # loop through stations and compute offsets and amplitude errors
+	    for ant in 1:nant
+	        perscanpointingoffsets[:, ant] = gentimeseries!(perscanpointingoffsets[:, ant], obs.yamlconf["pointing"]["mode"], 0.0, obs.stationinfo.pointingrms_arcsec[ant], 0.0, mispointveclen, obs.rngcorrupt)
+	        if obs.stationinfo.pbmodel[ant] == "gaussian"
                 perscanpointingamperrors[:, ant] = exp.(-0.5.*(perscanpointingoffsets[:, ant]./(pbfwhm[ant]/2.35)).^2)
+	        end
 	    end
-	end
 
-	#mispointvec = compute_mispointvec(idealtscanvec, pointinginterval, mispointsperscan)
+	    #mispointvec = compute_mispointvec(idealtscanvec, pointinginterval, mispointsperscan)
 
-	# loop over data and apply pointing errors
+	    # loop over data and apply pointing errors
         findnearest(A,x) = argmin(abs.(A .- x)) # define function to find nearest neighbour
 
         for t in 1:actualtscanveclen
-	    # find the nearest value in idealtscanvec to actualtscanvec and then find the index of ptg ampl error in 'perscanpointingamperrors' that should be used
-	    mispointindex = min(mispointveclen, findnearest(mispointvec, actualtscanvec[t]))
+	        # find the nearest value in idealtscanvec to actualtscanvec and then find the index of ptg ampl error in 'perscanpointingamperrors' that should be used
+	        mispointindex = min(mispointveclen, findnearest(mispointvec, actualtscanvec[t]))
 
             # read all baselines present in a given time
             ant1vec = getindex(obs.antenna1, findall(obs.times.==actualtscanvec[t]))
@@ -109,7 +109,7 @@ function pointing(obs::CjlObservation)
         end
 
         # write to h5 file
-	g["perscanamperr_scan$(scan)"] = perscanpointingamperrors
+        g["perscanamperr_scan$(scan)"] = perscanpointingamperrors
     end
 
     # add datatype attribute
