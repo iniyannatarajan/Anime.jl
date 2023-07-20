@@ -8,9 +8,6 @@ using Interpolations
 Compute the bandpass model and apply to data. The actual numerical values are serialized as HDF5.
 """
 function bandpass(obs::CjlObservation)
-    # get element type to be used
-    elemtype = typeof(obs.data[1][1])
-
     # read in the station bandpass file
     bpinfo = CSV.read(obs.yamlconf["bandpass"]["bandpassfile"], DataFrame; delim=",", ignorerepeated=false)
 
@@ -21,7 +18,7 @@ function bandpass(obs::CjlObservation)
     attributes(g)["dims"] = "2 x 2 x nchannels x nant" #for each scan, a 4d array of 2 x 2 x nchan x nant is stored
 
     # create empty array of dims 2 x 2 x nchannels x nant
-    bjonesmatrices = zeros(elemtype, 2, 2, obs.numchan, size(obs.stationinfo)[1]) # 2 x 2 x ntimes x nant
+    bjonesmatrices = zeros(eltype(obs.data), 2, 2, obs.numchan, size(obs.stationinfo)[1]) # 2 x 2 x ntimes x nant
 
     for station in eachindex(obs.stationinfo.station)
 	# read in bandpass info from the input bandpass file

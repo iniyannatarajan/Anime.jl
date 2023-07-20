@@ -6,9 +6,6 @@ export stationgains
 Compute time-variable station gains and apply to data. The actual numerical values are serialized as HDF5.
 """
 function stationgains(obs::CjlObservation)
-    # get element type to be used
-    elemtype = typeof(obs.data[1][1])
-
     # open h5 file for writing
     fid = h5open(obs.yamlconf["hdf5corruptions"], "r+")
     g = create_group(fid, "stationgains")
@@ -29,7 +26,7 @@ function stationgains(obs::CjlObservation)
 	idealtscanveclen = length(idealtscanvec)
 
 	# create 4d array to hold G-Jones terms per time per station
-	gjonesmatrices = zeros(elemtype, 2, 2, idealtscanveclen, size(obs.stationinfo)[1]) # 2 x 2 x ntimes x nant
+	gjonesmatrices = zeros(eltype(obs.data), 2, 2, idealtscanveclen, size(obs.stationinfo)[1]) # 2 x 2 x ntimes x nant
 
 	for ant in eachindex(obs.stationinfo.station)
         gjonesmatrices[1, 1, :, ant] = gentimeseries!(gjonesmatrices[1, 1, :, ant], obs.yamlconf["stationgains"]["mode"], obs.stationinfo.g_pol1_loc[ant], obs.stationinfo.g_pol1_scale[ant], 0.0, idealtscanveclen, obs.rngcorrupt)

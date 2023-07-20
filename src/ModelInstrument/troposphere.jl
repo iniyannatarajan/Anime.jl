@@ -101,9 +101,6 @@ end
 Compute sky noise contribution
 """
 function compute_skynoise(obs::CjlObservation, atmdf::DataFrame, transmission::Array{Float64, 3}, g::HDF5.Group)
-    # get matrix type and size to be created -- data is a 4d array
-    elemtype = typeof(obs.data[1])
-
     # get unique times
     uniqtimes = unique(obs.times)
     ntimes = size(uniqtimes)[1]
@@ -123,7 +120,7 @@ function compute_skynoise(obs::CjlObservation, atmdf::DataFrame, transmission::A
 
     # compute sky noise and add to data
     skynoiserms = zeros(Float64, size(obs.data))
-    skynoise = zeros(elemtype, size(obs.data))
+    skynoise = zeros(eltype(obs.data), size(obs.data))
     row = 1
     for t in 1:ntimes # no. of unique times
         # read all baselines present in a given time
@@ -132,7 +129,7 @@ function compute_skynoise(obs::CjlObservation, atmdf::DataFrame, transmission::A
         for (ant1,ant2) in zip(ant1vec, ant2vec)
             for chan in 1:obs.numchan
 		            skynoiserms[:, :, chan, row] .= sigmaperchantimebl = (1/obs.yamlconf["correff"]) * sqrt((sefdarray[chan, t, ant1+1]*sefdarray[chan, t, ant2+1])/(2*obs.exposure*obs.chanwidth))
-	                skynoise[:, :, chan, row] = sigmaperchantimebl*randn(obs.rngtrop, elemtype, 2, 2) # sky noise is polarized
+	                skynoise[:, :, chan, row] = sigmaperchantimebl*randn(obs.rngtrop, eltype(obs.data), 2, 2) # sky noise is polarized
 		        obs.data[:, :, chan, row] += skynoise[:, :, chan, row]
             end
             row += 1 # increment the last dimension i.e. row number
@@ -159,15 +156,12 @@ end
 Compute mean delays
 """
 function compute_meandelays(obs::CjlObservation, atmdf::DataFrame, elevationmatrix::Array{Float64, 2}, g::HDF5.Group)
-    # get element type to be used
-    elemtype = typeof(obs.data[1][1])
-
     # get unique times
     uniqtimes = unique(obs.times)
     ntimes = size(uniqtimes)[1]
 
     # compute time and frequency varying phase delays for each station
-    phasedelays = zeros(elemtype, obs.numchan, ntimes, size(obs.stationinfo)[1])
+    phasedelays = zeros(eltype(obs.data), obs.numchan, ntimes, size(obs.stationinfo)[1])
     for ant in 1:size(obs.stationinfo)[1]
         # get delta path length
 	deltapathlengthvec = obs.yamlconf["troposphere"]["wetonly"] ? atmdf[atmdf.Station .== obs.stationinfo.station[ant],:].Wet_disp + 
@@ -209,9 +203,6 @@ Compute turbulent phases
 """
 function compute_turbulence(obs::CjlObservation, atmdf::DataFrame, elevationmatrix::Array{Float64, 2}, g::HDF5.Group)
     beta::Float64 = 5/3 # power law index
-
-    # get element type to be used
-    elemtype = typeof(obs.data[1][1])
 
     # get unique scan numbers
     uniqscans = unique(obs.scanno)

@@ -6,9 +6,6 @@ export instrumentalpol
 Compute instrumental polarization (leakage, or "D-Jones" terms) and apply to data. The actual numerical values are serialized as HDF5.
 """
 function instrumentalpol(obs::CjlObservation)
-    # get element type to be used for the Jones matrices
-    elemtype = typeof(obs.data[1][1])
-
     # get unique scan numbers
     uniqscans = unique(obs.scanno)
 
@@ -35,8 +32,8 @@ function instrumentalpol(obs::CjlObservation)
     end
 
 	# D-terms -- perform twice the feed angle rotation
-	djonesmatrices = ones(elemtype, 2, 2, obs.numchan, size(obs.stationinfo)[1]) # 2 x 2 x nchan x nant
-	polrotmatrices = ones(elemtype, 2, 2, obs.numchan, ntimes, size(obs.stationinfo)[1])
+	djonesmatrices = ones(eltype(obs.data), 2, 2, obs.numchan, size(obs.stationinfo)[1]) # 2 x 2 x nchan x nant
+	polrotmatrices = ones(eltype(obs.data), 2, 2, obs.numchan, ntimes, size(obs.stationinfo)[1])
 
     # compute D-terms
     if obs.yamlconf["instrumentalpol"]["visibilityframe"] == "antenna"

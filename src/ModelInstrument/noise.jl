@@ -6,9 +6,6 @@ export thermalnoise
 Compute per-baseline thermal noise in visibility domain and apply to data. The actual numerical values are serialized as HDF5.
 """
 function thermalnoise(obs::CjlObservation)
-    # get type and size of the matrix to be created -- data is a 4d array
-    elemtype = typeof(obs.data[1])
-
     # get unique times
     uniqtimes = unique(obs.times)
     ntimes = size(uniqtimes)[1]
@@ -25,7 +22,7 @@ function thermalnoise(obs::CjlObservation)
 
     # loop through each baseline pair and compute and apply thermal noise to obs.data
     thermalnoiserms = zeros(Float64, size(obs.data))
-    thermalnoise = zeros(elemtype, size(obs.data))
+    thermalnoise = zeros(eltype(obs.data), size(obs.data))
     for a1 in uniqant1
 	    for a2 in uniqant2
 	        if a2>a1
@@ -34,7 +31,7 @@ function thermalnoise(obs::CjlObservation)
                 thermalnoiserms[:, :, :, indices] .= sigmaperbl = (1/obs.yamlconf["correff"]) * sqrt((obs.stationinfo.sefd_Jy[a1+1]*obs.stationinfo.sefd_Jy[a2+1])
 								/(2*obs.exposure*obs.chanwidth))
                 # compute and add thermal noise to data
-                thermalnoise[:, :, :, indices] = sigmaperbl*randn(obs.rngcorrupt, elemtype, size(obs.data[:,:,:,indices]))
+                thermalnoise[:, :, :, indices] = sigmaperbl*randn(obs.rngcorrupt, eltype(obs.data), size(obs.data[:,:,:,indices]))
 	 	        obs.data[:, :, :, indices] = obs.data[:, :, :, indices] + thermalnoise[:, :, :, indices]
             end
 	    end

@@ -45,8 +45,7 @@ Compute the pointing model and apply to data. The actual numerical values are se
 """
 function pointing(obs::CjlObservation)
     @info("Computing pointing errors...")
-    # get element type to be used
-    elemtype = typeof(obs.data[1][1])
+
     nant = size(obs.stationinfo)[1]
  
     # open h5 file for writing
