@@ -1,4 +1,4 @@
-export generatems
+export msfromconfig, msfromuvfits
 
 using StatsBase: mode
 
@@ -151,7 +151,7 @@ function msfromuvfits(yamlconf::Dict; delim::String=",", ignorerepeated::Bool=fa
 end
 
 
-"""
+#="""
     msfromconfig(yamlconf::Dict; delim::String=",", ignorerepeated::Bool=false)
 
 Generate MS from the MS-relevant parameters in the config file.
@@ -248,10 +248,112 @@ function msfromconfig(yamlconf::Dict; delim::String=",", ignorerepeated::Bool=fa
 
     addweightcols(yamlconf["msname"], yamlconf["mode"], true, true) # add weight columns
 
+end=#
+
+"""
+    msfromconfig(yamlconf::Dict; delim::String=",", ignorerepeated::Bool=false)
+
+Generate MS from the MS-relevant parameters in the config file.
+"""
+function msfromconfig(msname::String, mscreationmode::String, stations::String, casaanttemplate::String, spw_centrefreq::Array{Float64, 1}, 
+    spw_bw::Array{Float64, 1}, spw_channels::Array{Int64, 1}, sourcedict::Dict{String, Any}, starttime::String, exposure::Float64, scans::Int64,
+    scanlengths::Array{Float64, 1}, scanlags::Array{Any, 1}; autocorr::Bool=false, telescopename::String="VLBA", feed::String="perfect R L",
+    shadowlimit::Float64=1e-6, elevationlimit::String="10deg", stokes::String="RR RL LR LL", delim::String=",", ignorerepeated::Bool=false)
+    # open new MS
+    sm.open(msname)
+
+    # set autocorr
+    Bool(autocorr) ? sm.setauto(autocorrwt=1.0) : sm.setauto(autocorrwt=0.0)
+    
+    # set antenna config -- create a new CASA ANTENNA table if the station info is in a CSV file
+    #stationtable = ""
+    if isfile(stations) && isdir(casaanttemplate)
+	    # check if template is specified
+	    #casaanttemplate === nothing && error("$(yamlconf["stations"]) is a CSV file but template CASA ANTENNA table not specified 🤷")
+        @info("Creating new ANTENNA table from CSV station info file...")
+	    stationtable = makecasaanttable(stations, casaanttemplate; delim=delim, ignorerepeated=ignorerepeated)
+    else
+        error("Either $(stations) or $(casaanttemplate) does not exist 🤷")
+    end
+
+    # station locations are contained in a casa antenna table
+    tb.open(stationtable)
+    station_code = tb.getcol("STATION")
+    dish_diameter = tb.getcol("DISH_DIAMETER")
+    station_mount = tb.getcol("MOUNT")
+    x, y, z = tb.getcol("POSITION")
+    tb.close()
+    tb.clearlocks()
+
+    coords = "global" # CASA antenna tables use ITRF by default
+    obspos = me.observatory(telescopename)
+    me.doframe(obspos)
+
+    # NB: For any Python array with strings, convert elements to Julia strings and cast the entire Vector to PyList()
+    sm.setconfig(telescopename=telescopename, x=x, y=y, z=z,
+		 dishdiameter=dish_diameter, mount=PyList(string.(station_mount)), antname=PyList(string.(station_code)),
+		 padname=PyList(string.(station_code)), coordsystem=coords, referencelocation=obspos)
+
+    # set feed
+    sm.setfeed(mode=feed)
+
+    # set limits for data flagging
+    sm.setlimits(shadowlimit=shadowlimit, elevationlimit=elevationlimit)
+
+    # set spectral windows -- NB: we are not handling multiple spws as of now
+    #=for (key, val) in yamlconf["manual"]["spwname"]
+	startfreq = val["centrefreq"] - val["bandwidth"]-2.0
+	chanwidth = val["bandwidth"]/val["channels"]
+	sm.setspwindow(spwname=key, freq="$(startfreq)GHz",
+		deltafreq="$(chanwidth)GHz", freqresolution="$(chanwidth)GHz",
+		nchannels=val["channels"], stokes=yamlconf["manual"]["stokes"])
+    end=#
+    for ind in 1:length(spw_centrefreq)
+        chanwidth = spw_bw[ind]/spw_channels[ind]
+        startfreq = spw_centrefreq[ind] - spw_bw[ind]/2. + chanwidth/2.
+	sm.setspwindow(spwname="$(Int(spw_centrefreq[ind]/1e9))GHz", freq="$(startfreq)Hz",
+        	deltafreq="$(chanwidth)Hz", freqresolution="$(chanwidth)Hz",
+		nchannels=spw_channels[ind], stokes=stokes)
+    end
+
+    # set obs fields
+    for (key, val) in sourcedict
+	sm.setfield(sourcename=key, sourcedirection=me.direction(rf=val["epoch"], v0=val["RA"], v1=val["Dec"]))
+    end
+
+    # set obs times
+    obs_starttime = split(starttime, ",")
+    referencetime = me.epoch(obs_starttime...)
+    me.doframe(referencetime)
+    sm.settimes(integrationtime=exposure, usehourangle=false, referencetime=referencetime)
+
+    # observe
+    scans != length(scanlengths) && error("No. of scans and no. of scanlengths do not match 🤷")
+    scans != length(scanlags)+1 && error("Number of scans and no. of lag times b/w scans do not match (no. of lags must be scans+1) 🤷")
+
+    stoptime = 0
+    for ii in 1:scans
+	    starttime = ii==1 ? 0 : stoptime+scanlags[ii-1]
+	    stoptime = starttime + scanlengths[ii] #+ yamlconf["exposure"] # one more exposure added here at the end of the scan
+
+	    # NB: We are not handling multiple spectral windows as of now
+	    #=for (key, val) in yamlconf["manual"]["spwname"]
+	    sm.observe(sourcename=collect(keys(yamlconf["manual"]["source"]))[1], spwname=key, starttime="$(starttime)s", stoptime="$(stoptime)s")
+	    end=#
+	    for ind in 1:length(spw_centrefreq)
+            sm.observe(sourcename=collect(keys(sourcedict))[1], spwname="$(Int(spw_centrefreq[ind]/1e9))GHz", starttime="$(starttime)s", stoptime="$(stoptime)s")
+	    end
+    end
+
+    # clean up
+    sm.close()
+
+    addweightcols(msname, mscreationmode, true, true) # add weight columns
+
 end
 
 
-"""
+#="""
     generatems(config::String; delim::String=",", ignorerepeated::Bool=false)
 
 Call the appropriate MS creation function based on the input parameters in the config file.
@@ -266,7 +368,7 @@ function generatems(config::String; delim::String=",", ignorerepeated::Bool=fals
 	    error("MS generation mode '$(yamlconf["mode"])' not recognised 🤷")
     end
     @info("$(yamlconf["msname"]) generation complete 🙆")
-end
+end=#
 
 
 #=function setupexistingms(yamlconf::Dict, delim::String, ignorerepeated::Bool)
