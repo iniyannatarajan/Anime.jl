@@ -23,6 +23,8 @@ function makecasaanttable(stations::String, casaanttemplate::String; delim::Stri
     tb.open(stationtable, nomodify=false)
     for ii in 1:length(df.station)-1
         tb.copyrows(stationtable, nrow=1)
+    end
+    for ii in 1:length(df.station)
         tb.putcol("STATION", String(df.station[ii]), startrow=ii-1, nrow=1)
         tb.putcol("NAME", String(df.station[ii]), startrow=ii-1, nrow=1)
         tb.putcol("MOUNT", String(df.mount[ii]), startrow=ii-1, nrow=1)
