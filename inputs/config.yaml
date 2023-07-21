@@ -3,7 +3,7 @@
 ####################################################
 # settings to generate a new ms
 
-mode: "manual"                                       # "vex", "uvfits", "manual" are the only allowed values
+mode: "uvfits"                                       # "vex", "uvfits", "manual" are the only allowed values
 msname: "eht_perfectrl_rrrllrll.ms"                                  # name of output ms 
 telescopename: "VLBA"                                # preset telescope known to casa (not important since CASA is not used for predict; just an argument required for setconfig)
 stations: "/home/iniyan/software/dev/Anime.jl/inputs/eht_2017.stations"     # CSV file with station parameters
@@ -19,10 +19,10 @@ source:
     RA: "12h30m49.42"                                # right ascension of source position in hours
     Dec: "+12.23.28.04"                              # declination of source position in degrees
     epoch: "J2000"                                   # "J2000" or "B1950"
-scans: 2                                             # number of scans
-scanlengths: [900, 600]                              # list of lengths of each scan in seconds
-scanlags: [300]                                      # list of lengths of lag times between scans (one less than number of scans)
-exposure: 0.5                                          # integration time in seconds
+scans: 1                                             # number of scans
+scanlengths: [900.0]                              # list of lengths of each scan in seconds
+scanlags: []                                      # list of lengths of lag times between scans in seconds (one less than number of scans)
+exposure: 1.0                                          # integration time in seconds
 stokes: "RR RL LR LL"                                # CASA understandable Stokes types to simulate (check official MS specification)
 spw:
     centrefreq: [229.0e9]                            # centre frequency of spw in Hz
@@ -33,12 +33,10 @@ starttime: "UTC,2021/04/28/00:00:00.00"              # starting time of the firs
 ####################################################
 # settings for wsclean predict
 
-osfactor: 8191                                       # oversampling factor
-skymodelmode: "fits"                                 # "fits" or "hdf5"
-hdf5sky: "/home/iniyan/software/dev/Anime.jl/inputs/sspot_freq_230e9.hdf5"       # name of HDF5 file
-fitssky: "/home/iniyan/software/dev/Anime.jl/inputs/sourcemodels/point"       # directory containing FITS sky models
+osfactor: 8191                                       # oversampling factor for WSClean
+skymodel: "/home/iniyan/software/dev/Anime.jl/inputs/sourcemodels/point"       # HDF5 file or directory containing FITS files
 polarized: false                                     # toggle source model polarization
-channelgroups: 1                                     # number of groups to divide the channels into
+channelgroups: 1                                     # number of groups to divide the channels into for computing source coherencies
 
 ####################################################
 # common settings
@@ -46,20 +44,20 @@ channelgroups: 1                                     # number of groups to divid
 correff: 0.88                                      # correlator efficiency for 2 quantization bits (use 0.636 for 1-bit)
 hdf5corruptions: "allcorruptions.h5"                 # HDF5 filename to store all corruptions; will be created in whatever output directory the user designates
 corruptseed: 456                                     # seed to be used for generating random variables for corruptions (except for troposphere)
-diagnostics: true                                  # generate diagnostic plots and logs
+diagnostics: false                                  # generate diagnostic plots and logs
 
 ####################################################
 # settings for atmospheric corruptions
 
 troposphere:                                         # add troposphere
-  enable: false
+  enable: true
   wetonly: false                                     # add only the wet component
   attenuate: false                                   # signal attenuation due to opacity
   skynoise: false                                    # add tropospheric contribution to sky noise
-  meandelays: true                                   # add mean delays
+  meandelays: false                                   # add mean delays
   fixdelays: false                                   # add fixed delays 
-  turbulence: true                                  # add turbulent phases
-  tropseed: 821                                      # independent seed for generating random variables for troposphere
+  turbulence: false                                  # add turbulent phases
+  tropseed: 873256                                      # independent seed for generating random variables for troposphere
 
 ionosphere:                                          # add ionosphere
   enable: false
@@ -68,9 +66,9 @@ ionosphere:                                          # add ionosphere
 # beam and pointing settings
 
 pointing:
-  enable: false
+  enable: true
   mode: "gp"                                         # "gp" (Gaussian processes) or "normal" (Gaussian)
-  interval: "coherencetime"                          # time interval (in seconds) after which to generate new pointing errors (or "coherencetime")
+  interval: 5.0                          # time interval (in seconds) after which to generate new pointing errors (or "coherencetime")
   longterm:
     enable: false                                    # enable longterm, multiscan pointing drifts
     nscan: 5                                         # no. of scans after which to reset long term pointing drift
@@ -81,7 +79,7 @@ pointing:
 # settings for instrumental polarization
 
 instrumentalpol: 
-  enable: false                                       # add instrumental polarization
+  enable: true                                       # add instrumental polarization
   mode: "gp"                                     # "gp" (Gaussian processes) or "normal" (Gaussian)
   visibilityframe: "sky"                             # "sky" or "antenna"; "sky" frame is used by default
 
@@ -89,14 +87,14 @@ instrumentalpol:
 # settings for gains
 
 stationgains: 
-  enable: false                                      # add antenna gains
+  enable: true                                      # add antenna gains
   mode: "gp"                                     # "gp" or "normal"
 bandpass: 
-  enable: false                                      # add bandpass effects 
+  enable: true                                      # add bandpass effects 
   bandpassfile: "/home/iniyan/software/dev/Anime.jl/inputs/eht_2017.bandpass" # csv file containing bandpass information for all stations
 
 ####################################################
 # noise settings
 
 thermalnoise: 
-  enable: false                                      # toggle thermal noise
+  enable: true                                      # toggle thermal noise

@@ -1,6 +1,10 @@
-export msfromconfig, msfromuvfits
+export msfromconfig, msfromuvfits, testprint
 
 using StatsBase: mode
+
+function testprint()
+    println("hello")
+end
 
 """
     makecasaanttable(stations::String, casaanttemplate::String; delim::String=",", ignorerepeated::Bool=false)
@@ -151,11 +155,11 @@ function msfromuvfits(yamlconf::Dict; delim::String=",", ignorerepeated::Bool=fa
 end=#
 
 """
-    msfromuvfits(uvfits::String, msname::String, stations::String, mscreationmode::String; delim::String=",", ignorerepeated::Bool=false)
+    msfromuvfits(uvfits::String, msname::String, mscreationmode::String, stations::String; delim::String=",", ignorerepeated::Bool=false)
 
 Generate MS from existing UVFITS file
 """
-function msfromuvfits(uvfits::String, msname::String, stations::String, mscreationmode::String; delim::String=",", ignorerepeated::Bool=false)
+function msfromuvfits(uvfits::String, msname::String, mscreationmode::String, stations::String; delim::String=",", ignorerepeated::Bool=false)
     # convert uvfits to ms
     importuvfits(fitsfile=uvfits, vis=msname)
 

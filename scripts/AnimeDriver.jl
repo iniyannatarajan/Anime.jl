@@ -49,8 +49,6 @@ end
 @info("Changing working directory to $outdir")
 cd(outdir)
 
-# create new ms
-#generatems(config, delim=",", ignorerepeated=false) # comma-separated; do not ignore repeated delimiters
 y = YAML.load_file(config, dicttype=Dict{String,Any})
 
 # generate new MS
@@ -60,13 +58,13 @@ if y["mode"] == "manual"
     feed=y["feed"], shadowlimit=y["shadowlimit"], elevationlimit=y["elevationlimit"], stokes=y["stokes"], delim=",", ignorerepeated=false)
 
 elseif y["mode"] == "uvfits"
-    msfromuvfits(y["uvfits"], y["msname"], y["stations"], y["mode"], delim=",", ignorerepeated=false)
+    msfromuvfits(y["uvfits"], y["msname"], y["mode"], y["stations"], delim=",", ignorerepeated=false)
 else
     error("MS generation mode '$(y["mode"])' not recognised 🤷")
 end
 
-# call wscean to predict visibilities
-computecoherency(config)
+# call wscean to compute source coherency
+run_wsclean(y["msname"], y["skymodel"], y["polarized"], y["channelgroups"], y["osfactor"])
 
 # load ms data into custom struct
 obs = loadobs(config, delim=",", ignorerepeated=false)

@@ -1,4 +1,4 @@
-export computecoherency
+export run_wsclean
 
 tb = table()
 
@@ -10,10 +10,12 @@ function copymodeltodata(msname::String)
     tb.clearlocks()
 end
 
+"""
+    run_wsclean(msname::String, fitsdir::String, polarized::Bool, channelgroups::Int64, osfactor::Int64)
+
+Compute source coherency using WSClean
+"""
 function run_wsclean(msname::String, fitsdir::String, polarized::Bool, channelgroups::Int64, osfactor::Int64)
-    """
-    Run wsclean
-    """
     fitsfiles = readdir(fitsdir, sort=true)
     nmodels = 0
     if polarized
@@ -61,7 +63,7 @@ function run_ducc0(msname::String, fitsdir::String, polarized::Bool, channelgrou
 
 end
 
-"""
+#="""
     computecoherency(config::String)
 
 Predict uncorrupted visibilities with the parameters obtained from config file.
@@ -80,4 +82,4 @@ function computecoherency(config::String)
 
     # run wsclean
     run_wsclean(yamlconf["msname"], fitsdir, yamlconf["polarized"], yamlconf["channelgroups"], yamlconf["osfactor"])
-end
+end=#
