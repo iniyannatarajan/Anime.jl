@@ -113,7 +113,7 @@ function msfromvex()
 end
 
 
-"""
+#="""
     msfromuvfits(yamlconf::Dict; delim::String=",", ignorerepeated::Bool=false)
 
 Generate MS from existing UVFITS
@@ -148,8 +148,44 @@ function msfromuvfits(yamlconf::Dict; delim::String=",", ignorerepeated::Bool=fa
 
     # WEIGHT_SPECTRUM is added by importuvfits; add only SIGMA_SPECTRUM manually
     addweightcols(yamlconf["msname"], yamlconf["mode"], true, true)
-end
+end=#
 
+"""
+    msfromuvfits(uvfits::String, msname::String, stations::String, mscreationmode::String; delim::String=",", ignorerepeated::Bool=false)
+
+Generate MS from existing UVFITS file
+"""
+function msfromuvfits(uvfits::String, msname::String, stations::String, mscreationmode::String; delim::String=",", ignorerepeated::Bool=false)
+    # convert uvfits to ms
+    importuvfits(fitsfile=uvfits, vis=msname)
+
+    # compare ANTENNA table in ms with stations file
+    df = CSV.read(stations, DataFrame; delim=delim, ignorerepeated=ignorerepeated)
+
+    tb.open("$(msname)::ANTENNA")
+    msstations = string.(tb.getcol("STATION"))
+    tb.close()
+
+    if !(issetequal(msstations, df.station))
+        error("Station info file $(stations) and MS ANTENNA table do not match 🤷")
+    end
+   
+    # setup polarization info
+    #setup_polarization(msname, stations)
+
+    # replace EXPOSURE column with the mode of EXPOSURE column in the ms to avoid slight differences
+    # in recorded exposure times in uvfits output by eht-imaging (the most likely origin of a uvfits file)
+    tb.open(msname, nomodify=false)
+    exparr = pyconvert(PyArray, tb.getcol("EXPOSURE"))
+    @info("Replacing potentially inconsistent values in EXPOSURE and INTERVAL columns with mode(EXPOSURE): $(mode(exparr)) s")
+    exposurevec = mode(exparr) .+ zeros(Float64, pyconvert(Int64, tb.nrows())) # use mode instead of mean or median to get the "most correct" exposure value
+    tb.putcol("EXPOSURE", PyList(exposurevec))
+    tb.putcol("INTERVAL", PyList(exposurevec))
+    tb.close()
+
+    # WEIGHT_SPECTRUM is added by importuvfits; add only SIGMA_SPECTRUM manually
+    addweightcols(msname, mscreationmode, true, true)
+end
 
 #="""
     msfromconfig(yamlconf::Dict; delim::String=",", ignorerepeated::Bool=false)
@@ -251,9 +287,12 @@ function msfromconfig(yamlconf::Dict; delim::String=",", ignorerepeated::Bool=fa
 end=#
 
 """
-    msfromconfig(yamlconf::Dict; delim::String=",", ignorerepeated::Bool=false)
+    msfromconfig(msname::String, mscreationmode::String, stations::String, casaanttemplate::String, spw_centrefreq::Array{Float64, 1}, 
+    spw_bw::Array{Float64, 1}, spw_channels::Array{Int64, 1}, sourcedict::Dict{String, Any}, starttime::String, exposure::Float64, scans::Int64,
+    scanlengths::Array{Float64, 1}, scanlags::Array{Any, 1}; autocorr::Bool=false, telescopename::String="VLBA", feed::String="perfect R L",
+    shadowlimit::Float64=1e-6, elevationlimit::String="10deg", stokes::String="RR RL LR LL", delim::String=",", ignorerepeated::Bool=false)
 
-Generate MS from the MS-relevant parameters in the config file.
+Generate measurement set from scratch from input observation parameters
 """
 function msfromconfig(msname::String, mscreationmode::String, stations::String, casaanttemplate::String, spw_centrefreq::Array{Float64, 1}, 
     spw_bw::Array{Float64, 1}, spw_channels::Array{Int64, 1}, sourcedict::Dict{String, Any}, starttime::String, exposure::Float64, scans::Int64,
@@ -351,25 +390,6 @@ function msfromconfig(msname::String, mscreationmode::String, stations::String, 
     addweightcols(msname, mscreationmode, true, true) # add weight columns
 
 end
-
-
-#="""
-    generatems(config::String; delim::String=",", ignorerepeated::Bool=false)
-
-Call the appropriate MS creation function based on the input parameters in the config file.
-"""
-function generatems(config::String; delim::String=",", ignorerepeated::Bool=false)
-    yamlconf = YAML.load_file(config, dicttype=Dict{String,Any})
-    if yamlconf["mode"] == "manual"
-	    msfromconfig(yamlconf; delim=",", ignorerepeated=false)
-    elseif yamlconf["mode"] == "uvfits"
-	    msfromuvfits(yamlconf, delim=",", ignorerepeated=false)
-    else
-	    error("MS generation mode '$(yamlconf["mode"])' not recognised 🤷")
-    end
-    @info("$(yamlconf["msname"]) generation complete 🙆")
-end=#
-
 
 #=function setupexistingms(yamlconf::Dict, delim::String, ignorerepeated::Bool)
     """

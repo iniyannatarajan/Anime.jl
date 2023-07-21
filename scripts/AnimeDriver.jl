@@ -60,7 +60,7 @@ if y["mode"] == "manual"
     feed=y["feed"], shadowlimit=y["shadowlimit"], elevationlimit=y["elevationlimit"], stokes=y["stokes"], delim=",", ignorerepeated=false)
 
 elseif y["mode"] == "uvfits"
-    msfromuvfits(y, delim=",", ignorerepeated=false)
+    msfromuvfits(y["uvfits"], y["msname"], y["stations"], y["mode"], delim=",", ignorerepeated=false)
 else
     error("MS generation mode '$(y["mode"])' not recognised 🤷")
 end
