@@ -67,7 +67,7 @@ end
 run_wsclean(y["msname"], y["skymodel"], y["polarized"], y["channelgroups"], y["osfactor"])
 
 # load ms data into custom struct
-obs = loadobs(config, delim=",", ignorerepeated=false)
+obs = loadms(y, y["msname"], y["stations"], Int(y["corruptseed"]), Int(y["troposphere"]["tropseed"]), delim=",", ignorerepeated=false)
 
 # make diagnostic plots of uncorrupted data
 obs.yamlconf["diagnostics"] && plotvis(obs, saveprefix="modelvis_") #plotvis(obs.data, obs.flag, obs.uvw, obs.chanfreqvec, obs.numchan, saveprefix="beforepropagation_")
@@ -104,7 +104,8 @@ if obs.yamlconf["bandpass"]["enable"]
 end
 
 # add thermal noise
-obs.yamlconf["thermalnoise"]["enable"] && thermalnoise(obs)
+obs.yamlconf["thermalnoise"]["enable"] && thermalnoise(obs.times, obs.yamlconf["hdf5corruptions"], obs.antenna1, obs.antenna2, obs.data,
+obs.yamlconf["correff"], obs.exposure, obs.chanwidth, obs.rngcorrupt, obs.stationinfo.sefd_Jy)
 
 # make diagnostic plots
 obs.yamlconf["diagnostics"] && plotvis(obs, saveprefix="datavis_") #plotvis(obs.data, obs.flag, obs.uvw, obs.chanfreqvec, obs.numchan, saveprefix="afterpropagation_")

@@ -1,4 +1,4 @@
-export loadobs
+export loadms, CjlObservation
 
 abstract type AbstractObservation{T} end
 
@@ -35,14 +35,13 @@ Tables.columnaccess(::Type{<:CjlObservation}) = true
 Tables.columns(m::CjlObservation) = m
 
 """
-    loadobs(config::String; delim::String=",", ignorerepeated::Bool=false)
+    loadms(y:Dict, msname::String, stations::String, corruptseed::Int, tropseed::Int; delim::String=",", ignorerepeated::Bool=false)
 
-Load data and metadata from ms and station table and return a CjlObservation object.
+Load data and metadata from MS and station table and return a CjlObservation object.
 """
-function loadobs(config::String; delim::String=",", ignorerepeated::Bool=false)
+function loadms(y::Dict, msname::String, stations::String, corruptseed::Int, tropseed::Int; delim::String=",", ignorerepeated::Bool=false)
 
-    yamlconf = YAML.load_file(config, dicttype=Dict{String,Any})
-    tab = CCTable(yamlconf["msname"], CCTables.Old)
+    tab = CCTable(msname, CCTables.Old)
 
     # read values from ms
     data::Vector{Matrix{ComplexF32}} = tab[:DATA][:]
@@ -79,7 +78,7 @@ function loadobs(config::String; delim::String=",", ignorerepeated::Bool=false)
     flag3dresandperm = permutedims(flag3dres, (2,1,3,4))
 
     # read values from station info csv file
-    stationinfo = CSV.read(yamlconf["stations"], DataFrame; delim=delim, ignorerepeated=ignorerepeated)
+    stationinfo = CSV.read(stations, DataFrame; delim=delim, ignorerepeated=ignorerepeated)
 
     # parse strings to complex values for gjones terms
     stationinfo.g_pol1_loc = map(x->parse(ComplexF32,x), stationinfo.g_pol1_loc)
@@ -94,13 +93,14 @@ function loadobs(config::String; delim::String=",", ignorerepeated::Bool=false)
     stationinfo.mount = map(strip, stationinfo.mount)
 
     # generate some quantities to be available for all corrupting functions and them to the observation composite type
-    rngcorrupt = Xoshiro(Int(yamlconf["corruptseed"]))
-    rngtrop = Xoshiro(Int(yamlconf["troposphere"]["tropseed"]))
+    rngcorrupt = Xoshiro(corruptseed)
+    rngtrop = Xoshiro(tropseed)
 
     # construct CjlObservation object
     #observation = CjlObservation{Float64}(data3dresandperm,antenna1,antenna2,times,exposure,scanno,weight,weightspec,sigma,sigmaspec,
     #					  numchan,chanfreqvec,chanwidth,phasedir,pos,stationinfo,yamlconf,rngcorrupt,rngtrop)
-    observation = CjlObservation{Float64}(data3dresandperm,flag3dresandperm,antenna1,antenna2,uvw,times,exposure,scanno,numchan,chanfreqvec,chanwidth,phasedir,pos,stationinfo,yamlconf,rngcorrupt,rngtrop)
+    
+    observation = CjlObservation{Float64}(data3dresandperm,flag3dresandperm,antenna1,antenna2,uvw,times,exposure,scanno,numchan,chanfreqvec,chanwidth,phasedir,pos,stationinfo,y,rngcorrupt,rngtrop)
 
     @info("Load data for processing 🙆")
     return observation
