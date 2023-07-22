@@ -93,13 +93,15 @@ end
 
 # add station gains
 if obs.yamlconf["stationgains"]["enable"]
-    stationgains(obs)
+    stationgains(obs.yamlconf["hdf5corruptions"], obs.scanno, obs.times, obs.exposure, obs.data, obs.stationinfo, obs.yamlconf["stationgains"]["mode"],
+    obs.rngcorrupt, obs.antenna1, obs.antenna2, obs.numchan)
     obs.yamlconf["diagnostics"] && plotstationgains(obs)
 end
 
 # add bandpasses
 if obs.yamlconf["bandpass"]["enable"]
-    bandpass(obs)
+    bandpass(obs.yamlconf["bandpass"]["bandpassfile"], obs.yamlconf["hdf5corruptions"], obs.data, obs.stationinfo, obs.rngcorrupt, obs.antenna1, obs.antenna2,
+    obs.numchan, obs.chanfreqvec)
     obs.yamlconf["diagnostics"] && plotbandpass(obs)
 end
 
