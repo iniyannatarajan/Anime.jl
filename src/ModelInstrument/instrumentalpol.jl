@@ -1,11 +1,11 @@
 export instrumentalpol
 
 """
-    instrumentalpol(obs::CjlObservation)
+    instrumentalpol(obs::CjlObservation; h5file::String="")
 
 Compute instrumental polarization (leakage, or "D-Jones" terms) and apply to data. The actual numerical values are serialized as HDF5.
 """
-function instrumentalpol(obs::CjlObservation)
+function instrumentalpol(obs::CjlObservation; h5file::String="")
     # get unique scan numbers
     uniqscans = unique(obs.scanno)
 
@@ -13,23 +13,9 @@ function instrumentalpol(obs::CjlObservation)
     uniqtimes = unique(obs.times)
     ntimes = size(uniqtimes)[1]
 
-    # open h5 file for writing
-    fid = h5open(obs.yamlconf["hdf5corruptions"], "r+")
-    g = create_group(fid, "polarization")
-    attributes(g)["desc"] = "Numerical values of instrumental polarization matrices applied to data (Dterms and fullpolproduct)"
-    attributes(g)["dims"] = "2 x 2 x nchannels x nant" #for each scan, a 4d array of 2 x 2 x nchan x nant is stored
-
     # compute necessary quantities
     elevationmatrix = elevationangle(obs.times, obs.phasedir, obs.stationinfo, obs.pos)
     parallacticanglematrix = parallacticangle(obs)
-
-    if !(haskey(g, "elevation"))
-        g["elevation"] = elevationmatrix
-    end
-
-    if !(haskey(g, "parallacticangle"))
-        g["parallacticangle"] = parallacticanglematrix
-    end
 
 	# D-terms -- perform twice the feed angle rotation
 	djonesmatrices = ones(eltype(obs.data), 2, 2, obs.numchan, size(obs.stationinfo)[1]) # 2 x 2 x nchan x nant
@@ -93,11 +79,25 @@ function instrumentalpol(obs::CjlObservation)
     end
 
     # write polarization matrices to HDF5 file
-    g["djonesmatrices"] = djonesmatrices
-    g["polrotmatrices"] = polrotmatrices
-    attributes(g)["datatype"] = string(typeof(read(g[keys(g)[1]])))
-    # close h5 file
-    close(fid)
+    if !isempty(h5file)
+        fid = h5open(h5file, "cw")
+        g = create_group(fid, "polarization")
+        attributes(g)["desc"] = "Numerical values of instrumental polarization matrices applied to data (Dterms and fullpolproduct)"
+        attributes(g)["dims"] = "2 x 2 x nchannels x nant" #for each scan, a 4d array of 2 x 2 x nchan x nant is stored
+
+        if !(haskey(g, "elevation"))
+            g["elevation"] = elevationmatrix
+        end
+
+        if !(haskey(g, "parallacticangle"))
+            g["parallacticangle"] = parallacticanglematrix
+        end
+
+        g["djonesmatrices"] = djonesmatrices
+        g["polrotmatrices"] = polrotmatrices
+        attributes(g)["datatype"] = string(typeof(read(g[keys(g)[1]])))
+        close(fid)
+    end
 
     @info("Compute and apply instrumental polarization... 🙆")
     

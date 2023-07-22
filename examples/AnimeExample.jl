@@ -74,46 +74,45 @@ obs.yamlconf["diagnostics"] && plotvis(obs, saveprefix="modelvis_") #plotvis(obs
 
 # add corruptions
 #addcorruptions(obs)
-# create HDF5 file to store all corruptions
-@info("Initialising empty HDF5 file to store propagation path effects...")
-fid = h5open(obs.yamlconf["hdf5corruptions"], "w") # using mode "w" to destroy existing contents
-close(fid)
+
+h5file = "insmodel.h5"
 
 # add tropospheric effects
-obs.yamlconf["troposphere"]["enable"] && troposphere(obs)
+# TODO must pass h5file name to troposphere for now
+obs.yamlconf["troposphere"]["enable"] && troposphere(obs, h5file=h5file)
 
 # add instrumental polarization
-obs.yamlconf["instrumentalpol"]["enable"] && instrumentalpol(obs)
+obs.yamlconf["instrumentalpol"]["enable"] && instrumentalpol(obs, h5file=h5file)
 
 # add pointing errors
 if obs.yamlconf["pointing"]["enable"]
-    pointing(obs)
+    pointing(obs, h5file=h5file)
     obs.yamlconf["diagnostics"] && plotpointingerrors(obs)
 end
 
 # add station gains
 if obs.yamlconf["stationgains"]["enable"]
-    stationgains(obs.yamlconf["hdf5corruptions"], obs.scanno, obs.times, obs.exposure, obs.data, obs.stationinfo, obs.yamlconf["stationgains"]["mode"],
-    obs.rngcorrupt, obs.antenna1, obs.antenna2, obs.numchan)
+    stationgains(obs.scanno, obs.times, obs.exposure, obs.data, obs.stationinfo, obs.yamlconf["stationgains"]["mode"],
+    obs.rngcorrupt, obs.antenna1, obs.antenna2, obs.numchan, h5file=h5file)
     obs.yamlconf["diagnostics"] && plotstationgains(obs)
 end
 
 # add bandpasses
 if obs.yamlconf["bandpass"]["enable"]
-    bandpass(obs.yamlconf["bandpass"]["bandpassfile"], obs.yamlconf["hdf5corruptions"], obs.data, obs.stationinfo, obs.rngcorrupt, obs.antenna1, obs.antenna2,
-    obs.numchan, obs.chanfreqvec)
+    bandpass(obs.yamlconf["bandpass"]["bandpassfile"], obs.data, obs.stationinfo, obs.rngcorrupt, obs.antenna1, obs.antenna2,
+    obs.numchan, obs.chanfreqvec, h5file=h5file)
     obs.yamlconf["diagnostics"] && plotbandpass(obs)
 end
 
 # add thermal noise
-obs.yamlconf["thermalnoise"]["enable"] && thermalnoise(obs.times, obs.yamlconf["hdf5corruptions"], obs.antenna1, obs.antenna2, obs.data,
-obs.yamlconf["correff"], obs.exposure, obs.chanwidth, obs.rngcorrupt, obs.stationinfo.sefd_Jy)
+obs.yamlconf["thermalnoise"]["enable"] && thermalnoise(obs.times, obs.antenna1, obs.antenna2, obs.data,
+obs.yamlconf["correff"], obs.exposure, obs.chanwidth, obs.rngcorrupt, obs.stationinfo.sefd_Jy, h5file=h5file)
 
 # make diagnostic plots
 obs.yamlconf["diagnostics"] && plotvis(obs, saveprefix="datavis_") #plotvis(obs.data, obs.flag, obs.uvw, obs.chanfreqvec, obs.numchan, saveprefix="afterpropagation_")
 
 # compute weights and write everything to disk
-postprocessms(obs)
+postprocessms(obs, h5file=h5file)
 
 # Change back to original working directory
 @info("Changing working directory back to $startdir")

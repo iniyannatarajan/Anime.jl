@@ -39,20 +39,22 @@ function longtermpointing()
 end
 
 """
-    pointing(obs::CjlObservation)
+    pointing(obs::CjlObservation; h5file::String="")
 
 Compute the pointing model and apply to data. The actual numerical values are serialized as HDF5.
 """
-function pointing(obs::CjlObservation)
+function pointing(obs::CjlObservation; h5file::String="")
     @info("Computing pointing errors...")
 
     nant = size(obs.stationinfo)[1]
  
     # open h5 file for writing
-    fid = h5open(obs.yamlconf["hdf5corruptions"], "r+")
-    g = create_group(fid, "pointingerrors")
-    attributes(g)["desc"] = "Numerical values of time-variable short and long term pointing errors"
-    attributes(g)["dims"] = "short and long term pointing errors have different dims"
+    if !isempty(h5file)
+        fid = h5open(h5file, "cw")
+        g = create_group(fid, "pointingerrors")
+        attributes(g)["desc"] = "Numerical values of time-variable short and long term pointing errors"
+        attributes(g)["dims"] = "short and long term pointing errors have different dims"
+    end
  
     # get unique scan numbers
     uniqscans = unique(obs.scanno)
@@ -108,15 +110,16 @@ function pointing(obs::CjlObservation)
         end
 
         # write to h5 file
-        g["perscanoffsets_scan$(scan)"] = perscanoffsets
-        g["perscanamperrors_scan$(scan)"] = perscanamperrors
+        if !isempty(h5file)
+            g["perscanoffsets_scan$(scan)"] = perscanoffsets
+            g["perscanamperrors_scan$(scan)"] = perscanamperrors
+        end
     end
 
-    # add datatype attribute
-    attributes(g)["datatype"] = string(typeof(read(g[keys(g)[1]])))
-
-    # close h5 file
-    close(fid)
+    if !isempty(h5file)
+        attributes(g)["datatype"] = string(typeof(read(g[keys(g)[1]])))
+        close(fid)
+    end
 
     @info("Apply pointing errors to visibilities... 🙆")
 end

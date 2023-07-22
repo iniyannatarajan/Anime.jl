@@ -42,7 +42,6 @@ channelgroups: 1                                     # number of groups to divid
 # common settings
 
 correff: 0.88                                      # correlator efficiency for 2 quantization bits (use 0.636 for 1-bit)
-hdf5corruptions: "allcorruptions.h5"                 # HDF5 filename to store all corruptions; will be created in whatever output directory the user designates
 corruptseed: 456                                     # seed to be used for generating random variables for corruptions (except for troposphere)
 diagnostics: false                                  # generate diagnostic plots and logs
 
@@ -52,11 +51,11 @@ diagnostics: false                                  # generate diagnostic plots 
 troposphere:                                         # add troposphere
   enable: true
   wetonly: false                                     # add only the wet component
-  attenuate: false                                   # signal attenuation due to opacity
-  skynoise: false                                    # add tropospheric contribution to sky noise
-  meandelays: false                                   # add mean delays
+  attenuate: true                                   # signal attenuation due to opacity
+  skynoise: true                                    # add tropospheric contribution to sky noise
+  meandelays: true                                   # add mean delays
   fixdelays: false                                   # add fixed delays 
-  turbulence: false                                  # add turbulent phases
+  turbulence: true                                  # add turbulent phases
   tropseed: 873256                                      # independent seed for generating random variables for troposphere
 
 ionosphere:                                          # add ionosphere

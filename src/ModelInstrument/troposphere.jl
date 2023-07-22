@@ -277,15 +277,15 @@ function compute_turbulence(obs::CjlObservation, atmdf::DataFrame, elevationmatr
 end
 
 """
-    troposphere(obs::CjlObservation)
+    troposphere(obs::CjlObservation; h5file::String="")
 
 Compute various tropospheric effects and apply to data. The actual numerical values are serialized as HDF5.
 """
-function troposphere(obs::CjlObservation)
+function troposphere(obs::CjlObservation; h5file::String="")
     @info("Computing tropospheric effects...")
 
     # open h5 file for writing
-    fid = h5open(obs.yamlconf["hdf5corruptions"], "r+")
+    fid = h5open(h5file, "cw")
     g = create_group(fid, "troposphere")
     attributes(g)["desc"] = "all tropospheric signal corruptions"
     attributes(g)["dims"] = "various"
