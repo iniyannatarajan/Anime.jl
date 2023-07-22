@@ -1,7 +1,8 @@
 export thermalnoise
 
 """
-    thermalnoise(obs::CjlObservation)
+    thermalnoise(times::Vector{Float64}, h5file::String, antenna1::Vector{Int}, antenna2::Vector{Int}, data::Array{Complex{Float32},4}, correff::Float64,
+    exposure::Float64, chanwidth::Float64, rngcorrupt::AbstractRNG, sefd::Vector{Float64})
 
 Compute per-baseline thermal noise in visibility domain and apply to data. The actual numerical values are serialized as HDF5.
 """
