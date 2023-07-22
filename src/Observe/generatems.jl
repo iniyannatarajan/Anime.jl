@@ -267,11 +267,10 @@ function msfromconfig(yamlconf::Dict; delim::String=",", ignorerepeated::Bool=fa
 
     # observe
     Int64(yamlconf["scans"]) != length(yamlconf["scanlengths"]) && error("Number of scans and length(scanlengths_s) do not match 🤷")
-    Int64(yamlconf["scans"]) != length(yamlconf["scanlags"])+1 && error("Number of scans and length(scanlaglist)+1 do not match 🤷")
 
     stoptime = 0
     for ii in 1:Int64(yamlconf["scans"])
-	starttime = ii==1 ? 0 : stoptime+yamlconf["scanlags"][ii-1]
+	starttime = ii==1 ? 0 : stoptime+yamlconf["scanlag"]
 	stoptime = starttime + yamlconf["scanlengths"][ii] #+ yamlconf["exposure"] # one more exposure added here at the end of the scan
 
 	# NB: We are not handling multiple spectral windows as of now
@@ -293,14 +292,14 @@ end=#
 """
     msfromconfig(msname::String, mscreationmode::String, stations::String, casaanttemplate::String, spw_centrefreq::Array{Float64, 1}, 
     spw_bw::Array{Float64, 1}, spw_channels::Array{Int64, 1}, sourcedict::Dict{String, Any}, starttime::String, exposure::Float64, scans::Int64,
-    scanlengths::Array{Float64, 1}, scanlags::Array{Any, 1}; autocorr::Bool=false, telescopename::String="VLBA", feed::String="perfect R L",
+    scanlengths::Array{Float64, 1}, scanlag::Float64; autocorr::Bool=false, telescopename::String="VLBA", feed::String="perfect R L",
     shadowlimit::Float64=1e-6, elevationlimit::String="10deg", stokes::String="RR RL LR LL", delim::String=",", ignorerepeated::Bool=false)
 
 Generate measurement set from scratch from input observation parameters
 """
 function msfromconfig(msname::String, mscreationmode::String, stations::String, casaanttemplate::String, spw_centrefreq::Array{Float64, 1}, 
     spw_bw::Array{Float64, 1}, spw_channels::Array{Int64, 1}, sourcedict::Dict{String, Any}, starttime::String, exposure::Float64, scans::Int64,
-    scanlengths::Array{Float64, 1}, scanlags::Array{Any, 1}; autocorr::Bool=false, telescopename::String="VLBA", feed::String="perfect R L",
+    scanlengths::Array{Float64, 1}, scanlag::Float64; autocorr::Bool=false, telescopename::String="VLBA", feed::String="perfect R L",
     shadowlimit::Float64=1e-6, elevationlimit::String="10deg", stokes::String="RR RL LR LL", delim::String=",", ignorerepeated::Bool=false)
     # open new MS
     sm.open(msname)
@@ -372,11 +371,10 @@ function msfromconfig(msname::String, mscreationmode::String, stations::String, 
 
     # observe
     scans != length(scanlengths) && error("No. of scans and no. of scanlengths do not match 🤷")
-    scans != length(scanlags)+1 && error("Number of scans and no. of lag times b/w scans do not match (no. of lags must be scans+1) 🤷")
 
     stoptime = 0
     for ii in 1:scans
-	    starttime = ii==1 ? 0 : stoptime+scanlags[ii-1]
+	    starttime = ii==1 ? 0 : stoptime+scanlag
 	    stoptime = starttime + scanlengths[ii] #+ yamlconf["exposure"] # one more exposure added here at the end of the scan
 
 	    # NB: We are not handling multiple spectral windows as of now

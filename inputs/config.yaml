@@ -3,7 +3,7 @@
 ####################################################
 # settings to generate a new ms
 
-mode: "uvfits"                                       # "vex", "uvfits", "manual" are the only allowed values
+mode: "manual"                                       # "vex", "uvfits", "manual" are the only allowed values
 msname: "eht_perfectrl_rrrllrll.ms"                                  # name of output ms 
 telescopename: "VLBA"                                # preset telescope known to casa (not important since CASA is not used for predict; just an argument required for setconfig)
 stations: "/home/iniyan/software/dev/Anime.jl/inputs/eht_2017.stations"     # CSV file with station parameters
@@ -21,7 +21,7 @@ source:
     epoch: "J2000"                                   # "J2000" or "B1950"
 scans: 1                                             # number of scans
 scanlengths: [900.0]                              # list of lengths of each scan in seconds
-scanlags: []                                      # list of lengths of lag times between scans in seconds (one less than number of scans)
+scanlag: 300.0                                     # lag time between scans in seconds
 exposure: 1.0                                          # integration time in seconds
 stokes: "RR RL LR LL"                                # CASA understandable Stokes types to simulate (check official MS specification)
 spw:
