@@ -1,10 +1,6 @@
-export msfromconfig, msfromuvfits, testprint
+export msfromconfig, msfromuvfits
 
 using StatsBase: mode
-
-function testprint()
-    println("hello")
-end
 
 """
     makecasaanttable(stations::String, casaanttemplate::String; delim::String=",", ignorerepeated::Bool=false)
