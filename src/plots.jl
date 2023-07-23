@@ -33,7 +33,7 @@ function plotvis(obs::CjlObservation; saveprefix="data_")
     plot!(p, xlabel="Projected baseline separation (Gλ)", ylabel="Complex visibility amplitude (Jy)", legend=:outertop, legendcolumns=4)
     savefig(p, saveprefix*"visampvspbs.png")
 
-    #=# plot visibility phases against projected baseline separation
+    # plot visibility phases against projected baseline separation
     p = plot()
     # plot first frequency channel
     plot!(p, uvwave, angle.(maskeddata[1,1,1,:]), seriestype=:scatter, ls=:dot, ms=1, mc=:red, msc=:red, label="RR")
@@ -50,7 +50,7 @@ function plotvis(obs::CjlObservation; saveprefix="data_")
     end
 
     plot!(p, xlabel="Projected baseline separation (Gλ)", ylabel="Complex visibility phase (rad)", legend=:outertop, legendcolumns=4)
-    savefig(p, saveprefix*"visphasevspbs.png")=#
+    savefig(p, saveprefix*"visphasevspbs.png")
 
     # plot visibility amplitudes against time
     p = plot()
@@ -72,7 +72,7 @@ function plotvis(obs::CjlObservation; saveprefix="data_")
     plot!(p, xlabel="Time (s)", ylabel="Complex visibility amplitude (Jy)", legend=:outertop, legendcolumns=4)
     savefig(p, saveprefix*"visampvstime.png")
 
-    #=# plot visibility phases against time
+    # plot visibility phases against time
     p = plot()
     x = obs.times .- obs.times[1]
     # plot first frequency channel
@@ -90,7 +90,7 @@ function plotvis(obs::CjlObservation; saveprefix="data_")
     end
     
     plot!(p, xlabel="Time (s)", ylabel="Complex visibility phase (rad)", legend=:outertop, legendcolumns=4)
-    savefig(p, saveprefix*"visphasevstime.png")=#
+    savefig(p, saveprefix*"visphasevstime.png")
 
     @info("Done 🙆")
 end

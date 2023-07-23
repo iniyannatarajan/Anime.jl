@@ -27,10 +27,6 @@ tb = table()
 me = measures()
 sm = simulator()
 
-#=include("Observe/Observe.jl")
-include("Utils/Utils.jl")
-include("ModelInstrument/ModelInstrument.jl")=#
-
 include("storageutils/storageutils.jl")
 include("coherency/coherency.jl")
 include("atmosphericmodels/atmosphericmodels.jl")
@@ -38,6 +34,7 @@ include("polarizationmodels/polarizationmodels.jl")
 include("beammodels/beammodels.jl")
 include("gainmodels/gainmodels.jl")
 include("noisemodels/noisemodels.jl")
-include("Utils/Utils.jl")
+include("util.jl")
+include("plots.jl")
 
 end
