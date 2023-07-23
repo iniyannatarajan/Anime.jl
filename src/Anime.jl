@@ -33,7 +33,11 @@ include("ModelInstrument/ModelInstrument.jl")=#
 
 include("storageutils/storageutils.jl")
 include("coherency/coherency.jl")
-include("ModelInstrument/ModelInstrument.jl")
+include("atmosphericmodels/atmosphericmodels.jl")
+include("polarizationmodels/polarizationmodels.jl")
+include("beammodels/beammodels.jl")
+include("gainmodels/gainmodels.jl")
+include("noisemodels/noisemodels.jl")
 include("Utils/Utils.jl")
 
 end
