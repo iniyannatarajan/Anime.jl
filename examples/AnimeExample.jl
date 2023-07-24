@@ -82,11 +82,13 @@ h5file = "insmodel.h5"
 y["troposphere"]["enable"] && troposphere(obs, h5file=h5file)
 
 # add instrumental polarization
-y["instrumentalpol"]["enable"] && instrumentalpol(obs, h5file=h5file)
+if y["instrumentalpol"]["enable"]
+    instrumentalpol(obs.scanno, obs.times, obs.stationinfo, obs.phasedir, obs.pos, obs.data, obs.numchan, y["instrumentalpol"]["visibilityframe"],
+    y["instrumentalpol"]["mode"], obs.antenna1, obs.antenna2, obs.exposure, obs.rngcorrupt, h5file=h5file)
+end
 
 # add pointing errors
 if y["pointing"]["enable"]
-    #pointing(obs, h5file=h5file)
     pointing(obs.stationinfo, obs.scanno, obs.chanfreqvec, y["pointing"]["interval"], y["pointing"]["mode"], obs.exposure, obs.times, obs.rngcorrupt,
     obs.antenna1, obs.antenna2, obs.data, obs.numchan, h5file=h5file)
     y["diagnostics"] && plotpointingerrors(obs)
