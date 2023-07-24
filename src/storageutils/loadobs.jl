@@ -4,6 +4,7 @@ abstract type AbstractObservation{T} end
 
 # TODO the entire data structure to hold MS data needs to be rewritten
 struct CjlObservation{T} <: AbstractObservation{T}
+    msname::String
     data::Array{Complex{Float32},4}
     flag::Array{Bool,4}
     antenna1::Vector{Int32}
@@ -22,7 +23,19 @@ struct CjlObservation{T} <: AbstractObservation{T}
     phasedir::Array{Float64,2}
     pos::Array{Float64, 2}
     stationinfo::DataFrame
-    yamlconf::Dict
+    #yamlconf::Dict
+    tropwetonly::Bool
+    correff::Float64
+    tropattenuate::Bool
+    tropskynoise::Bool
+    tropmeandelays::Bool
+    tropturbulence::Bool
+    polframe::String
+    polmode::String
+    ptginterval::Float64
+    ptgmode::String
+    stationgainsmode::String
+    bandpassfile::String
     rngcorrupt::AbstractRNG
     rngtrop::AbstractRNG
 end
@@ -35,11 +48,15 @@ Tables.columnaccess(::Type{<:CjlObservation}) = true
 Tables.columns(m::CjlObservation) = m
 
 """
-    loadms(y:Dict, msname::String, stations::String, corruptseed::Int, tropseed::Int; delim::String=",", ignorerepeated::Bool=false)
+    loadms(msname::String, stations::String, corruptseed::Int64, tropseed::Int64, tropwetonly::Bool, correff::Float64, tropattenuate::Bool,
+    tropskynoise::Bool, tropmeandelays::Bool, tropturbulence::Bool, polframe::String, polmode::String, ptginterval::Float64, ptgmode::String,
+    stationgainsmode::String, bandpassfile::String; delim::String=",", ignorerepeated::Bool=false)
 
 Load data and metadata from MS and station table and return a CjlObservation object.
 """
-function loadms(y::Dict, msname::String, stations::String, corruptseed::Int, tropseed::Int; delim::String=",", ignorerepeated::Bool=false)
+function loadms(msname::String, stations::String, corruptseed::Int64, tropseed::Int64, tropwetonly::Bool, correff::Float64, tropattenuate::Bool,
+    tropskynoise::Bool, tropmeandelays::Bool, tropturbulence::Bool, polframe::String, polmode::String, ptginterval::Float64, ptgmode::String,
+    stationgainsmode::String, bandpassfile::String; delim::String=",", ignorerepeated::Bool=false)
 
     tab = CCTable(msname, CCTables.Old)
 
@@ -96,11 +113,10 @@ function loadms(y::Dict, msname::String, stations::String, corruptseed::Int, tro
     rngcorrupt = Xoshiro(corruptseed)
     rngtrop = Xoshiro(tropseed)
 
-    # construct CjlObservation object
-    #observation = CjlObservation{Float64}(data3dresandperm,antenna1,antenna2,times,exposure,scanno,weight,weightspec,sigma,sigmaspec,
-    #					  numchan,chanfreqvec,chanwidth,phasedir,pos,stationinfo,yamlconf,rngcorrupt,rngtrop)
-    
-    observation = CjlObservation{Float64}(data3dresandperm,flag3dresandperm,antenna1,antenna2,uvw,times,exposure,scanno,numchan,chanfreqvec,chanwidth,phasedir,pos,stationinfo,y,rngcorrupt,rngtrop)
+    # construct CjlObservation object    
+    observation = CjlObservation{Float64}(msname,data3dresandperm,flag3dresandperm,antenna1,antenna2,uvw,times,exposure,scanno,numchan,chanfreqvec,
+    chanwidth,phasedir,pos,stationinfo,tropwetonly,correff,tropattenuate,tropskynoise,tropmeandelays,tropturbulence,polframe,polmode,
+    ptginterval,ptgmode,stationgainsmode,bandpassfile,rngcorrupt,rngtrop)
 
     @info("Load data for processing 🙆")
     return observation

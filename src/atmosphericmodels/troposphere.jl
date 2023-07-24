@@ -54,7 +54,7 @@ function compute_transmission!(transmission::Array{Float64, 3}, obs::CjlObservat
     # compute time and frequency varying transmission matrix for each station
     for ant in 1:size(transmission)[3]
         # get opacity at all frequencies for this station
-	opacityvec = obs.yamlconf["troposphere"]["wetonly"] ? atmdf[atmdf.Station .== obs.stationinfo.station[ant],:].Wet_opacity : 
+	opacityvec = obs.tropwetonly ? atmdf[atmdf.Station .== obs.stationinfo.station[ant],:].Wet_opacity : 
 	             atmdf[atmdf.Station .== obs.stationinfo.station[ant],:].Dry_opacity + atmdf[atmdf.Station .== obs.stationinfo.station[ant],:].Wet_opacity
         for t in 1:size(transmission)[2]
             for chan in 1:obs.numchan
@@ -128,7 +128,7 @@ function compute_skynoise(obs::CjlObservation, atmdf::DataFrame, transmission::A
         ant2vec = getindex(obs.antenna2, findall(obs.times.==uniqtimes[t]))
         for (ant1,ant2) in zip(ant1vec, ant2vec)
             for chan in 1:obs.numchan
-		            skynoiserms[:, :, chan, row] .= sigmaperchantimebl = (1/obs.yamlconf["correff"]) * sqrt((sefdarray[chan, t, ant1+1]*sefdarray[chan, t, ant2+1])/(2*obs.exposure*obs.chanwidth))
+		            skynoiserms[:, :, chan, row] .= sigmaperchantimebl = (1/obs.correff) * sqrt((sefdarray[chan, t, ant1+1]*sefdarray[chan, t, ant2+1])/(2*obs.exposure*obs.chanwidth))
 	                skynoise[:, :, chan, row] = sigmaperchantimebl*randn(obs.rngtrop, eltype(obs.data), 2, 2) # sky noise is polarized
 		        obs.data[:, :, chan, row] += skynoise[:, :, chan, row]
             end
@@ -164,7 +164,7 @@ function compute_meandelays(obs::CjlObservation, atmdf::DataFrame, elevationmatr
     phasedelays = zeros(eltype(obs.data), obs.numchan, ntimes, size(obs.stationinfo)[1])
     for ant in 1:size(obs.stationinfo)[1]
         # get delta path length
-	deltapathlengthvec = obs.yamlconf["troposphere"]["wetonly"] ? atmdf[atmdf.Station .== obs.stationinfo.station[ant],:].Wet_disp + 
+	deltapathlengthvec = obs.tropwetonly ? atmdf[atmdf.Station .== obs.stationinfo.station[ant],:].Wet_disp + 
 	                     atmdf[atmdf.Station .== obs.stationinfo.station[ant],:].Wet_nondisp : atmdf[atmdf.Station .== obs.stationinfo.station[ant],:].Wet_disp + 
 			     atmdf[atmdf.Station .== obs.stationinfo.station[ant],:].Wet_nondisp + atmdf[atmdf.Station .== obs.stationinfo.station[ant],:].Dry_nondisp
         for t in 1:ntimes
@@ -298,22 +298,22 @@ function troposphere(obs::CjlObservation; h5file::String="")
     end
 
     transmission = nothing
-    if obs.yamlconf["troposphere"]["attenuate"] || obs.yamlconf["troposphere"]["skynoise"]
+    if obs.tropattenuate || obs.tropskynoise
         transmission = zeros(Float64, obs.numchan, size(unique(obs.times))[1], size(obs.stationinfo)[1])
         transmission = compute_transmission!(transmission, obs, atmdf, elevationmatrix, g)
     end
 
     # attenuate
-    obs.yamlconf["troposphere"]["attenuate"] && attenuate(obs, transmission)
+    obs.tropattenuate && attenuate(obs, transmission)
 
     # skynoise
-    obs.yamlconf["troposphere"]["skynoise"] && compute_skynoise(obs, atmdf, transmission, g)
+    obs.tropskynoise && compute_skynoise(obs, atmdf, transmission, g)
 
     # meandelays
-    obs.yamlconf["troposphere"]["meandelays"] && compute_meandelays(obs, atmdf, elevationmatrix, g)
+    obs.tropmeandelays && compute_meandelays(obs, atmdf, elevationmatrix, g)
 
     # turbulence
-    obs.yamlconf["troposphere"]["turbulence"] && compute_turbulence(obs, atmdf, elevationmatrix, g)
+    obs.tropturbulence && compute_turbulence(obs, atmdf, elevationmatrix, g)
 
     # close h5 file
     close(fid)

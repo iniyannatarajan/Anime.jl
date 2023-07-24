@@ -66,7 +66,7 @@ function postprocessms(obs::CjlObservation; h5file::String="")
     revdata = [Matrix{ComplexF32}(revdata3d[:,:,i]) for i in 1:size(revdata3d)[3]]
 
     # when all the corruptions have been applied, write the above columns back to disk
-    table = CCTable(obs.yamlconf["msname"], CCTables.Update)
+    table = CCTable(obs.msname, CCTables.Update)
     table[:DATA] = revdata
     table[:SIGMA_SPECTRUM] = revtotalrmsspec
 	table[:WEIGHT_SPECTRUM] = revtotalwtspec

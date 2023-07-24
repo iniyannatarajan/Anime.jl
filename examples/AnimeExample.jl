@@ -67,7 +67,10 @@ end
 run_wsclean(y["msname"], y["skymodel"], y["polarized"], y["channelgroups"], y["osfactor"])
 
 # load ms data into custom struct
-obs = loadms(y, y["msname"], y["stations"], Int(y["corruptseed"]), Int(y["troposphere"]["tropseed"]), delim=",", ignorerepeated=false)
+obs = loadms(y["msname"], y["stations"], Int(y["corruptseed"]), Int(y["troposphere"]["tropseed"]), y["troposphere"]["wetonly"], y["correff"],
+y["troposphere"]["attenuate"], y["troposphere"]["skynoise"], y["troposphere"]["meandelays"], y["troposphere"]["turbulence"],
+y["instrumentalpol"]["visibilityframe"], y["instrumentalpol"]["mode"], y["pointing"]["interval"], y["pointing"]["mode"], y["stationgains"]["mode"],
+y["bandpass"]["bandpassfile"], delim=",", ignorerepeated=false)
 
 # make diagnostic plots of uncorrupted data
 y["diagnostics"] && plotvis(obs, saveprefix="modelvis_") #plotvis(obs.data, obs.flag, obs.uvw, obs.chanfreqvec, obs.numchan, saveprefix="beforepropagation_")
@@ -83,27 +86,27 @@ y["troposphere"]["enable"] && troposphere(obs, h5file=h5file)
 
 # add instrumental polarization
 if y["instrumentalpol"]["enable"]
-    instrumentalpol(obs.scanno, obs.times, obs.stationinfo, obs.phasedir, obs.pos, obs.data, obs.numchan, y["instrumentalpol"]["visibilityframe"],
-    y["instrumentalpol"]["mode"], obs.antenna1, obs.antenna2, obs.exposure, obs.rngcorrupt, h5file=h5file)
+    instrumentalpol(obs.scanno, obs.times, obs.stationinfo, obs.phasedir, obs.pos, obs.data, obs.numchan, obs.polframe,
+    obs.polmode, obs.antenna1, obs.antenna2, obs.exposure, obs.rngcorrupt, h5file=h5file)
 end
 
 # add pointing errors
 if y["pointing"]["enable"]
-    pointing(obs.stationinfo, obs.scanno, obs.chanfreqvec, y["pointing"]["interval"], y["pointing"]["mode"], obs.exposure, obs.times, obs.rngcorrupt,
+    pointing(obs.stationinfo, obs.scanno, obs.chanfreqvec, obs.ptginterval, obs.ptgmode, obs.exposure, obs.times, obs.rngcorrupt,
     obs.antenna1, obs.antenna2, obs.data, obs.numchan, h5file=h5file)
     y["diagnostics"] && plotpointingerrors(obs)
 end
 
 # add station gains
 if y["stationgains"]["enable"]
-    stationgains(obs.scanno, obs.times, obs.exposure, obs.data, obs.stationinfo, y["stationgains"]["mode"],
+    stationgains(obs.scanno, obs.times, obs.exposure, obs.data, obs.stationinfo, obs.stationgainsmode,
     obs.rngcorrupt, obs.antenna1, obs.antenna2, obs.numchan, h5file=h5file)
     y["diagnostics"] && plotstationgains(obs)
 end
 
 # add bandpasses
 if y["bandpass"]["enable"]
-    bandpass(y["bandpass"]["bandpassfile"], obs.data, obs.stationinfo, obs.rngcorrupt, obs.antenna1, obs.antenna2,
+    bandpass(obs.bandpassfile, obs.data, obs.stationinfo, obs.rngcorrupt, obs.antenna1, obs.antenna2,
     obs.numchan, obs.chanfreqvec, h5file=h5file)
     y["diagnostics"] && plotbandpass(obs)
 end
