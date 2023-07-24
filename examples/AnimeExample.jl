@@ -49,7 +49,8 @@ end
 @info("Changing working directory to $outdir")
 cd(outdir)
 
-y = YAML.load_file(config, dicttype=Dict{String,Any})
+y = YAML.load_file(config, dicttype=Dict{String,Any}) # load YAML config file
+h5file = "insmodel.h5"
 
 # generate new MS
 if y["mode"] == "manual"
@@ -73,12 +74,7 @@ y["instrumentalpol"]["visibilityframe"], y["instrumentalpol"]["mode"], y["pointi
 y["bandpass"]["bandpassfile"], delim=",", ignorerepeated=false)
 
 # make diagnostic plots of uncorrupted data
-y["diagnostics"] && plotvis(obs, saveprefix="modelvis_") #plotvis(obs.data, obs.flag, obs.uvw, obs.chanfreqvec, obs.numchan, saveprefix="beforepropagation_")
-
-# add corruptions
-#addcorruptions(obs)
-
-h5file = "insmodel.h5"
+y["diagnostics"] && plotvis(obs.uvw, obs.chanfreqvec, obs.flag, obs.data, obs.numchan, obs.times, saveprefix="modelvis_") 
 
 # add tropospheric effects
 # TODO must pass h5file name to troposphere for now
@@ -94,21 +90,21 @@ end
 if y["pointing"]["enable"]
     pointing(obs.stationinfo, obs.scanno, obs.chanfreqvec, obs.ptginterval, obs.ptgmode, obs.exposure, obs.times, obs.rngcorrupt,
     obs.antenna1, obs.antenna2, obs.data, obs.numchan, h5file=h5file)
-    y["diagnostics"] && plotpointingerrors(obs)
+    y["diagnostics"] && plotpointingerrors(h5file, obs.scanno, obs.stationinfo.station)
 end
 
 # add station gains
 if y["stationgains"]["enable"]
     stationgains(obs.scanno, obs.times, obs.exposure, obs.data, obs.stationinfo, obs.stationgainsmode,
     obs.rngcorrupt, obs.antenna1, obs.antenna2, obs.numchan, h5file=h5file)
-    y["diagnostics"] && plotstationgains(obs)
+    y["diagnostics"] && plotstationgains(h5file, obs.scanno, obs.times, obs.stationinfo.station)
 end
 
 # add bandpasses
 if y["bandpass"]["enable"]
     bandpass(obs.bandpassfile, obs.data, obs.stationinfo, obs.rngcorrupt, obs.antenna1, obs.antenna2,
     obs.numchan, obs.chanfreqvec, h5file=h5file)
-    y["diagnostics"] && plotbandpass(obs)
+    y["diagnostics"] && plotbandpass(h5file, obs.stationinfo.station, obs.chanfreqvec)
 end
 
 # add thermal noise
@@ -116,7 +112,7 @@ y["thermalnoise"]["enable"] && thermalnoise(obs.times, obs.antenna1, obs.antenna
 y["correff"], obs.exposure, obs.chanwidth, obs.rngcorrupt, obs.stationinfo.sefd_Jy, h5file=h5file)
 
 # make diagnostic plots
-y["diagnostics"] && plotvis(obs, saveprefix="datavis_") #plotvis(obs.data, obs.flag, obs.uvw, obs.chanfreqvec, obs.numchan, saveprefix="afterpropagation_")
+y["diagnostics"] && plotvis(obs.uvw, obs.chanfreqvec, obs.flag, obs.data, obs.numchan, obs.times, saveprefix="datavis_") 
 
 # compute weights and write everything to disk
 postprocessms(obs, h5file=h5file)

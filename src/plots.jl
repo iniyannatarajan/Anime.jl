@@ -1,17 +1,18 @@
 export plotvis, plotstationgains, plotbandpass, plotpointingerrors
 
 """
-    plotvis(data::Array{Complex{Float32},4}, flag::Array{Bool,4}, uvw::Matrix{Float64}, chanfreqvec::Array{Float64,1}, numchan::Int64; saveprefix="data_")
+    plotvis(uvw::Matrix{Float64}, chanfreqvec::Array{Float64,1}, flag::Array{Bool,4}, data::Array{Complex{Float32},4},
+    numchan::Int64, times::Vector{Float64}; saveprefix="data_")
 
 Generate various complex visibility plots
 """
-#function plotvis(data::Array{Complex{Float32},4}, flag::Array{Bool,4}, uvw::Matrix{Float64}, chanfreqvec::Array{Float64,1}, numchan::Int64; saveprefix="data_")
-function plotvis(obs::CjlObservation; saveprefix="data_")
+function plotvis(uvw::Matrix{Float64}, chanfreqvec::Array{Float64,1}, flag::Array{Bool,4}, data::Array{Complex{Float32},4},
+    numchan::Int64, times::Vector{Float64}; saveprefix="data_")
     @info("Generating visibility plots...")
-    uvwave = sqrt.(obs.uvw[1,:].^2 .+ obs.uvw[2,:].^2) / (299792458.0/mean(obs.chanfreqvec)) / 1e9 # in units of Gλ
+    uvwave = sqrt.(uvw[1,:].^2 .+ uvw[2,:].^2) / (299792458.0/mean(chanfreqvec)) / 1e9 # in units of Gλ
 
-    maskindices = findall(isequal(true), obs.flag)
-    maskeddata = deepcopy(obs.data)
+    maskindices = findall(isequal(true), flag)
+    maskeddata = deepcopy(data)
     maskeddata[maskindices] .= NaN # assign NaN values to flagged visibilities
 
     # plot visibility amplitudes against projected baseline separation
@@ -23,7 +24,7 @@ function plotvis(obs::CjlObservation; saveprefix="data_")
     plot!(p, uvwave, abs.(maskeddata[2,2,1,:]), seriestype=:scatter, ls=:dot, ms=1, mc=:green, msc=:green, label="LL")
     
     # plot the rest of the frequency channels
-    if obs.numchan > 1
+    if numchan > 1
         plot!(p, uvwave, abs.(maskeddata[1,1,2:end,:]'), seriestype=:scatter, ls=:dot, ms=1, mc=:red, msc=:red, label="")
         plot!(p, uvwave, abs.(maskeddata[1,2,2:end,:]'), seriestype=:scatter, ls=:dot, ms=1, mc=:cyan, msc=:cyan, label="")
         plot!(p, uvwave, abs.(maskeddata[2,1,2:end,:]'), seriestype=:scatter, ls=:dot, ms=1, mc=:purple, msc=:purple, label="")
@@ -42,7 +43,7 @@ function plotvis(obs::CjlObservation; saveprefix="data_")
     plot!(p, uvwave, angle.(maskeddata[2,2,1,:]), seriestype=:scatter, ls=:dot, ms=1, mc=:green, msc=:green, label="LL")
     
     # plot the rest of the frequency channels
-    if obs.numchan > 1
+    if numchan > 1
         plot!(p, uvwave, angle.(maskeddata[1,1,2:end,:]'), seriestype=:scatter, ls=:dot, ms=1, mc=:red, msc=:red, label="")
         plot!(p, uvwave, angle.(maskeddata[1,2,2:end,:]'), seriestype=:scatter, ls=:dot, ms=1, mc=:cyan, msc=:cyan, label="")
         plot!(p, uvwave, angle.(maskeddata[2,1,2:end,:]'), seriestype=:scatter, ls=:dot, ms=1, mc=:purple, msc=:purple, label="")
@@ -54,7 +55,7 @@ function plotvis(obs::CjlObservation; saveprefix="data_")
 
     # plot visibility amplitudes against time
     p = plot()
-    x = obs.times .- obs.times[1]
+    x = times .- times[1]
     # plot first frequency channel
     plot!(p, x, abs.(maskeddata[1,1,1,:]), seriestype=:scatter, ls=:dot, ms=1, mc=:red, msc=:red, label="RR")
     plot!(p, x, abs.(maskeddata[1,2,1,:]), seriestype=:scatter, ls=:dot, ms=1, mc=:cyan, msc=:cyan, label="RL")
@@ -62,7 +63,7 @@ function plotvis(obs::CjlObservation; saveprefix="data_")
     plot!(p, x, abs.(maskeddata[2,2,1,:]), seriestype=:scatter, ls=:dot, ms=1, mc=:green, msc=:green, label="LL")
     
     # plot the rest of the frequency channels
-    if obs.numchan > 1
+    if numchan > 1
         plot!(p, x, abs.(maskeddata[1,1,2:end,:]'), seriestype=:scatter, ls=:dot, ms=1, mc=:red, msc=:red, label="")
         plot!(p, x, abs.(maskeddata[1,2,2:end,:]'), seriestype=:scatter, ls=:dot, ms=1, mc=:cyan, msc=:cyan, label="")
         plot!(p, x, abs.(maskeddata[2,1,2:end,:]'), seriestype=:scatter, ls=:dot, ms=1, mc=:purple, msc=:purple, label="")
@@ -74,7 +75,7 @@ function plotvis(obs::CjlObservation; saveprefix="data_")
 
     # plot visibility phases against time
     p = plot()
-    x = obs.times .- obs.times[1]
+    x = times .- times[1]
     # plot first frequency channel
     plot!(p, x, angle.(maskeddata[1,1,1,:]), seriestype=:scatter, ls=:dot, ms=1, mc=:red, msc=:red, label="RR")
     plot!(p, x, angle.(maskeddata[1,2,1,:]), seriestype=:scatter, ls=:dot, ms=1, mc=:cyan, msc=:cyan, label="RL")
@@ -82,7 +83,7 @@ function plotvis(obs::CjlObservation; saveprefix="data_")
     plot!(p, x, angle.(maskeddata[2,2,1,:]), seriestype=:scatter, ls=:dot, ms=1, mc=:green, msc=:green, label="LL")
         
     # plot the rest of the frequency channels
-    if obs.numchan > 1
+    if numchan > 1
         plot!(p, x, angle.(maskeddata[1,1,2:end,:]'), seriestype=:scatter, ls=:dot, ms=1, mc=:red, msc=:red, label="")
         plot!(p, x, angle.(maskeddata[1,2,2:end,:]'), seriestype=:scatter, ls=:dot, ms=1, mc=:cyan, msc=:cyan, label="")
         plot!(p, x, angle.(maskeddata[2,1,2:end,:]'), seriestype=:scatter, ls=:dot, ms=1, mc=:purple, msc=:purple, label="")
@@ -96,19 +97,19 @@ function plotvis(obs::CjlObservation; saveprefix="data_")
 end
 
 """
-    plotstationgains(obs; saveas="stationgainsvstime.png")
+    plotstationgains(h5file::String, scanno::Vector{Int32}, times::Vector{Float64}, stationnames::Vector{String3}; saveas="stationgainsvstime.png")
 
 Plot station gains against time
 """
-function plotstationgains(obs; saveas="stationgainsvstime.png")
+function plotstationgains(h5file::String, scanno::Vector{Int32}, times::Vector{Float64}, stationnames::Vector{String3}; saveas="stationgainsvstime.png")
     @info("Plotting station gains against time...")
-    fid = h5open(obs.yamlconf["hdf5corruptions"], "r")
+    fid = h5open(h5file, "r")
 
     # get unique scan numbers
-    uniqscans = unique(obs.scanno)
+    uniqscans = unique(scanno)
 
     # get unique times
-    uniqtimes = unique(obs.times)
+    uniqtimes = unique(times)
     x = uniqtimes .- first(uniqtimes)
 
     p = plot()
@@ -118,9 +119,9 @@ function plotstationgains(obs; saveas="stationgainsvstime.png")
         gterms = read(fid["stationgains"]["gjones_scan$(scan)"])
         indexend = indexend + size(gterms)[3]
 
-        for ant in eachindex(obs.stationinfo.station)
+        for ant in eachindex(stationnames)
             if scan == 1
-                plot!(p, x[indexstart:indexend], abs.(gterms[1,1,:,ant]), lw=1, lc=ColorSchemes.mk_15[ant], label=obs.stationinfo.station[ant])
+                plot!(p, x[indexstart:indexend], abs.(gterms[1,1,:,ant]), lw=1, lc=ColorSchemes.mk_15[ant], label=stationnames[ant])
             else
                 plot!(p, x[indexstart:indexend], abs.(gterms[1,1,:,ant]), lw=1, lc=ColorSchemes.mk_15[ant], label="")
             end
@@ -135,25 +136,25 @@ function plotstationgains(obs; saveas="stationgainsvstime.png")
 end
 
 """
-    plotbandpass(obs; saveas="bandpassgains.png")
+    plotbandpass(h5file::String, stationnames::Vector{String3}, chanfreqvec::Vector{Float64}; saveas="bandpassgains.png")
 
 Plot bandpass gains against time
 """
-function plotbandpass(obs; saveas="bandpassgains.png")
+function plotbandpass(h5file::String, stationnames::Vector{String3}, chanfreqvec::Vector{Float64}; saveas="bandpassgains.png")
     @info("Plotting bandpass gains against time...")
-    fid = h5open(obs.yamlconf["hdf5corruptions"], "r")
+    fid = h5open(h5file, "r")
 
     b = read(fid["bandpass"]["bjonesmatrices"])
 
     p1 = plot()
-    for ant in eachindex(obs.stationinfo.station)
-        plot!(p1, obs.chanfreqvec./1e9, abs.(b[1, 1, :, ant]), lw=1, lc=ColorSchemes.mk_15[ant], label="")
+    for ant in eachindex(stationnames)
+        plot!(p1, chanfreqvec./1e9, abs.(b[1, 1, :, ant]), lw=1, lc=ColorSchemes.mk_15[ant], label="")
     end
     plot!(p1, title="Station bandpass gain amplitudes", ylabel="Pol1 gain amp") #, legend=:outertop, legendcolumns=6)
 
     p2 = plot()
-    for ant in eachindex(obs.stationinfo.station)
-        plot!(p2, obs.chanfreqvec./1e9, abs.(b[2, 2, :, ant]), lw=1, lc=ColorSchemes.mk_15[ant], label=obs.stationinfo.station[ant])
+    for ant in eachindex(stationnames)
+        plot!(p2, chanfreqvec./1e9, abs.(b[2, 2, :, ant]), lw=1, lc=ColorSchemes.mk_15[ant], label=stationnames[ant])
     end
     plot!(p2, xlabel="Channel frequency (GHz)", ylabel="Pol2 gain amp") # legend=:outertop, legendcolumns=6)
 
@@ -165,20 +166,16 @@ function plotbandpass(obs; saveas="bandpassgains.png")
 end
 
 """
-    plotpointingerrors(obs)
+    plotpointingerrors(h5file::String, scanno::Vector{Int32}, stationnames::Vector{String3})
 
 Plot pointing errors
 """
-function plotpointingerrors(obs)
+function plotpointingerrors(h5file::String, scanno::Vector{Int32}, stationnames::Vector{String3})
     @info("Plotting pointing errors...")
-    fid = h5open(obs.yamlconf["hdf5corruptions"], "r")
+    fid = h5open(h5file, "r")
 
     # get unique scan numbers
-    uniqscans = unique(obs.scanno)
-
-    # get unique times
-    #uniqtimes = unique(obs.times)
-    #x = uniqtimes .- first(uniqtimes)
+    uniqscans = unique(scanno)
 
     p_off = plot()
     p_amperr = plot()
@@ -189,10 +186,10 @@ function plotpointingerrors(obs)
         amperrarr = read(fid["pointingerrors"]["perscanamperrors_scan$(scan)"])
         indexend = indexend + size(offsetarr)[1] # both arrays have same dimensions
 
-        for ant in eachindex(obs.stationinfo.station)
+        for ant in eachindex(stationnames)
             if scan == 1
-                plot!(p_off, 1:indexend, offsetarr[:,ant], lw=1, lc=ColorSchemes.mk_15[ant], label=obs.stationinfo.station[ant])
-                plot!(p_amperr, 1:indexend, amperrarr[:,ant], lw=1, lc=ColorSchemes.mk_15[ant], label=obs.stationinfo.station[ant])
+                plot!(p_off, 1:indexend, offsetarr[:,ant], lw=1, lc=ColorSchemes.mk_15[ant], label=stationnames[ant])
+                plot!(p_amperr, 1:indexend, amperrarr[:,ant], lw=1, lc=ColorSchemes.mk_15[ant], label=stationnames[ant])
             else
                 plot!(p_off, indexstart:indexend, offsetarr[:,ant], lw=1, lc=ColorSchemes.mk_15[ant], label="")
                 plot!(p_amperr, indexstart:indexend, amperrarr[:,ant], lw=1, lc=ColorSchemes.mk_15[ant], label="")

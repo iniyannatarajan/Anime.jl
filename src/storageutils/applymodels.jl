@@ -39,8 +39,10 @@ function postprocessms(obs::CjlObservation; h5file::String="")
     totalrmsspec = zeros(Float32, 2, 2, obs.numchan, size(obs.data)[4]) # noise rms zero by default
     totalwtspec = ones(Float32, 2, 2, obs.numchan, size(obs.data)[4]) # weights unity by default
 
-    @info("Computing weight and sigma spectrum arrays...")
-    @time computeweights!(totalrmsspec, totalwtspec, obs, h5file=h5file)
+    if isfile(h5file)
+        @info("Populating weight and sigma spectrum arrays...")
+        computeweights!(totalrmsspec, totalwtspec, obs, h5file=h5file)
+    end
 
     # convert the sigma_spec and weight_spec arrays to the format required by Casacore.jl
     revtotalrmsspec3dres = permutedims(totalrmsspec, (2,1,3,4))
