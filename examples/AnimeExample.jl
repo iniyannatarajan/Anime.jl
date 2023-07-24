@@ -70,7 +70,7 @@ run_wsclean(y["msname"], y["skymodel"], y["polarized"], y["channelgroups"], y["o
 obs = loadms(y, y["msname"], y["stations"], Int(y["corruptseed"]), Int(y["troposphere"]["tropseed"]), delim=",", ignorerepeated=false)
 
 # make diagnostic plots of uncorrupted data
-obs.yamlconf["diagnostics"] && plotvis(obs, saveprefix="modelvis_") #plotvis(obs.data, obs.flag, obs.uvw, obs.chanfreqvec, obs.numchan, saveprefix="beforepropagation_")
+y["diagnostics"] && plotvis(obs, saveprefix="modelvis_") #plotvis(obs.data, obs.flag, obs.uvw, obs.chanfreqvec, obs.numchan, saveprefix="beforepropagation_")
 
 # add corruptions
 #addcorruptions(obs)
@@ -79,37 +79,39 @@ h5file = "insmodel.h5"
 
 # add tropospheric effects
 # TODO must pass h5file name to troposphere for now
-obs.yamlconf["troposphere"]["enable"] && troposphere(obs, h5file=h5file)
+y["troposphere"]["enable"] && troposphere(obs, h5file=h5file)
 
 # add instrumental polarization
-obs.yamlconf["instrumentalpol"]["enable"] && instrumentalpol(obs, h5file=h5file)
+y["instrumentalpol"]["enable"] && instrumentalpol(obs, h5file=h5file)
 
 # add pointing errors
-if obs.yamlconf["pointing"]["enable"]
-    pointing(obs, h5file=h5file)
-    obs.yamlconf["diagnostics"] && plotpointingerrors(obs)
+if y["pointing"]["enable"]
+    #pointing(obs, h5file=h5file)
+    pointing(obs.stationinfo, obs.scanno, obs.chanfreqvec, y["pointing"]["interval"], y["pointing"]["mode"], obs.exposure, obs.times, obs.rngcorrupt,
+    obs.antenna1, obs.antenna2, obs.data, obs.numchan, h5file=h5file)
+    y["diagnostics"] && plotpointingerrors(obs)
 end
 
 # add station gains
-if obs.yamlconf["stationgains"]["enable"]
-    stationgains(obs.scanno, obs.times, obs.exposure, obs.data, obs.stationinfo, obs.yamlconf["stationgains"]["mode"],
+if y["stationgains"]["enable"]
+    stationgains(obs.scanno, obs.times, obs.exposure, obs.data, obs.stationinfo, y["stationgains"]["mode"],
     obs.rngcorrupt, obs.antenna1, obs.antenna2, obs.numchan, h5file=h5file)
-    obs.yamlconf["diagnostics"] && plotstationgains(obs)
+    y["diagnostics"] && plotstationgains(obs)
 end
 
 # add bandpasses
-if obs.yamlconf["bandpass"]["enable"]
-    bandpass(obs.yamlconf["bandpass"]["bandpassfile"], obs.data, obs.stationinfo, obs.rngcorrupt, obs.antenna1, obs.antenna2,
+if y["bandpass"]["enable"]
+    bandpass(y["bandpass"]["bandpassfile"], obs.data, obs.stationinfo, obs.rngcorrupt, obs.antenna1, obs.antenna2,
     obs.numchan, obs.chanfreqvec, h5file=h5file)
-    obs.yamlconf["diagnostics"] && plotbandpass(obs)
+    y["diagnostics"] && plotbandpass(obs)
 end
 
 # add thermal noise
-obs.yamlconf["thermalnoise"]["enable"] && thermalnoise(obs.times, obs.antenna1, obs.antenna2, obs.data,
-obs.yamlconf["correff"], obs.exposure, obs.chanwidth, obs.rngcorrupt, obs.stationinfo.sefd_Jy, h5file=h5file)
+y["thermalnoise"]["enable"] && thermalnoise(obs.times, obs.antenna1, obs.antenna2, obs.data,
+y["correff"], obs.exposure, obs.chanwidth, obs.rngcorrupt, obs.stationinfo.sefd_Jy, h5file=h5file)
 
 # make diagnostic plots
-obs.yamlconf["diagnostics"] && plotvis(obs, saveprefix="datavis_") #plotvis(obs.data, obs.flag, obs.uvw, obs.chanfreqvec, obs.numchan, saveprefix="afterpropagation_")
+y["diagnostics"] && plotvis(obs, saveprefix="datavis_") #plotvis(obs.data, obs.flag, obs.uvw, obs.chanfreqvec, obs.numchan, saveprefix="afterpropagation_")
 
 # compute weights and write everything to disk
 postprocessms(obs, h5file=h5file)
