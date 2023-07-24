@@ -1,12 +1,12 @@
 export thermalnoise
 
 """
-    thermalnoise(times::Vector{Float64}, antenna1::Vector{Int}, antenna2::Vector{Int}, data::Array{Complex{Float32},4}, correff::Float64,
+    thermalnoise(times::Vector{Float64}, antenna1::Vector{Int32}, antenna2::Vector{Int32}, data::Array{Complex{Float32},4}, correff::Float64,
     exposure::Float64, chanwidth::Float64, rngcorrupt::AbstractRNG, sefd::Vector{Float64}; h5file::String="")
 
 Compute per-baseline thermal noise in visibility domain and apply to data. The actual numerical values are serialized as HDF5.
 """
-function thermalnoise(times::Vector{Float64}, antenna1::Vector{Int}, antenna2::Vector{Int}, data::Array{Complex{Float32},4}, correff::Float64,
+function thermalnoise(times::Vector{Float64}, antenna1::Vector{Int32}, antenna2::Vector{Int32}, data::Array{Complex{Float32},4}, correff::Float64,
     exposure::Float64, chanwidth::Float64, rngcorrupt::AbstractRNG, sefd::Vector{Float64}; h5file::String="")
     # get unique times
     uniqtimes = unique(times)

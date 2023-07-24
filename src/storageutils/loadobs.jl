@@ -6,12 +6,12 @@ abstract type AbstractObservation{T} end
 struct CjlObservation{T} <: AbstractObservation{T}
     data::Array{Complex{Float32},4}
     flag::Array{Bool,4}
-    antenna1::Vector{Int}
-    antenna2::Vector{Int}
+    antenna1::Vector{Int32}
+    antenna2::Vector{Int32}
     uvw::Matrix{Float64}
     times::Vector{Float64}
     exposure::Float64
-    scanno::Vector{Int}
+    scanno::Vector{Int32}
     #=weight::Vector{Vector{Float32}}
     weightspec::Array{Float32,3}
     sigma::Vector{Vector{Float32}}

@@ -1,13 +1,13 @@
 export stationgains
 
 """
-    stationgains(scanno::Vector{Int}, times::Vector{Float64}, exposure::Float64, data::Array{Complex{Float32},4},
-    stationinfo::DataFrame, mode::String, rngcorrupt::AbstractRNG, antenna1::Vector{Int}, antenna2::Vector{Int}, numchan::Int64; h5file::String="")
+    stationgains(scanno::Vector{Int32}, times::Vector{Float64}, exposure::Float64, data::Array{Complex{Float32},4},
+    stationinfo::DataFrame, mode::String, rngcorrupt::AbstractRNG, antenna1::Vector{Int32}, antenna2::Vector{Int32}, numchan::Int64; h5file::String="")
 
 Compute time-variable station gains and apply to data. The actual numerical values are serialized as HDF5.
 """
-function stationgains(scanno::Vector{Int}, times::Vector{Float64}, exposure::Float64, data::Array{Complex{Float32},4},
-    stationinfo::DataFrame, mode::String, rngcorrupt::AbstractRNG, antenna1::Vector{Int}, antenna2::Vector{Int}, numchan::Int64; h5file::String="")
+function stationgains(scanno::Vector{Int32}, times::Vector{Float64}, exposure::Float64, data::Array{Complex{Float32},4},
+    stationinfo::DataFrame, mode::String, rngcorrupt::AbstractRNG, antenna1::Vector{Int32}, antenna2::Vector{Int32}, numchan::Int64; h5file::String="")
     
     # open h5 file for writing
     if !isempty(h5file)

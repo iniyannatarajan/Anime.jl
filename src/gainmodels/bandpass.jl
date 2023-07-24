@@ -4,12 +4,12 @@ using Interpolations
 
 """
     bandpass(bandpassfile::String, data::Array{Complex{Float32},4}, stationinfo::DataFrame, rngcorrupt::AbstractRNG,
-    antenna1::Vector{Int}, antenna2::Vector{Int}, numchan::Int64, chanfreqvec::Vector{Float64}; h5file::String="")
+    antenna1::Vector{Int32}, antenna2::Vector{Int32}, numchan::Int64, chanfreqvec::Vector{Float64}; h5file::String="")
 
 Compute the bandpass model and apply to data. The actual numerical values are serialized as HDF5.
 """
 function bandpass(bandpassfile::String, data::Array{Complex{Float32},4}, stationinfo::DataFrame, rngcorrupt::AbstractRNG,
-    antenna1::Vector{Int}, antenna2::Vector{Int}, numchan::Int64, chanfreqvec::Vector{Float64}; h5file::String="")
+    antenna1::Vector{Int32}, antenna2::Vector{Int32}, numchan::Int64, chanfreqvec::Vector{Float64}; h5file::String="")
     # read in the station bandpass file
     bpinfo = CSV.read(bandpassfile, DataFrame; delim=",", ignorerepeated=false)
 

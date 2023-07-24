@@ -39,14 +39,18 @@ function longtermpointing()
 end
 
 """
-    pointing(obs::CjlObservation; h5file::String="")
+    pointing(stationinfo::DataFrame, scanno::Vector{Int32}, chanfreqvec::Vector{Float64}, ptgint::Float64, ptgmode::String,
+    exposure::Float64, times::Vector{Float64}, rngcorrupt::AbstractRNG, antenna1::Vector{Int32}, antenna2::Vector{Int32},
+    data::Array{Complex{Float32},4}, numchan::Int64; h5file::String="")
 
 Compute the pointing model and apply to data. The actual numerical values are serialized as HDF5.
 """
-function pointing(obs::CjlObservation; h5file::String="")
+function pointing(stationinfo::DataFrame, scanno::Vector{Int32}, chanfreqvec::Vector{Float64}, ptgint::Float64, ptgmode::String,
+    exposure::Float64, times::Vector{Float64}, rngcorrupt::AbstractRNG, antenna1::Vector{Int32}, antenna2::Vector{Int32},
+    data::Array{Complex{Float32},4}, numchan::Int64; h5file::String="")
     @info("Computing pointing errors...")
 
-    nant = size(obs.stationinfo)[1]
+    nant = size(stationinfo)[1]
  
     # open h5 file for writing
     if !isempty(h5file)
@@ -57,22 +61,22 @@ function pointing(obs::CjlObservation; h5file::String="")
     end
  
     # get unique scan numbers
-    uniqscans = unique(obs.scanno)
+    uniqscans = unique(scanno)
 
-    pbfwhm = obs.stationinfo.pbfwhm230_arcsec./(mean(obs.chanfreqvec)/230.0e9) # scale primary beam to centre frequency of spw
-    pointinginterval = obs.yamlconf["pointing"]["interval"] == "coherencetime" ? mean(obs.stationinfo.ctime_sec) : obs.yamlconf["pointing"]["interval"]
-    if pointinginterval < obs.exposure
-        @warn("Pointing interval ($pointinginterval) < integration time ($(obs.exposure))! Setting pointing interval to $(obs.exposure) s ...")
-        pointinginterval = obs.exposure
+    pbfwhm = stationinfo.pbfwhm230_arcsec./(mean(chanfreqvec)/230.0e9) # scale primary beam to centre frequency of spw
+    pointinginterval = ptgint <= 0.0 ? mean(stationinfo.ctime_sec) : ptgint
+    if pointinginterval < exposure
+        @warn("Pointing interval ($pointinginterval) < integration time ($(exposure))! Setting pointing interval to $(exposure) s ...")
+        pointinginterval = exposure
     end
     @info("Generating new mispointings every $(pointinginterval) seconds...")
 
     # TODO calculate antenna rise and set times and mask pointing offsets? Is this really necessary? 
     # If the source is not above horizon, the antenna would automatically be flagged; shouldn't make a difference
-    row = 1 # variable to index obs.data array
+    row = 1 # variable to index data array
     for scan in uniqscans
         # compute mispoint vector with values spaced by pointing interval
-        actualtscanvec = unique(getindex(obs.times, findall(obs.scanno.==scan)))
+        actualtscanvec = unique(getindex(times, findall(scanno.==scan)))
         actualtscanveclen = length(actualtscanvec)
         mispointvec = collect(first(actualtscanvec):pointinginterval:last(actualtscanvec)) # 'ideal'tscanvec is actually 'pointinginterval'tscanvec
         mispointveclen = length(mispointvec)
@@ -83,8 +87,8 @@ function pointing(obs::CjlObservation; h5file::String="")
 
 	    # loop through stations and compute offsets and amplitude errors
 	    for ant in 1:nant
-	        perscanoffsets[:, ant] = gentimeseries!(perscanoffsets[:, ant], obs.yamlconf["pointing"]["mode"], 0.0, obs.stationinfo.pointingrms_arcsec[ant], 0.0, mispointveclen, obs.rngcorrupt)
-	        if obs.stationinfo.pbmodel[ant] == "gaussian"
+	        perscanoffsets[:, ant] = gentimeseries!(perscanoffsets[:, ant], ptgmode, 0.0, stationinfo.pointingrms_arcsec[ant], 0.0, mispointveclen, rngcorrupt)
+	        if stationinfo.pbmodel[ant] == "gaussian"
                 perscanamperrors[:, ant] = exp.(-0.5.*(perscanoffsets[:, ant]./(pbfwhm[ant]/2.35)).^2)
 	        end
 	    end
@@ -99,13 +103,13 @@ function pointing(obs::CjlObservation; h5file::String="")
 	        mispointindex = min(mispointveclen, findnearest(mispointvec, actualtscanvec[t]))
 
             # read all baselines present in a given time
-            ant1vec = getindex(obs.antenna1, findall(obs.times.==actualtscanvec[t]))
-            ant2vec = getindex(obs.antenna2, findall(obs.times.==actualtscanvec[t]))
+            ant1vec = getindex(antenna1, findall(times.==actualtscanvec[t]))
+            ant2vec = getindex(antenna2, findall(times.==actualtscanvec[t]))
             for (ant1,ant2) in zip(ant1vec, ant2vec)
-                for chan in 1:obs.numchan
-                    obs.data[:,:,chan,row] = perscanamperrors[mispointindex,ant1+1]*obs.data[:,:,chan,row]*adjoint(perscanamperrors[mispointindex,ant2+1])
+                for chan in 1:numchan
+                    data[:,:,chan,row] = perscanamperrors[mispointindex,ant1+1]*data[:,:,chan,row]*adjoint(perscanamperrors[mispointindex,ant2+1])
                 end
-                row += 1 # increment obs.data last index i.e. row number
+                row += 1 # increment data last index i.e. row number
             end
         end
 
