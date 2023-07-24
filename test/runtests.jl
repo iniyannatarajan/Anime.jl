@@ -10,14 +10,9 @@ end=#
 end=#
 
 @testset "Load Observation" begin
-    include("testloadobservation.jl")
+    include("testloadobs.jl")
 end
 
-#=@testset "Model Instrument" begin
-    #include("testthermalnoise.jl")
-    #include("teststationgains.jl")
-    #include("testbandpass.jl")
-    #include("testbeam.jl")
-    #include("testinstrumentalpol.jl")
-    #include("testtroposphere.jl")
+#=@testset "Utility Functions" begin
+    include("testutils.jl")
 end=#
