@@ -62,24 +62,3 @@ Predict uncorrupted visibilities using the ducc0 wgridder (experimental)
 function run_ducc0(msname::String, fitsdir::String, polarized::Bool, channelgroups::Int64, osfactor::Int64)
 
 end
-
-#="""
-    computecoherency(config::String)
-
-Predict uncorrupted visibilities with the parameters obtained from config file.
-"""
-function computecoherency(config::String)
-    yamlconf = YAML.load_file(config, dicttype=Dict{String,Any})
-    # check sky model mode
-    if yamlconf["skymodelmode"] == "hdf5"
-        # TODO convert h5 sky to fits directory
-	    # fitsdir = assign new fits directory that was created
-    elseif yamlconf["skymodelmode"] == "fits"
-        fitsdir = yamlconf["fitssky"]
-    else
-	    error("Source model must be either a directory with FITS files or an HDF5 file 🤷 (check \"skymodelmode\" keyword in config file)")
-    end
-
-    # run wsclean
-    run_wsclean(yamlconf["msname"], fitsdir, yamlconf["polarized"], yamlconf["channelgroups"], yamlconf["osfactor"])
-end=#
