@@ -20,3 +20,14 @@ end=#
     @inferred gentimeseries!(zeros(Float64, 100), "gp", 0.0, 1.0, 3.0, 100, Xoshiro(42))
     @inferred gentimeseries!(zeros(Float64, 100), "normal", 0.0, 1.0, 3.0, 100, Xoshiro(42))
 end
+
+@testset "Plots" begin
+    y = YAML.load_file("data/testconfig.yaml", dicttype=Dict{String,Any}) # sample dict to test loadms()
+
+    obs = loadms(y["msname"], y["stations"], Int(y["corruptseed"]), Int(y["troposphere"]["tropseed"]), y["troposphere"]["wetonly"], y["correff"], 
+    y["troposphere"]["attenuate"], y["troposphere"]["skynoise"], y["troposphere"]["meandelays"], y["troposphere"]["turbulence"], 
+    y["instrumentalpol"]["visibilityframe"], y["instrumentalpol"]["mode"], y["pointing"]["interval"], y["pointing"]["mode"], y["stationgains"]["mode"], 
+    y["bandpass"]["bandpassfile"], delim=",", ignorerepeated=false)
+
+    @inferred plotvis(obs.uvw, obs.chanfreqvec, obs.flag, obs.data, obs.numchan, obs.times, saveprefix="test_")
+end
