@@ -1,9 +1,8 @@
 @testset "Load MS" begin
-    y = Dict("x" => "5.0") # sample dict to test loadms()
-    msname = "data/eht.ms"
-    stations = "data/eht_2017.stations"
-    corruptseed = 4534
-    tropseed = 83746
+    y = YAML.load_file("data/testconfig.yaml", dicttype=Dict{String,Any}) # sample dict to test loadms()
 
-    @inferred loadms(y, msname, stations, corruptseed, tropseed, delim=",", ignorerepeated=false)
+    @inferred loadms(y["msname"], y["stations"], Int(y["corruptseed"]), Int(y["troposphere"]["tropseed"]), y["troposphere"]["wetonly"], y["correff"], 
+    y["troposphere"]["attenuate"], y["troposphere"]["skynoise"], y["troposphere"]["meandelays"], y["troposphere"]["turbulence"], 
+    y["instrumentalpol"]["visibilityframe"], y["instrumentalpol"]["mode"], y["pointing"]["interval"], y["pointing"]["mode"], y["stationgains"]["mode"], 
+    y["bandpass"]["bandpassfile"], delim=",", ignorerepeated=false)
 end

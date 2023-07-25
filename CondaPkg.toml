@@ -3,5 +3,5 @@ python = "=3.8"
 
 [pip.deps]
 casadata = ""
-casatools = ""
-casatasks = ""
+casatools = "==6.5.3.28"
+casatasks = "==6.5.3.28"
