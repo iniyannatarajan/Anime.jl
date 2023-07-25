@@ -1,6 +1,7 @@
 using Anime
 using Test
 using YAML
+using Random
 
 #=@testset "Create MS" begin
     include("testcreatems.jl")
@@ -14,6 +15,6 @@ end=#
     include("testloadobs.jl")
 end
 
-#=@testset "Utility Functions" begin
-    include("testutils.jl")
-end=#
+@testset "Utility Functions" begin
+    include("testutilities.jl")
+end

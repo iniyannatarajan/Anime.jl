@@ -43,9 +43,9 @@ end
 struct CpyObservation{T} <: AbstractObservation{T} end
 
 # implement Tables interface for CjlObservation
-Tables.istable(::Type{<:CjlObservation}) = true
-Tables.columnaccess(::Type{<:CjlObservation}) = true
-Tables.columns(m::CjlObservation) = m
+#Tables.istable(::Type{<:CjlObservation}) = true
+#Tables.columnaccess(::Type{<:CjlObservation}) = true
+#Tables.columns(m::CjlObservation) = m
 
 """
     loadms(msname::String, stations::String, corruptseed::Int64, tropseed::Int64, tropwetonly::Bool, correff::Float64, tropattenuate::Bool,
