@@ -34,8 +34,8 @@ function stationgains(scanno::Vector{Int32}, times::Vector{Float64}, exposure::F
 	    gjonesmatrices = zeros(eltype(data), 2, 2, idealtscanveclen, size(stationinfo)[1]) # 2 x 2 x ntimes x nant
 
 	    for ant in eachindex(stationinfo.station)
-            gjonesmatrices[1, 1, :, ant] = gentimeseries!(gjonesmatrices[1, 1, :, ant], mode, stationinfo.g_pol1_loc[ant], stationinfo.g_pol1_scale[ant], 0.0, idealtscanveclen, rngcorrupt)
-	        gjonesmatrices[2, 2, :, ant] = gentimeseries!(gjonesmatrices[2, 2, :, ant], mode, stationinfo.g_pol2_loc[ant], stationinfo.g_pol2_scale[ant], 0.0, idealtscanveclen, rngcorrupt)
+            gjonesmatrices[1, 1, :, ant] = gentimeseries!(gjonesmatrices[1, 1, :, ant], mode, stationinfo.g_pol1_loc[ant], Float32(stationinfo.g_pol1_scale[ant]), Float32(0.0), idealtscanveclen, rngcorrupt)
+	        gjonesmatrices[2, 2, :, ant] = gentimeseries!(gjonesmatrices[2, 2, :, ant], mode, stationinfo.g_pol2_loc[ant], Float32(stationinfo.g_pol2_scale[ant]), Float32(0.0), idealtscanveclen, rngcorrupt)
 	    end
 
         # loop over time/row and apply gjones terms corresponding to each baseline

@@ -37,8 +37,8 @@ function instrumentalpol(scanno::Vector{Int32}, times::Vector{Float64}, stationi
         end
 
 	    for ant in eachindex(stationinfo.station)
-            djonesmatrices[1, 2, :, ant] = gentimeseries!(djonesmatrices[1, 2, :, ant], polmode, stationinfo.d_pol1_loc[ant], stationinfo.d_pol1_scale[ant], 0.0, numchan, rngcorrupt)
-            djonesmatrices[2, 1, :, ant] = gentimeseries!(djonesmatrices[2, 1, :, ant], polmode, stationinfo.d_pol2_loc[ant], stationinfo.d_pol2_scale[ant], 0.0, numchan, rngcorrupt)
+            djonesmatrices[1, 2, :, ant] = gentimeseries!(djonesmatrices[1, 2, :, ant], polmode, stationinfo.d_pol1_loc[ant], Float32(stationinfo.d_pol1_scale[ant]), Float32(0.0), numchan, rngcorrupt)
+            djonesmatrices[2, 1, :, ant] = gentimeseries!(djonesmatrices[2, 1, :, ant], polmode, stationinfo.d_pol2_loc[ant], Float32(stationinfo.d_pol2_scale[ant]), Float32(0.0), numchan, rngcorrupt)
 
 	        for t in 1:ntimes
     	        for chan in 1:numchan
