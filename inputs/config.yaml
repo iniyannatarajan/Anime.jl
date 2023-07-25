@@ -19,10 +19,10 @@ source:
     RA: "12h30m49.42"                                # right ascension of source position in hours
     Dec: "+12.23.28.04"                              # declination of source position in degrees
     epoch: "J2000"                                   # "J2000" or "B1950"
-scans: 1                                             # number of scans
-scanlengths: [900.0]                              # list of lengths of each scan in seconds
+scans: 2                                             # number of scans
+scanlengths: [300.0, 300.0]                              # list of lengths of each scan in seconds
 scanlag: 300.0                                     # lag time between scans in seconds
-exposure: 1.0                                          # integration time in seconds
+exposure: 4.0                                          # integration time in seconds
 stokes: "RR RL LR LL"                                # CASA understandable Stokes types to simulate (check official MS specification)
 spw:
     centrefreq: [229.0e9]                            # centre frequency of spw in Hz
@@ -43,7 +43,7 @@ channelgroups: 1                                     # number of groups to divid
 
 correff: 0.88                                      # correlator efficiency for 2 quantization bits (use 0.636 for 1-bit)
 corruptseed: 456                                     # seed to be used for generating random variables for corruptions (except for troposphere)
-diagnostics: false                                  # generate diagnostic plots and logs
+diagnostics: true                                  # generate diagnostic plots and logs
 
 ####################################################
 # settings for atmospheric corruptions
@@ -67,7 +67,7 @@ ionosphere:                                          # add ionosphere
 pointing:
   enable: true
   mode: "gp"                                         # "gp" (Gaussian processes) or "normal" (Gaussian)
-  interval: 5.0                          # time interval (in seconds) after which to generate new pointing errors (or "coherencetime")
+  interval: 5.0                          # time interval (in seconds) after which to generate new pointing errors (<=0.0 for "mean(coherencetime)")
   longterm:
     enable: false                                    # enable longterm, multiscan pointing drifts
     nscan: 5                                         # no. of scans after which to reset long term pointing drift
@@ -80,7 +80,7 @@ pointing:
 instrumentalpol: 
   enable: true                                       # add instrumental polarization
   mode: "gp"                                     # "gp" (Gaussian processes) or "normal" (Gaussian)
-  visibilityframe: "sky"                             # "sky" or "antenna"; "sky" frame is used by default
+  visibilityframe: "sky"                             # visibilities are written out in "sky" frame
 
 ####################################################
 # settings for gains

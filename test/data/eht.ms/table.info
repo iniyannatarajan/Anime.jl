@@ -1,5 +1,5 @@
 Type = Measurement Set
-SubType = UVFITS
+SubType = simulator
 
 This is a MeasurementSet Table holding measurements from a Telescope
-This is a measurement set Table holding astronomical observations
+This is a MeasurementSet Table holding simulated astronomical observations

@@ -23,6 +23,7 @@ end
 
 @testset "Plots" begin
     y = YAML.load_file("data/testconfig.yaml", dicttype=Dict{String,Any}) # sample dict to test loadms()
+    h5file = "data/insmodel.h5"
 
     obs = loadms(y["msname"], y["stations"], Int(y["corruptseed"]), Int(y["troposphere"]["tropseed"]), y["troposphere"]["wetonly"], y["correff"], 
     y["troposphere"]["attenuate"], y["troposphere"]["skynoise"], y["troposphere"]["meandelays"], y["troposphere"]["turbulence"], 
@@ -30,4 +31,7 @@ end
     y["bandpass"]["bandpassfile"], delim=",", ignorerepeated=false)
 
     @inferred plotvis(obs.uvw, obs.chanfreqvec, obs.flag, obs.data, obs.numchan, obs.times, saveprefix="test_")
+    @inferred plotstationgains(h5file, obs.scanno, obs.times, obs.stationinfo.station)
+    @inferred plotbandpass(h5file, obs.stationinfo.station, obs.chanfreqvec)
+    @inferred plotpointingerrors(h5file, obs.scanno, obs.stationinfo.station)
 end
