@@ -7,7 +7,8 @@
 [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://iniyannatarajan.github.io/Anime.jl/stable/)
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://iniyannatarajan.github.io/Anime.jl/dev/)
 ## Status
-[![Build Status](https://github.com/iniyannatarajan/Anime.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/iniyannatarajan/Anime.jl/actions/workflows/CI.yml?query=branch%3Amain)
+[![Build Status](https://github.com/iniyannatarajan/Anime.jl/workflows/CI/badge.svg)](https://github.com/iniyannatarajan/Anime.jl/actions)
+[![Coverage](https://codecov.io/gh/iniyannatarajan/Anime.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/iniyannatarajan/Anime.jl)
 
 ## Installation
 Anime.jl can be installed using Julia's package manager by entering the Julia REPL and typing
