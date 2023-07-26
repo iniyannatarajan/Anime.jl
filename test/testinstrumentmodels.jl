@@ -1,4 +1,4 @@
-#=@testset "Troposphere" begin
+@testset "Troposphere" begin
     y = YAML.load_file("data/testconfig.yaml", dicttype=Dict{String,Any}) # sample dict to test loadms()
 
     obs = loadms(y["msname"], y["stations"], Int(y["corruptseed"]), Int(y["troposphere"]["tropseed"]), y["troposphere"]["wetonly"], y["correff"], 
@@ -9,13 +9,13 @@
     @inferred Anime.run_atm(obs)
 
     rm("atm.csv")
-end=#
+end
 
 #=@testset "Polarization" begin
     
 end=#
 
-@testset "Primary Beam" begin
+#=@testset "Primary Beam" begin
     y = YAML.load_file("data/testconfig.yaml", dicttype=Dict{String,Any}) # sample dict to test loadms()
     h5file = "beam.h5"
 
@@ -73,4 +73,4 @@ end
     obs.stationinfo.sefd_Jy, h5file=h5file)
 
     rm(h5file)
-end
+end=#

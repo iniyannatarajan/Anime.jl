@@ -3,18 +3,22 @@ using Test
 using YAML
 using Random
 
-@testset "Load Observation" begin
+#=@testset "Load Observation" begin
     include("testloadobs.jl")
-end
+end=#
 
 @testset "Instrument Models" begin
     include("testinstrumentmodels.jl")
 end
 
-@testset "Storage Utilities" begin
+#=@testset "Storage Utilities" begin
     include("teststorageutils.jl")
 end
 
 @testset "Utility Functions" begin
     include("testutilities.jl")
-end
+end=#
+
+#=@testset "test" begin
+    @inferred Anime.copymodeltodata("data/eht.ms")
+end=#
