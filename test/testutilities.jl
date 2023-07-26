@@ -31,7 +31,19 @@ end
     y["bandpass"]["bandpassfile"], delim=",", ignorerepeated=false)
 
     @inferred plotvis(obs.uvw, obs.chanfreqvec, obs.flag, obs.data, obs.numchan, obs.times, saveprefix="test_")
+    rm("test_visampvspbs.png")
+    rm("test_visphasevspbs.png")
+    rm("test_visampvstime.png")
+    rm("test_visphasevstime.png")
+
+
     @inferred plotstationgains(h5file, obs.scanno, obs.times, obs.stationinfo.station)
+    rm("stationgainsvstime.png")
+
     @inferred plotbandpass(h5file, obs.stationinfo.station, obs.chanfreqvec)
+    rm("bandpassgains.png")
+
     @inferred plotpointingerrors(h5file, obs.scanno, obs.stationinfo.station)
+    rm("pointingoffsets.png")
+    rm("pointingamplitudeerrors.png")
 end
