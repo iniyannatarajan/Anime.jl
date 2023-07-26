@@ -2,7 +2,7 @@ export pointing
 
 using Statistics
 
-"""
+#="""
     compute_mispointvec(times::Vector{Float64}, pointinginterval::Float64, mispointsperscan::Int64)::Vector{Int32}
 
 Compute mispoint vector that holds mispoint id per scan for indexing into pointing amplitude error matrix
@@ -28,7 +28,7 @@ function compute_mispointvec(times::Vector{Float64}, pointinginterval::Float64, 
     end
 
     return mispointvec
-end
+end=#
 
 #="""
     longtermpointing()

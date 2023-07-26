@@ -54,11 +54,11 @@ function run_wsclean(msname::String, fitsdir::String, polarized::Bool, channelgr
 
 end
 
-"""
+#="""
     run_ducc0(msname::String, fitsdir::String, polarized::Bool, channelgroups::Int64, osfactor::Int64)
 
 Predict uncorrupted visibilities using the ducc0 wgridder (experimental)
 """
 function run_ducc0(msname::String, fitsdir::String, polarized::Bool, channelgroups::Int64, osfactor::Int64)
 
-end
+end=#
