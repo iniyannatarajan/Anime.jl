@@ -15,6 +15,10 @@ end=#
     include("testloadobs.jl")
 end
 
+@testset "Instrument Models" begin
+    include("testinstrumentmodels.jl")
+end
+
 @testset "Utility Functions" begin
     include("testutilities.jl")
 end

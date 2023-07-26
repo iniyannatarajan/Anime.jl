@@ -30,13 +30,13 @@ function compute_mispointvec(times::Vector{Float64}, pointinginterval::Float64, 
     return mispointvec
 end
 
-"""
+#="""
     longtermpointing()
 
 Compute long-term pointing errors
 """
 function longtermpointing()
-end
+end=#
 
 """
     pointing(stationinfo::DataFrame, scanno::Vector{Int32}, chanfreqvec::Vector{Float64}, ptgint::Float64, ptgmode::String,
