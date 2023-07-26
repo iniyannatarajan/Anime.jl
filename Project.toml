@@ -1,7 +1,7 @@
 name = "Anime"
 uuid = "628eb91b-9d1c-424a-81d5-cd7fa5d7294a"
 authors = ["Iniyan Natarajan <iniyannatarajan@gmail.com>"]
-version = "0.1.0"
+version = "0.2.1"
 
 [deps]
 ArgParse = "c7e460c6-2fb9-53a9-8c5b-16f535851c63"
