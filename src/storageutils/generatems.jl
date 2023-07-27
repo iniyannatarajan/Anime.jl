@@ -88,7 +88,7 @@ function addweightcols(msname::String, mode::String, sigmaspec::Bool, weightspec
     tb.close()
 end
 
-"""
+#="""
     setup_polarization(msname::String, stationtable::String)
 
 Set up all polarization subtables in the MS based on the station feed types
@@ -100,15 +100,15 @@ function setup_polarization(msname::String, stationtable::String)
 
     # modify DATA_DESCRIPTION, POLARIZATION, FEED subtables
 
-end
+end=#
 
-"""
+#="""
     msfromvex()
 
 Extract config parameters from VEX schedule and call msfromconfig() to generate MS
 """
 function msfromvex()
-end
+end=#
 
 """
     msfromuvfits(uvfits::String, msname::String, mscreationmode::String, stations::String; delim::String=",", ignorerepeated::Bool=false)
