@@ -6,31 +6,52 @@ using LinearAlgebra
 const Boltzmann = 1.380649e-23
 const lightspeed = 2.99792458e8
 
-function run_atm(obs::CjlObservation)::DataFrame
+function run_atm(obs::CjlObservation; absorptionfile::String="", dispersivefile::String="")::DataFrame
     """
     Run ATM (Pardo et al. 2001) to compute absorption by and dispersive delay in the atmosphere
     """
+    if absorptionfile == ""
+        absorptionfile = "absorption.csv"
+    end
+    if dispersivefile == ""
+        dispersivefile = "dispersive.csv"
+    end
     # loop through stations
     absdfvec = []
     dispdfvec = []
+
+    if !isfile(absorptionfile)
     for ant in eachindex(obs.stationinfo.station)
-	# absorption
-	atmcommand = obs.numchan == 1 ? `./data/absorption --fmin $(obs.chanfreqvec[1]/1e9-1.0) --fmax $(obs.chanfreqvec[1]/1e9) --fstep 1.0 --pwv $(obs.stationinfo.pwv_mm[ant]) 
-	--gpress $(obs.stationinfo.gpress_mb[ant]) --gtemp $(obs.stationinfo.gtemp_K[ant])` : `./data/absorption --fmin $((first(obs.chanfreqvec)-obs.chanwidth)/1e9) --fmax $(last(obs.chanfreqvec)/1e9) 
-	--fstep $(obs.chanwidth/1e9) --pwv $(obs.stationinfo.pwv_mm[ant]) --gpress $(obs.stationinfo.gpress_mb[ant]) --gtemp $(obs.stationinfo.gtemp_K[ant])`
-        run(pipeline(atmcommand, stdout="absorption.csv", append=false))
+	    # absorption
+	    atmcommand = obs.numchan == 1 ? `absorption --fmin $(obs.chanfreqvec[1]/1e9-1.0) --fmax $(obs.chanfreqvec[1]/1e9) --fstep 1.0 --pwv $(obs.stationinfo.pwv_mm[ant]) 
+	    --gpress $(obs.stationinfo.gpress_mb[ant]) --gtemp $(obs.stationinfo.gtemp_K[ant])` : `absorption --fmin $((first(obs.chanfreqvec)-obs.chanwidth)/1e9) --fmax $(last(obs.chanfreqvec)/1e9) 
+	    --fstep $(obs.chanwidth/1e9) --pwv $(obs.stationinfo.pwv_mm[ant]) --gpress $(obs.stationinfo.gpress_mb[ant]) --gtemp $(obs.stationinfo.gtemp_K[ant])`
+        run(pipeline(atmcommand, stdout=absorptionfile, append=false))
 
-	# load as dataframe
-	push!(absdfvec, CSV.read("absorption.csv", DataFrame; delim=",", ignorerepeated=false, header=["Frequency", "Dry_opacity", "Wet_opacity", "Sky_brightness"], skipto=2))
+	    # load as dataframe
+	    push!(absdfvec, CSV.read(absorptionfile, DataFrame; delim=",", ignorerepeated=false, header=["Frequency", "Dry_opacity", "Wet_opacity", "Sky_brightness"], skipto=2))
+    end
+    else
+        for ant in eachindex(obs.stationinfo.station)
+            push!(absdfvec, CSV.read(absorptionfile, DataFrame; delim=",", ignorerepeated=false, header=1, skipto=(ant-1)*obs.numchan+2, limit=obs.numchan))
+        end
+    end
 
-	# dispersive delay
-	atmcommand = obs.numchan == 1 ? `./data/dispersive --fmin $(obs.chanfreqvec[1]/1e9-1.0) --fmax $(obs.chanfreqvec[1]/1e9) --fstep 1.0 --pwv $(obs.stationinfo.pwv_mm[ant]) 
-	--gpress $(obs.stationinfo.gpress_mb[ant]) --gtemp $(obs.stationinfo.gtemp_K[ant])` : `./data/dispersive --fmin $((first(obs.chanfreqvec)-obs.chanwidth)/1e9) --fmax $(last(obs.chanfreqvec)/1e9) 
-	--fstep $(obs.chanwidth/1e9) --pwv $(obs.stationinfo.pwv_mm[ant]) --gpress $(obs.stationinfo.gpress_mb[ant]) --gtemp $(obs.stationinfo.gtemp_K[ant])`
-        run(pipeline(atmcommand, stdout="dispersive.csv", append=false))
+    if !isfile(dispersivefile)
+    for ant in eachindex(obs.stationinfo.station)
+	    # dispersive delay
+	    atmcommand = obs.numchan == 1 ? `dispersive --fmin $(obs.chanfreqvec[1]/1e9-1.0) --fmax $(obs.chanfreqvec[1]/1e9) --fstep 1.0 --pwv $(obs.stationinfo.pwv_mm[ant]) 
+	    --gpress $(obs.stationinfo.gpress_mb[ant]) --gtemp $(obs.stationinfo.gtemp_K[ant])` : `dispersive --fmin $((first(obs.chanfreqvec)-obs.chanwidth)/1e9) --fmax $(last(obs.chanfreqvec)/1e9) 
+	    --fstep $(obs.chanwidth/1e9) --pwv $(obs.stationinfo.pwv_mm[ant]) --gpress $(obs.stationinfo.gpress_mb[ant]) --gtemp $(obs.stationinfo.gtemp_K[ant])`
+        run(pipeline(atmcommand, stdout=dispersivefile, append=false))
 
-	# load as dataframe
-	push!(dispdfvec, CSV.read("dispersive.csv", DataFrame; delim=",", ignorerepeated=false, header=["Frequency", "Wet_nondisp", "Wet_disp", "Dry_nondisp"], skipto=2))
+	    # load as dataframe
+	    push!(dispdfvec, CSV.read(dispersivefile, DataFrame; delim=",", ignorerepeated=false, header=["Frequency", "Wet_nondisp", "Wet_disp", "Dry_nondisp"], skipto=2))
+    end
+    else
+        for ant in eachindex(obs.stationinfo.station)
+            push!(dispdfvec, CSV.read(dispersivefile, DataFrame; delim=",", ignorerepeated=false, header=1, skipto=(ant-1)*obs.numchan+2, limit=obs.numchan))
+        end
     end
 
     # concatenate all to one dataframe
@@ -41,7 +62,6 @@ function run_atm(obs::CjlObservation)::DataFrame
     absdf[!, :Dry_nondisp] = dispdf.Dry_nondisp
 
     CSV.write("atm.csv", absdf) # write all to a single csv file
-    run(`rm absorption.csv dispersive.csv`) # remove clutter
 
     @info("Compute absorption by and dispersive delay in the troposphere using ATM 🙆")
     return absdf
@@ -281,7 +301,7 @@ end
 
 Compute various tropospheric effects and apply to data. The actual numerical values are serialized as HDF5.
 """
-function troposphere(obs::CjlObservation; h5file::String="")
+function troposphere(obs::CjlObservation, h5file::String)
     @info("Computing tropospheric effects...")
 
     # open h5 file for writing

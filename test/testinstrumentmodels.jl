@@ -6,7 +6,7 @@
     y["instrumentalpol"]["visibilityframe"], y["instrumentalpol"]["mode"], y["pointing"]["interval"], y["pointing"]["mode"], y["stationgains"]["mode"], 
     y["bandpass"]["bandpassfile"], delim=",", ignorerepeated=false)
 
-    @inferred Anime.run_atm(obs)
+    @inferred Anime.run_atm(obs, absorptionfile="data/absorption.csv", dispersivefile="data/dispersive.csv")
 
     rm("atm.csv")
 end
@@ -15,7 +15,7 @@ end
     
 end=#
 
-#=@testset "Primary Beam" begin
+@testset "Primary Beam" begin
     y = YAML.load_file("data/testconfig.yaml", dicttype=Dict{String,Any}) # sample dict to test loadms()
     h5file = "beam.h5"
 
@@ -73,4 +73,4 @@ end
     obs.stationinfo.sefd_Jy, h5file=h5file)
 
     rm(h5file)
-end=#
+end

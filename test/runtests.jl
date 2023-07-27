@@ -11,14 +11,10 @@ end=#
     include("testinstrumentmodels.jl")
 end
 
-#=@testset "Storage Utilities" begin
+@testset "Storage Utilities" begin
     include("teststorageutils.jl")
 end
 
 @testset "Utility Functions" begin
     include("testutilities.jl")
-end=#
-
-#=@testset "test" begin
-    @inferred Anime.copymodeltodata("data/eht.ms")
-end=#
+end

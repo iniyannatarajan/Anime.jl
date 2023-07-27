@@ -77,8 +77,7 @@ y["bandpass"]["bandpassfile"], delim=",", ignorerepeated=false)
 y["diagnostics"] && plotvis(obs.uvw, obs.chanfreqvec, obs.flag, obs.data, obs.numchan, obs.times, saveprefix="modelvis_") 
 
 # add tropospheric effects
-# TODO must pass h5file name to troposphere for now
-y["troposphere"]["enable"] && troposphere(obs, h5file=h5file)
+y["troposphere"]["enable"] && troposphere(obs, h5file)
 
 # add instrumental polarization
 if y["instrumentalpol"]["enable"]
