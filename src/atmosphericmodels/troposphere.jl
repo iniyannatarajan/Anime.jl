@@ -6,10 +6,12 @@ using LinearAlgebra
 const Boltzmann = 1.380649e-23
 const lightspeed = 2.99792458e8
 
+"""
+    run_atm(obs::CjlObservation; absorptionfile::String="", dispersivefile::String="")::DataFrame
+
+Run ATM (Pardo et al. 2001) to compute absorption by and dispersive delay in the atmosphere
+"""
 function run_atm(obs::CjlObservation; absorptionfile::String="", dispersivefile::String="")::DataFrame
-    """
-    Run ATM (Pardo et al. 2001) to compute absorption by and dispersive delay in the atmosphere
-    """
     if absorptionfile == ""
         absorptionfile = "absorption.csv"
     end
@@ -67,10 +69,12 @@ function run_atm(obs::CjlObservation; absorptionfile::String="", dispersivefile:
     return absdf
 end
 
+"""
+    compute_transmission!(transmission::Array{Float64, 3}, obs::CjlObservation, atmdf::DataFrame, elevationmatrix::Array{Float64, 2}, g::HDF5.Group)::Array{Float64, 3}
+
+Compute transmission matrix
+"""
 function compute_transmission!(transmission::Array{Float64, 3}, obs::CjlObservation, atmdf::DataFrame, elevationmatrix::Array{Float64, 2}, g::HDF5.Group)::Array{Float64, 3}
-    """
-    Compute transmission matrix
-    """
     # compute time and frequency varying transmission matrix for each station
     for ant in 1:size(transmission)[3]
         # get opacity at all frequencies for this station
@@ -297,11 +301,11 @@ function compute_turbulence(obs::CjlObservation, atmdf::DataFrame, elevationmatr
 end
 
 """
-    troposphere(obs::CjlObservation; h5file::String="")
+    troposphere(obs::CjlObservation, h5file::String; absorptionfile="", dispersivefile="", elevfile="")
 
 Compute various tropospheric effects and apply to data. The actual numerical values are serialized as HDF5.
 """
-function troposphere(obs::CjlObservation, h5file::String)
+function troposphere(obs::CjlObservation, h5file::String; absorptionfile="", dispersivefile="", elevfile="")
     @info("Computing tropospheric effects...")
 
     # open h5 file for writing
@@ -310,9 +314,16 @@ function troposphere(obs::CjlObservation, h5file::String)
     attributes(g)["desc"] = "all tropospheric signal corruptions"
     attributes(g)["dims"] = "various"
     
-    atmdf = run_atm(obs) # compute necessary atmospheric quantities using atm
+    atmdf = run_atm(obs, absorptionfile=absorptionfile, dispersivefile=dispersivefile) # compute necessary atmospheric quantities using atm
 
-    elevationmatrix = elevationangle(obs.times, obs.phasedir, obs.stationinfo, obs.pos) # compute elevation angle for all stations
+    if elevfile != "" && isfile(elevfile)
+        fid = h5open(elevfile, "r")
+        elevationmatrix = read(fid["troposphere"]["elevation"])
+        close(fid)
+    else
+        elevationmatrix = elevationangle(obs.times, obs.phasedir, obs.stationinfo, obs.pos) # compute elevation angle for all stations
+    end
+
     if !(haskey(g, "elevation"))
         g["elevation"] = elevationmatrix
     end

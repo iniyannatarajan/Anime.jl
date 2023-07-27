@@ -3,7 +3,7 @@ export instrumentalpol
 """
     instrumentalpol(scanno::Vector{Int32}, times::Vector{Float64}, stationinfo::DataFrame, phasedir::Array{Float64,2},
     pos::Array{Float64, 2}, data::Array{Complex{Float32},4}, numchan::Int64, polframe::String, polmode::String,
-    antenna1::Vector{Int32}, antenna2::Vector{Int32}, exposure::Float64, rngcorrupt::AbstractRNG; h5file::String="")
+    antenna1::Vector{Int32}, antenna2::Vector{Int32}, exposure::Float64, rngcorrupt::AbstractRNG; h5file::String="", elevfile::String="", parangfile::String="")
 
 Compute instrumental polarization (leakage, or "D-Jones" terms) and apply to data. The actual numerical values are serialized as HDF5.
 """
