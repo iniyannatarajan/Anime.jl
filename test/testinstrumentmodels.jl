@@ -11,9 +11,20 @@
     rm("atm.csv")
 end
 
-#=@testset "Polarization" begin
-    
-end=#
+@testset "Polarization" begin
+    y = YAML.load_file("data/testconfig.yaml", dicttype=Dict{String,Any}) # sample dict to test loadms()
+    h5file = "inspol.h5"
+
+    obs = loadms(y["msname"], y["stations"], Int(y["corruptseed"]), Int(y["troposphere"]["tropseed"]), y["troposphere"]["wetonly"], y["correff"], 
+    y["troposphere"]["attenuate"], y["troposphere"]["skynoise"], y["troposphere"]["meandelays"], y["troposphere"]["turbulence"], 
+    y["instrumentalpol"]["visibilityframe"], y["instrumentalpol"]["mode"], y["pointing"]["interval"], y["pointing"]["mode"], y["stationgains"]["mode"], 
+    y["bandpass"]["bandpassfile"], delim=",", ignorerepeated=false)
+
+    @inferred instrumentalpol(obs.scanno, obs.times, obs.stationinfo, obs.phasedir, obs.pos, obs.data, obs.numchan, obs.polframe,
+    obs.polmode, obs.antenna1, obs.antenna2, obs.exposure, obs.rngcorrupt, h5file=h5file, elevfile="data/insmodel.h5", parangfile="data/insmodel.h5")
+
+    rm(h5file)
+end
 
 @testset "Primary Beam" begin
     y = YAML.load_file("data/testconfig.yaml", dicttype=Dict{String,Any}) # sample dict to test loadms()

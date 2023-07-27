@@ -9,7 +9,7 @@ Compute instrumental polarization (leakage, or "D-Jones" terms) and apply to dat
 """
 function instrumentalpol(scanno::Vector{Int32}, times::Vector{Float64}, stationinfo::DataFrame, phasedir::Array{Float64,2},
     pos::Array{Float64, 2}, data::Array{Complex{Float32},4}, numchan::Int64, polframe::String, polmode::String,
-    antenna1::Vector{Int32}, antenna2::Vector{Int32}, exposure::Float64, rngcorrupt::AbstractRNG; h5file::String="")
+    antenna1::Vector{Int32}, antenna2::Vector{Int32}, exposure::Float64, rngcorrupt::AbstractRNG; h5file::String="", elevfile::String="", parangfile::String="")
     # get unique scan numbers
     uniqscans = unique(scanno)
 
@@ -18,8 +18,21 @@ function instrumentalpol(scanno::Vector{Int32}, times::Vector{Float64}, stationi
     ntimes = size(uniqtimes)[1]
 
     # compute necessary quantities
-    elevationmatrix = elevationangle(times, phasedir, stationinfo, pos)
-    parallacticanglematrix = parallacticangle(times, phasedir, stationinfo, pos)
+    if elevfile != "" && isfile(elevfile)
+        fid = h5open(elevfile, "r")
+        elevationmatrix = read(fid["polarization"]["elevation"])
+        close(fid)
+    else
+        elevationmatrix = elevationangle(times, phasedir, stationinfo, pos)
+    end
+
+    if parangfile != "" && isfile(parangfile)
+        fid = h5open(parangfile, "r")
+        parallacticanglematrix = read(fid["polarization"]["parallacticangle"])
+        close(fid)
+    else
+        parallacticanglematrix = parallacticangle(times, phasedir, stationinfo, pos)
+    end
 
 	# D-terms -- perform twice the feed angle rotation
 	djonesmatrices = ones(eltype(data), 2, 2, numchan, size(stationinfo)[1]) # 2 x 2 x nchan x nant
