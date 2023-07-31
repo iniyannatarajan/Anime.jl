@@ -317,11 +317,9 @@ function troposphere(obs::CjlObservation, h5file::String; absorptionfile="", dis
     # open h5 file for writing
     if !isempty(h5file)
         fid = h5open(h5file, "cw")
-        @info("Opened $h5file 1")
         g = create_group(fid, "troposphere")
         attributes(g)["desc"] = "all tropospheric signal corruptions"
         attributes(g)["dims"] = "various"
-        @info("Opened $h5file")
     end
     
     atmdf = run_atm(obs, absorptionfile=absorptionfile, dispersivefile=dispersivefile) # compute necessary atmospheric quantities using atm

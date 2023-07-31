@@ -15,6 +15,10 @@ end
     include("teststorageutils.jl")
 end
 
-@testset "Utility Functions" begin
-    include("testutilities.jl")
+@testset "Stats Methods" begin
+    include("teststatsutils.jl")
+end
+
+@testset "Plotting Methods" begin
+    include("testplots.jl")
 end
