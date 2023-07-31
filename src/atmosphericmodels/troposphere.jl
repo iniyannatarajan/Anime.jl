@@ -23,16 +23,16 @@ function run_atm(obs::CjlObservation; absorptionfile::String="", dispersivefile:
     dispdfvec = []
 
     if !isfile(absorptionfile)
-    for ant in eachindex(obs.stationinfo.station)
-	    # absorption
-	    atmcommand = obs.numchan == 1 ? `absorption --fmin $(obs.chanfreqvec[1]/1e9-1.0) --fmax $(obs.chanfreqvec[1]/1e9) --fstep 1.0 --pwv $(obs.stationinfo.pwv_mm[ant]) 
-	    --gpress $(obs.stationinfo.gpress_mb[ant]) --gtemp $(obs.stationinfo.gtemp_K[ant])` : `absorption --fmin $((first(obs.chanfreqvec)-obs.chanwidth)/1e9) --fmax $(last(obs.chanfreqvec)/1e9) 
-	    --fstep $(obs.chanwidth/1e9) --pwv $(obs.stationinfo.pwv_mm[ant]) --gpress $(obs.stationinfo.gpress_mb[ant]) --gtemp $(obs.stationinfo.gtemp_K[ant])`
-        run(pipeline(atmcommand, stdout=absorptionfile, append=false))
+        for ant in eachindex(obs.stationinfo.station)
+	        # absorption
+	        atmcommand = obs.numchan == 1 ? `absorption --fmin $(obs.chanfreqvec[1]/1e9-1.0) --fmax $(obs.chanfreqvec[1]/1e9) --fstep 1.0 --pwv $(obs.stationinfo.pwv_mm[ant]) 
+	        --gpress $(obs.stationinfo.gpress_mb[ant]) --gtemp $(obs.stationinfo.gtemp_K[ant])` : `absorption --fmin $((first(obs.chanfreqvec)-obs.chanwidth)/1e9) --fmax $(last(obs.chanfreqvec)/1e9) 
+	        --fstep $(obs.chanwidth/1e9) --pwv $(obs.stationinfo.pwv_mm[ant]) --gpress $(obs.stationinfo.gpress_mb[ant]) --gtemp $(obs.stationinfo.gtemp_K[ant])`
+            run(pipeline(atmcommand, stdout=absorptionfile, append=false))
 
-	    # load as dataframe
-	    push!(absdfvec, CSV.read(absorptionfile, DataFrame; delim=",", ignorerepeated=false, header=["Frequency", "Dry_opacity", "Wet_opacity", "Sky_brightness"], skipto=2))
-    end
+	        # load as dataframe
+	        push!(absdfvec, CSV.read(absorptionfile, DataFrame; delim=",", ignorerepeated=false, header=["Frequency", "Dry_opacity", "Wet_opacity", "Sky_brightness"], skipto=2))
+        end
     else
         for ant in eachindex(obs.stationinfo.station)
             push!(absdfvec, CSV.read(absorptionfile, DataFrame; delim=",", ignorerepeated=false, header=1, skipto=(ant-1)*obs.numchan+2, limit=obs.numchan))
@@ -40,21 +40,27 @@ function run_atm(obs::CjlObservation; absorptionfile::String="", dispersivefile:
     end
 
     if !isfile(dispersivefile)
-    for ant in eachindex(obs.stationinfo.station)
-	    # dispersive delay
-	    atmcommand = obs.numchan == 1 ? `dispersive --fmin $(obs.chanfreqvec[1]/1e9-1.0) --fmax $(obs.chanfreqvec[1]/1e9) --fstep 1.0 --pwv $(obs.stationinfo.pwv_mm[ant]) 
-	    --gpress $(obs.stationinfo.gpress_mb[ant]) --gtemp $(obs.stationinfo.gtemp_K[ant])` : `dispersive --fmin $((first(obs.chanfreqvec)-obs.chanwidth)/1e9) --fmax $(last(obs.chanfreqvec)/1e9) 
-	    --fstep $(obs.chanwidth/1e9) --pwv $(obs.stationinfo.pwv_mm[ant]) --gpress $(obs.stationinfo.gpress_mb[ant]) --gtemp $(obs.stationinfo.gtemp_K[ant])`
-        run(pipeline(atmcommand, stdout=dispersivefile, append=false))
+        for ant in eachindex(obs.stationinfo.station)
+	        # dispersive delay
+	        atmcommand = obs.numchan == 1 ? `dispersive --fmin $(obs.chanfreqvec[1]/1e9-1.0) --fmax $(obs.chanfreqvec[1]/1e9) --fstep 1.0 --pwv $(obs.stationinfo.pwv_mm[ant]) 
+	        --gpress $(obs.stationinfo.gpress_mb[ant]) --gtemp $(obs.stationinfo.gtemp_K[ant])` : `dispersive --fmin $((first(obs.chanfreqvec)-obs.chanwidth)/1e9) --fmax $(last(obs.chanfreqvec)/1e9) 
+	        --fstep $(obs.chanwidth/1e9) --pwv $(obs.stationinfo.pwv_mm[ant]) --gpress $(obs.stationinfo.gpress_mb[ant]) --gtemp $(obs.stationinfo.gtemp_K[ant])`
+            run(pipeline(atmcommand, stdout=dispersivefile, append=false))
 
-	    # load as dataframe
-	    push!(dispdfvec, CSV.read(dispersivefile, DataFrame; delim=",", ignorerepeated=false, header=["Frequency", "Wet_nondisp", "Wet_disp", "Dry_nondisp"], skipto=2))
-    end
+	        # load as dataframe
+	        push!(dispdfvec, CSV.read(dispersivefile, DataFrame; delim=",", ignorerepeated=false, header=["Frequency", "Wet_nondisp", "Wet_disp", "Dry_nondisp"], skipto=2))
+        end
     else
         for ant in eachindex(obs.stationinfo.station)
             push!(dispdfvec, CSV.read(dispersivefile, DataFrame; delim=",", ignorerepeated=false, header=1, skipto=(ant-1)*obs.numchan+2, limit=obs.numchan))
         end
     end
+
+    #=# create input files for bypassing casacore functions for test cases
+    absdf = vcat(absdfvec...)
+    CSV.write("absorption1.csv", absdf)
+    dispdf = vcat(dispdfvec...)
+    CSV.write("dispersive1.csv", dispdf)=#
 
     # concatenate all to one dataframe
     absdf = vcat(absdfvec...,source=:Station => obs.stationinfo.station)
@@ -309,24 +315,31 @@ function troposphere(obs::CjlObservation, h5file::String; absorptionfile="", dis
     @info("Computing tropospheric effects...")
 
     # open h5 file for writing
-    fid = h5open(h5file, "cw")
-    g = create_group(fid, "troposphere")
-    attributes(g)["desc"] = "all tropospheric signal corruptions"
-    attributes(g)["dims"] = "various"
+    if !isempty(h5file)
+        fid = h5open(h5file, "cw")
+        @info("Opened $h5file 1")
+        g = create_group(fid, "troposphere")
+        attributes(g)["desc"] = "all tropospheric signal corruptions"
+        attributes(g)["dims"] = "various"
+        @info("Opened $h5file")
+    end
     
     atmdf = run_atm(obs, absorptionfile=absorptionfile, dispersivefile=dispersivefile) # compute necessary atmospheric quantities using atm
+    @info("run_atm successful")
 
     if elevfile != "" && isfile(elevfile)
-        fid = h5open(elevfile, "r")
-        elevationmatrix = read(fid["troposphere"]["elevation"])
-        close(fid)
+        fidelev = h5open(elevfile, "r")
+        elevationmatrix = read(fidelev["troposphere"]["elevation"])
+        close(fidelev)
     else
         elevationmatrix = elevationangle(obs.times, obs.phasedir, obs.stationinfo, obs.pos) # compute elevation angle for all stations
     end
+    @info("elevationmatrix ready")
 
     if !(haskey(g, "elevation"))
         g["elevation"] = elevationmatrix
     end
+    @info("written elevationmatrix to $h5file")
 
     transmission = nothing
     if obs.tropattenuate || obs.tropskynoise

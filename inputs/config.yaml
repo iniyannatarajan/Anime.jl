@@ -27,7 +27,7 @@ stokes: "RR RL LR LL"                                # CASA understandable Stoke
 spw:
     centrefreq: [229.0e9]                            # centre frequency of spw in Hz
     bandwidth: [2e9]                               # bandwidth of spw in Hz
-    channels: [32]                                   # number of channels in spw
+    channels: [16]                                   # number of channels in spw
 starttime: "UTC,2021/04/28/00:00:00.00"              # starting time of the first scan in the observation
 
 ####################################################
@@ -49,7 +49,7 @@ diagnostics: false                                  # generate diagnostic plots 
 # settings for atmospheric corruptions
 
 troposphere:                                         # add troposphere
-  enable: false
+  enable: true
   wetonly: false                                     # add only the wet component
   attenuate: true                                   # signal attenuation due to opacity
   skynoise: true                                    # add tropospheric contribution to sky noise
@@ -96,4 +96,4 @@ bandpass:
 # noise settings
 
 thermalnoise: 
-  enable: true                                      # toggle thermal noise
+  enable: false                                      # toggle thermal noise

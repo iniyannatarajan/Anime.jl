@@ -3,9 +3,9 @@ using Test
 using YAML
 using Random
 
-#=@testset "Load Observation" begin
+@testset "Load Observation" begin
     include("testloadobs.jl")
-end=#
+end
 
 @testset "Instrument Models" begin
     include("testinstrumentmodels.jl")

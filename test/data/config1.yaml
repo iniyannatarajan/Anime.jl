@@ -1,0 +1,99 @@
+####################################################
+# sample config file for AnimeDriver.jl
+####################################################
+# settings to generate a new ms
+
+mode: "manual"                                       # "vex", "uvfits", "manual" are the only allowed values
+msname: "data/eht1.ms"                                  # name of output ms 
+telescopename: "VLBA"                                # preset telescope known to casa (not important since CASA is not used for predict; just an argument required for setconfig)
+stations: "data/eht_2017.stations"     # CSV file with station parameters
+casaanttemplate: "data/antenna_table.template"                 # Input CASA ANTENNA table to use as template
+vex: "data/e17e11.vex"    # name of the VEX schedule to use for observing
+uvfits: "data/hops_lo_3601_M87+zbl-dtcal_selfcal.uvfits" # name of uvfits file to convert to ms
+autocorr: false                                      # toggle whether to include autocorrelations
+feed: "perfect R L"                                  # "perfect R L" or "perfect X Y"
+shadowlimit: 1e-6                                    # maximum fraction of geometrically shadowed area before flagging occurs
+elevationlimit: "10deg"                              # minimum elevation angle before flagging occurs
+source:
+  M87:
+    RA: "12h30m49.42"                                # right ascension of source position in hours
+    Dec: "+12.23.28.04"                              # declination of source position in degrees
+    epoch: "J2000"                                   # "J2000" or "B1950"
+scans: 2                                             # number of scans
+scanlengths: [400.0, 300.0]                              # list of lengths of each scan in seconds
+scanlag: 300.0                                     # lag time between scans in seconds
+exposure: 4.0                                          # integration time in seconds
+stokes: "RR RL LR LL"                                # CASA understandable Stokes types to simulate (check official MS specification)
+spw:
+    centrefreq: [229.0e9]                            # centre frequency of spw in Hz
+    bandwidth: [2e9]                               # bandwidth of spw in Hz
+    channels: [32]                                   # number of channels in spw
+starttime: "UTC,2021/04/28/00:00:00.00"              # starting time of the first scan in the observation
+
+####################################################
+# settings for wsclean predict
+
+osfactor: 8191                                       # oversampling factor for WSClean
+skymodel: "data/grmhdpol"       # HDF5 file or directory containing FITS files
+polarized: false                                     # toggle source model polarization
+channelgroups: 1                                     # number of groups to divide the channels into for computing source coherencies
+
+####################################################
+# common settings
+
+correff: 0.88                                      # correlator efficiency for 2 quantization bits (use 0.636 for 1-bit)
+corruptseed: 456                                     # seed to be used for generating random variables for corruptions (except for troposphere)
+diagnostics: true                                  # generate diagnostic plots and logs
+
+####################################################
+# settings for atmospheric corruptions
+
+troposphere:                                         # add troposphere
+  enable: true
+  wetonly: false                                     # add only the wet component
+  attenuate: true                                   # signal attenuation due to opacity
+  skynoise: true                                    # add tropospheric contribution to sky noise
+  meandelays: true                                   # add mean delays
+  fixdelays: false                                   # add fixed delays 
+  turbulence: true                                  # add turbulent phases
+  tropseed: 873256                                      # independent seed for generating random variables for troposphere
+
+ionosphere:                                          # add ionosphere
+  enable: false
+
+####################################################
+# beam and pointing settings
+
+pointing:
+  enable: true
+  mode: "gp"                                         # "gp" (Gaussian processes) or "normal" (Gaussian)
+  interval: 5.0                          # time interval (in seconds) after which to generate new pointing errors (<=0.0 for "mean(coherencetime)")
+  longterm:
+    enable: false                                    # enable longterm, multiscan pointing drifts
+    nscan: 5                                         # no. of scans after which to reset long term pointing drift
+    sigmascale: 1.2                                  # scale pointing rms by this value
+    epsilon: 0.1                                     # growth factor multiplied with the scaled up sigma
+
+####################################################
+# settings for instrumental polarization
+
+instrumentalpol: 
+  enable: true                                       # add instrumental polarization
+  mode: "gp"                                     # "gp" (Gaussian processes) or "normal" (Gaussian)
+  visibilityframe: "sky"                             # visibilities are written out in "sky" frame
+
+####################################################
+# settings for gains
+
+stationgains: 
+  enable: true                                      # add antenna gains
+  mode: "gp"                                     # "gp" or "normal"
+bandpass: 
+  enable: true                                      # add bandpass effects 
+  bandpassfile: "data/eht_2017.bandpass" # csv file containing bandpass information for all stations
+
+####################################################
+# noise settings
+
+thermalnoise: 
+  enable: true                                      # toggle thermal noise

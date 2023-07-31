@@ -1,20 +1,20 @@
 @testset "Troposphere" begin
-    y = YAML.load_file("data/testconfig.yaml", dicttype=Dict{String,Any}) # sample dict to test loadms()
-    h5file = "trop.h5"
+    y = YAML.load_file("data/config1.yaml", dicttype=Dict{String,Any}) # sample dict to test loadms()
+    h5file = "tropos.h5"
 
     obs = loadms(y["msname"], y["stations"], Int(y["corruptseed"]), Int(y["troposphere"]["tropseed"]), y["troposphere"]["wetonly"], y["correff"], 
     y["troposphere"]["attenuate"], y["troposphere"]["skynoise"], y["troposphere"]["meandelays"], y["troposphere"]["turbulence"], 
     y["instrumentalpol"]["visibilityframe"], y["instrumentalpol"]["mode"], y["pointing"]["interval"], y["pointing"]["mode"], y["stationgains"]["mode"], 
     y["bandpass"]["bandpassfile"], delim=",", ignorerepeated=false)
 
-    @inferred troposphere(obs, h5file, absorptionfile="data/absorption.csv", dispersivefile="data/dispersive.csv", elevfile="data/insmodel.h5")
+    @inferred troposphere(obs, h5file, absorptionfile="data/absorption1.csv", dispersivefile="data/dispersive1.csv", elevfile="data/insmodel1.h5")
 
     rm("atm.csv")
     rm(h5file)
 end
 
 @testset "Polarization" begin
-    y = YAML.load_file("data/testconfig.yaml", dicttype=Dict{String,Any}) # sample dict to test loadms()
+    y = YAML.load_file("data/config1.yaml", dicttype=Dict{String,Any}) # sample dict to test loadms()
     h5file = "inspol.h5"
 
     obs = loadms(y["msname"], y["stations"], Int(y["corruptseed"]), Int(y["troposphere"]["tropseed"]), y["troposphere"]["wetonly"], y["correff"], 
@@ -23,13 +23,13 @@ end
     y["bandpass"]["bandpassfile"], delim=",", ignorerepeated=false)
 
     @inferred instrumentalpol(obs.scanno, obs.times, obs.stationinfo, obs.phasedir, obs.pos, obs.data, obs.numchan, obs.polframe,
-    obs.polmode, obs.antenna1, obs.antenna2, obs.exposure, obs.rngcorrupt, h5file=h5file, elevfile="data/insmodel.h5", parangfile="data/insmodel.h5")
+    obs.polmode, obs.antenna1, obs.antenna2, obs.exposure, obs.rngcorrupt, h5file=h5file, elevfile="data/insmodel1.h5", parangfile="data/insmodel1.h5")
 
     rm(h5file)
 end
 
 @testset "Primary Beam" begin
-    y = YAML.load_file("data/testconfig.yaml", dicttype=Dict{String,Any}) # sample dict to test loadms()
+    y = YAML.load_file("data/config1.yaml", dicttype=Dict{String,Any}) # sample dict to test loadms()
     h5file = "beam.h5"
 
     obs = loadms(y["msname"], y["stations"], Int(y["corruptseed"]), Int(y["troposphere"]["tropseed"]), y["troposphere"]["wetonly"], y["correff"], 
@@ -44,7 +44,7 @@ end
 end
 
 @testset "Station Gains" begin
-    y = YAML.load_file("data/testconfig.yaml", dicttype=Dict{String,Any}) # sample dict to test loadms()
+    y = YAML.load_file("data/config1.yaml", dicttype=Dict{String,Any}) # sample dict to test loadms()
     h5file = "gains.h5"
 
     obs = loadms(y["msname"], y["stations"], Int(y["corruptseed"]), Int(y["troposphere"]["tropseed"]), y["troposphere"]["wetonly"], y["correff"], 
@@ -59,7 +59,7 @@ end
 end
 
 @testset "Bandpass" begin
-    y = YAML.load_file("data/testconfig.yaml", dicttype=Dict{String,Any}) # sample dict to test loadms()
+    y = YAML.load_file("data/config1.yaml", dicttype=Dict{String,Any}) # sample dict to test loadms()
     h5file = "bandpass.h5"
 
     obs = loadms(y["msname"], y["stations"], Int(y["corruptseed"]), Int(y["troposphere"]["tropseed"]), y["troposphere"]["wetonly"], y["correff"], 
@@ -73,8 +73,8 @@ end
     rm(h5file)
 end
 
-@testset "Noise" begin
-    y = YAML.load_file("data/testconfig.yaml", dicttype=Dict{String,Any}) # sample dict to test loadms()
+@testset "Thermal Noise" begin
+    y = YAML.load_file("data/config1.yaml", dicttype=Dict{String,Any}) # sample dict to test loadms()
     h5file = "noise.h5"
 
     obs = loadms(y["msname"], y["stations"], Int(y["corruptseed"]), Int(y["troposphere"]["tropseed"]), y["troposphere"]["wetonly"], y["correff"], 
