@@ -43,13 +43,13 @@ channelgroups: 1                                     # number of groups to divid
 
 correff: 0.88                                      # correlator efficiency for 2 quantization bits (use 0.636 for 1-bit)
 corruptseed: 456                                     # seed to be used for generating random variables for corruptions (except for troposphere)
-diagnostics: true                                  # generate diagnostic plots and logs
+diagnostics: false                                  # generate diagnostic plots and logs
 
 ####################################################
 # settings for atmospheric corruptions
 
 troposphere:                                         # add troposphere
-  enable: true
+  enable: false
   wetonly: false                                     # add only the wet component
   attenuate: true                                   # signal attenuation due to opacity
   skynoise: true                                    # add tropospheric contribution to sky noise
@@ -65,7 +65,7 @@ ionosphere:                                          # add ionosphere
 # beam and pointing settings
 
 pointing:
-  enable: true
+  enable: false
   mode: "gp"                                         # "gp" (Gaussian processes) or "normal" (Gaussian)
   interval: 5.0                          # time interval (in seconds) after which to generate new pointing errors (<=0.0 for "mean(coherencetime)")
   longterm:
@@ -78,7 +78,7 @@ pointing:
 # settings for instrumental polarization
 
 instrumentalpol: 
-  enable: true                                       # add instrumental polarization
+  enable: false                                       # add instrumental polarization
   mode: "gp"                                     # "gp" (Gaussian processes) or "normal" (Gaussian)
   visibilityframe: "sky"                             # visibilities are written out in "sky" frame
 
@@ -86,10 +86,10 @@ instrumentalpol:
 # settings for gains
 
 stationgains: 
-  enable: true                                      # add antenna gains
+  enable: false                                      # add antenna gains
   mode: "gp"                                     # "gp" or "normal"
 bandpass: 
-  enable: true                                      # add bandpass effects 
+  enable: false                                      # add bandpass effects 
   bandpassfile: "/home/iniyan/software/dev/Anime.jl/inputs/eht_2017.bandpass" # csv file containing bandpass information for all stations
 
 ####################################################

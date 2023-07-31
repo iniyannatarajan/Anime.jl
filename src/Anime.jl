@@ -34,6 +34,7 @@ include("polarizationmodels/polarizationmodels.jl")
 include("beammodels/beammodels.jl")
 include("gainmodels/gainmodels.jl")
 include("noisemodels/noisemodels.jl")
+include("stats/stats.jl")
 include("util.jl")
 include("plots.jl")
 
