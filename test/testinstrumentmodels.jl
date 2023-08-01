@@ -84,6 +84,10 @@ end
 
     @inferred thermalnoise(obs.times, obs.antenna1, obs.antenna2, obs.data, y["correff"], obs.exposure, obs.chanwidth, obs.rngcorrupt, 
     obs.stationinfo.sefd_Jy, h5file=h5file)
-
     rm(h5file)
+
+    @inferred thermalnoise(obs.times, obs.antenna1, obs.antenna2, obs.data, y["correff"], obs.exposure, obs.chanwidth, obs.rngcorrupt, 
+    obs.stationinfo.sefd_Jy, h5file=h5file, noisefile="data/insmodel1.h5")
+    rm(h5file)
+
 end
