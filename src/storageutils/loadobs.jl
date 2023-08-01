@@ -7,6 +7,7 @@ struct CjlObservation{T} <: AbstractObservation{T}
     msname::String
     data::Array{Complex{Float32},4}
     flag::Array{Bool,4}
+    flagrow::Array{Bool,1}
     antenna1::Vector{Int32}
     antenna2::Vector{Int32}
     uvw::Matrix{Float64}
@@ -63,6 +64,7 @@ function loadms(msname::String, stations::String, corruptseed::Int64, tropseed::
     # read values from ms
     data::Vector{Matrix{ComplexF32}} = tab[:DATA][:]
     flag::Vector{Matrix{Bool}} = tab[:FLAG][:]
+    flagrow::Vector{Bool} = tab[:FLAG_ROW][:]
     antenna1::Vector{Int32} = tab[:ANTENNA1][:]
     antenna2::Vector{Int32} = tab[:ANTENNA2][:]
     uvw::Matrix{Float64} = tab[:UVW][:,:]
@@ -114,7 +116,7 @@ function loadms(msname::String, stations::String, corruptseed::Int64, tropseed::
     rngtrop = Xoshiro(tropseed)
 
     # construct CjlObservation object    
-    observation = CjlObservation{Float64}(msname,data3dresandperm,flag3dresandperm,antenna1,antenna2,uvw,times,exposure,scanno,numchan,chanfreqvec,
+    observation = CjlObservation{Float64}(msname,data3dresandperm,flag3dresandperm,flagrow,antenna1,antenna2,uvw,times,exposure,scanno,numchan,chanfreqvec,
     chanwidth,phasedir,pos,stationinfo,tropwetonly,correff,tropattenuate,tropskynoise,tropmeandelays,tropturbulence,polframe,polmode,
     ptginterval,ptgmode,stationgainsmode,bandpassfile,rngcorrupt,rngtrop)
 

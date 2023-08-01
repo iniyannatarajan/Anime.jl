@@ -73,8 +73,10 @@ y["troposphere"]["attenuate"], y["troposphere"]["skynoise"], y["troposphere"]["m
 y["instrumentalpol"]["visibilityframe"], y["instrumentalpol"]["mode"], y["pointing"]["interval"], y["pointing"]["mode"], y["stationgains"]["mode"],
 y["bandpass"]["bandpassfile"], delim=",", ignorerepeated=false)
 
+y["diagnostics"] && plotuvcov(obs.uvw, obs.flagrow, obs.chanfreqvec)
+
 # make diagnostic plots of uncorrupted data
-y["diagnostics"] && plotvis(obs.uvw, obs.chanfreqvec, obs.flag, obs.data, obs.numchan, obs.times, saveprefix="modelvis_") 
+y["diagnostics"] && plotvis(obs.uvw, obs.chanfreqvec, obs.flag, obs.data, obs.numchan, obs.times, plotphases=true, saveprefix="modelvis_") 
 
 # add tropospheric effects
 y["troposphere"]["enable"] && troposphere(obs, h5file)

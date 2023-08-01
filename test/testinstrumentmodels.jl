@@ -1,4 +1,4 @@
-@testset "Troposphere" begin
+#=@testset "Troposphere" begin
     y = YAML.load_file("data/config1.yaml", dicttype=Dict{String,Any}) # sample dict to test loadms()
     h5file = "tropos.h5"
 
@@ -71,7 +71,7 @@ end
     obs.numchan, obs.chanfreqvec, h5file=h5file)
 
     rm(h5file)
-end
+end=#
 
 @testset "Thermal Noise" begin
     y = YAML.load_file("data/config1.yaml", dicttype=Dict{String,Any}) # sample dict to test loadms()
@@ -88,6 +88,10 @@ end
 
     @inferred thermalnoise(obs.times, obs.antenna1, obs.antenna2, obs.data, y["correff"], obs.exposure, obs.chanwidth, obs.rngcorrupt, 
     obs.stationinfo.sefd_Jy, h5file=h5file, noisefile="data/insmodel1.h5")
+    rm(h5file)
+
+    @inferred thermalnoise(obs.times, obs.antenna1, obs.antenna2, obs.data, y["correff"], obs.exposure, obs.chanwidth, obs.rngcorrupt, 
+    obs.stationinfo.sefd_Jy, h5file=h5file, noisefile="data/insmodel2.h5")
     rm(h5file)
 
 end

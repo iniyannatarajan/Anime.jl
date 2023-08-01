@@ -1,4 +1,27 @@
-export plotvis, plotstationgains, plotbandpass, plotpointingerrors
+export plotuvcov, plotvis, plotstationgains, plotbandpass, plotpointingerrors
+
+"""
+    plotuvcov(uvw::Matrix{Float64}, flagrow::Vector{Bool}, chanfreqvec::Vector{Float64}; saveprefix="test_")
+
+Plot uv-coverage of observation
+"""
+function plotuvcov(uvw::Matrix{Float64}, flagrow::Vector{Bool}, chanfreqvec::Vector{Float64}; saveprefix="test_")
+    @info("Generating uv-coverage plots...")
+
+    maskindices = findall(isequal(true), flagrow)
+    muwave = deepcopy(uvw[1,:]) / (299792458.0/mean(chanfreqvec)) / 1e9 # convert to Gλ
+    mvwave = deepcopy(uvw[2,:]) / (299792458.0/mean(chanfreqvec)) / 1e9
+
+    muwave[maskindices] .= NaN
+    mvwave[maskindices] .= NaN
+
+    p = plot()
+    plot!(p, muwave, mvwave, seriestype=:scatter, ls=:dot, ms=1, mc=:blue, msc=:blue, label="", xflip=true)
+    plot!(p, xlabel="u (Gλ)", ylabel="v (Gλ)", title="uv-coverage")
+
+    savefig(p, saveprefix*"uvcoverage.png")
+    @info("Done 🙆")
+end
 
 """
     plotvis(uvw::Matrix{Float64}, chanfreqvec::Array{Float64,1}, flag::Array{Bool,4}, data::Array{Complex{Float32},4},
@@ -7,7 +30,7 @@ export plotvis, plotstationgains, plotbandpass, plotpointingerrors
 Generate various complex visibility plots
 """
 function plotvis(uvw::Matrix{Float64}, chanfreqvec::Array{Float64,1}, flag::Array{Bool,4}, data::Array{Complex{Float32},4},
-    numchan::Int64, times::Vector{Float64}; saveprefix="data_")
+    numchan::Int64, times::Vector{Float64}; plotphases::Bool=false, saveprefix="data_")
     @info("Generating visibility plots...")
     uvwave = sqrt.(uvw[1,:].^2 .+ uvw[2,:].^2) / (299792458.0/mean(chanfreqvec)) / 1e9 # in units of Gλ
 
@@ -35,23 +58,25 @@ function plotvis(uvw::Matrix{Float64}, chanfreqvec::Array{Float64,1}, flag::Arra
     savefig(p, saveprefix*"visampvspbs.png")
 
     # plot visibility phases against projected baseline separation
-    p = plot()
-    # plot first frequency channel
-    plot!(p, uvwave, angle.(maskeddata[1,1,1,:]), seriestype=:scatter, ls=:dot, ms=1, mc=:red, msc=:red, label="RR")
-    plot!(p, uvwave, angle.(maskeddata[1,2,1,:]), seriestype=:scatter, ls=:dot, ms=1, mc=:cyan, msc=:cyan, label="RL")
-    plot!(p, uvwave, angle.(maskeddata[2,1,1,:]), seriestype=:scatter, ls=:dot, ms=1, mc=:purple, msc=:purple, label="LR")
-    plot!(p, uvwave, angle.(maskeddata[2,2,1,:]), seriestype=:scatter, ls=:dot, ms=1, mc=:green, msc=:green, label="LL")
+    if plotphases
+        p = plot()
+        # plot first frequency channel
+        plot!(p, uvwave, angle.(maskeddata[1,1,1,:]), seriestype=:scatter, ls=:dot, ms=1, mc=:red, msc=:red, label="RR")
+        plot!(p, uvwave, angle.(maskeddata[1,2,1,:]), seriestype=:scatter, ls=:dot, ms=1, mc=:cyan, msc=:cyan, label="RL")
+        plot!(p, uvwave, angle.(maskeddata[2,1,1,:]), seriestype=:scatter, ls=:dot, ms=1, mc=:purple, msc=:purple, label="LR")
+        plot!(p, uvwave, angle.(maskeddata[2,2,1,:]), seriestype=:scatter, ls=:dot, ms=1, mc=:green, msc=:green, label="LL")
     
-    # plot the rest of the frequency channels
-    if numchan > 1
-        plot!(p, uvwave, angle.(maskeddata[1,1,2:end,:]'), seriestype=:scatter, ls=:dot, ms=1, mc=:red, msc=:red, label="")
-        plot!(p, uvwave, angle.(maskeddata[1,2,2:end,:]'), seriestype=:scatter, ls=:dot, ms=1, mc=:cyan, msc=:cyan, label="")
-        plot!(p, uvwave, angle.(maskeddata[2,1,2:end,:]'), seriestype=:scatter, ls=:dot, ms=1, mc=:purple, msc=:purple, label="")
-        plot!(p, uvwave, angle.(maskeddata[2,2,2:end,:]'), seriestype=:scatter, ls=:dot, ms=1, mc=:green, msc=:green, label="")
-    end
+        # plot the rest of the frequency channels
+        if numchan > 1
+            plot!(p, uvwave, angle.(maskeddata[1,1,2:end,:]'), seriestype=:scatter, ls=:dot, ms=1, mc=:red, msc=:red, label="")
+            plot!(p, uvwave, angle.(maskeddata[1,2,2:end,:]'), seriestype=:scatter, ls=:dot, ms=1, mc=:cyan, msc=:cyan, label="")
+            plot!(p, uvwave, angle.(maskeddata[2,1,2:end,:]'), seriestype=:scatter, ls=:dot, ms=1, mc=:purple, msc=:purple, label="")
+            plot!(p, uvwave, angle.(maskeddata[2,2,2:end,:]'), seriestype=:scatter, ls=:dot, ms=1, mc=:green, msc=:green, label="")
+        end
 
-    plot!(p, xlabel="Projected baseline separation (Gλ)", ylabel="Complex visibility phase (rad)", legend=:outertop, legendcolumns=4)
-    savefig(p, saveprefix*"visphasevspbs.png")
+        plot!(p, xlabel="Projected baseline separation (Gλ)", ylabel="Complex visibility phase (rad)", legend=:outertop, legendcolumns=4)
+        savefig(p, saveprefix*"visphasevspbs.png")
+    end
 
     # plot visibility amplitudes against time
     p = plot()
@@ -74,24 +99,26 @@ function plotvis(uvw::Matrix{Float64}, chanfreqvec::Array{Float64,1}, flag::Arra
     savefig(p, saveprefix*"visampvstime.png")
 
     # plot visibility phases against time
-    p = plot()
-    x = times .- times[1]
-    # plot first frequency channel
-    plot!(p, x, angle.(maskeddata[1,1,1,:]), seriestype=:scatter, ls=:dot, ms=1, mc=:red, msc=:red, label="RR")
-    plot!(p, x, angle.(maskeddata[1,2,1,:]), seriestype=:scatter, ls=:dot, ms=1, mc=:cyan, msc=:cyan, label="RL")
-    plot!(p, x, angle.(maskeddata[2,1,1,:]), seriestype=:scatter, ls=:dot, ms=1, mc=:purple, msc=:purple, label="LR")
-    plot!(p, x, angle.(maskeddata[2,2,1,:]), seriestype=:scatter, ls=:dot, ms=1, mc=:green, msc=:green, label="LL")
+    if plotphases
+        p = plot()
+        x = times .- times[1]
+        # plot first frequency channel
+        plot!(p, x, angle.(maskeddata[1,1,1,:]), seriestype=:scatter, ls=:dot, ms=1, mc=:red, msc=:red, label="RR")
+        plot!(p, x, angle.(maskeddata[1,2,1,:]), seriestype=:scatter, ls=:dot, ms=1, mc=:cyan, msc=:cyan, label="RL")
+        plot!(p, x, angle.(maskeddata[2,1,1,:]), seriestype=:scatter, ls=:dot, ms=1, mc=:purple, msc=:purple, label="LR")
+        plot!(p, x, angle.(maskeddata[2,2,1,:]), seriestype=:scatter, ls=:dot, ms=1, mc=:green, msc=:green, label="LL")
         
-    # plot the rest of the frequency channels
-    if numchan > 1
-        plot!(p, x, angle.(maskeddata[1,1,2:end,:]'), seriestype=:scatter, ls=:dot, ms=1, mc=:red, msc=:red, label="")
-        plot!(p, x, angle.(maskeddata[1,2,2:end,:]'), seriestype=:scatter, ls=:dot, ms=1, mc=:cyan, msc=:cyan, label="")
-        plot!(p, x, angle.(maskeddata[2,1,2:end,:]'), seriestype=:scatter, ls=:dot, ms=1, mc=:purple, msc=:purple, label="")
-        plot!(p, x, angle.(maskeddata[2,2,2:end,:]'), seriestype=:scatter, ls=:dot, ms=1, mc=:green, msc=:green, label="")
-    end
+        # plot the rest of the frequency channels
+        if numchan > 1
+            plot!(p, x, angle.(maskeddata[1,1,2:end,:]'), seriestype=:scatter, ls=:dot, ms=1, mc=:red, msc=:red, label="")
+            plot!(p, x, angle.(maskeddata[1,2,2:end,:]'), seriestype=:scatter, ls=:dot, ms=1, mc=:cyan, msc=:cyan, label="")
+            plot!(p, x, angle.(maskeddata[2,1,2:end,:]'), seriestype=:scatter, ls=:dot, ms=1, mc=:purple, msc=:purple, label="")
+            plot!(p, x, angle.(maskeddata[2,2,2:end,:]'), seriestype=:scatter, ls=:dot, ms=1, mc=:green, msc=:green, label="")
+        end
     
-    plot!(p, xlabel="Time (s)", ylabel="Complex visibility phase (rad)", legend=:outertop, legendcolumns=4)
-    savefig(p, saveprefix*"visphasevstime.png")
+        plot!(p, xlabel="Time (s)", ylabel="Complex visibility phase (rad)", legend=:outertop, legendcolumns=4)
+        savefig(p, saveprefix*"visphasevstime.png")
+    end
 
     @info("Done 🙆")
 end

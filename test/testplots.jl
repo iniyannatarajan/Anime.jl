@@ -19,7 +19,10 @@ end=#
     y["instrumentalpol"]["visibilityframe"], y["instrumentalpol"]["mode"], y["pointing"]["interval"], y["pointing"]["mode"], y["stationgains"]["mode"], 
     y["bandpass"]["bandpassfile"], delim=",", ignorerepeated=false)
 
-    @inferred plotvis(obs.uvw, obs.chanfreqvec, obs.flag, obs.data, obs.numchan, obs.times, saveprefix="test_")
+    @inferred plotuvcov(obs.uvw, obs.flagrow, obs.chanfreqvec)
+    rm("test_uvcoverage.png")
+
+    @inferred plotvis(obs.uvw, obs.chanfreqvec, obs.flag, obs.data, obs.numchan, obs.times, plotphases=true, saveprefix="test_")
     rm("test_visampvspbs.png")
     rm("test_visphasevspbs.png")
     rm("test_visampvstime.png")
