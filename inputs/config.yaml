@@ -43,13 +43,13 @@ channelgroups: 1                                     # number of groups to divid
 
 correff: 0.88                                      # correlator efficiency for 2 quantization bits (use 0.636 for 1-bit)
 corruptseed: 456                                     # seed to be used for generating random variables for corruptions (except for troposphere)
-diagnostics: false                                  # generate diagnostic plots and logs
+diagnostics: true                                  # generate diagnostic plots and logs
 
 ####################################################
 # settings for atmospheric corruptions
 
 troposphere:                                         # add troposphere
-  enable: true
+  enable: false
   wetonly: false                                     # add only the wet component
   attenuate: true                                   # signal attenuation due to opacity
   skynoise: true                                    # add tropospheric contribution to sky noise
@@ -78,7 +78,7 @@ pointing:
 # settings for instrumental polarization
 
 instrumentalpol: 
-  enable: false                                       # add instrumental polarization
+  enable: true                                       # add instrumental polarization
   mode: "gp"                                     # "gp" (Gaussian processes) or "normal" (Gaussian)
   visibilityframe: "sky"                             # visibilities are written out in "sky" frame
 

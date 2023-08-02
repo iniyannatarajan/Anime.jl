@@ -89,6 +89,7 @@ if y["instrumentalpol"]["enable"]
     if y["diagnostics"]
         plotelevationangle(h5file, obs.scanno, obs.times, obs.stationinfo.station)
         plotparallacticangle(h5file, obs.scanno, obs.times, obs.stationinfo.station)
+        plotdterms(h5file, obs.stationinfo.station)
     end
 end
 
@@ -122,6 +123,9 @@ y["diagnostics"] && plotvis(obs.uvw, obs.chanfreqvec, obs.flag, obs.data, obs.nu
 
 # compute weights and write everything to disk
 postprocessms(obs, h5file=h5file)
+
+# convert to uvfits
+#mstouvfits(y["msname"], "test.uvfits", "corrected")
 
 # Change back to original working directory
 @info("Changing working directory back to $startdir")

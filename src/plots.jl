@@ -1,4 +1,4 @@
-export plotuvcov, plotvis, plotstationgains, plotbandpass, plotpointingerrors, plotelevationangle, plotparallacticangle
+export plotuvcov, plotvis, plotstationgains, plotbandpass, plotpointingerrors, plotelevationangle, plotparallacticangle, plotdterms
 
 """
     plotuvcov(uvw::Matrix{Float64}, flagrow::Vector{Bool}, chanfreqvec::Vector{Float64}; saveprefix="test_")
@@ -241,6 +241,7 @@ end
 Plot elevation angle by station
 """
 function plotelevationangle(h5file::String, scanno::Vector{Int32}, times::Vector{Float64}, stationnames::Vector{String3})
+    @info("Plotting elevation angles by station...")
     
     # get unique scan numbers
     uniqscans = unique(scanno)
@@ -257,18 +258,18 @@ function plotelevationangle(h5file::String, scanno::Vector{Int32}, times::Vector
         elevmat = read(fid["polarization"]["elevation"])
     else
         close(fid)
-        @error("$h5file does not contain elevation angle information. Not plotting elevation angles!")
+        @error("$h5file does not contain elevation angle information. Not plotting elevation angles 🤷")
         throw(KeyError("elevation"))
     end
 
     if length(stationnames) != size(elevmat)[2]
         close(fid)
-        throw(BoundsError("$h5file does not match the stations in station information. Not plotting elevation angles!"))
+        throw(BoundsError("$h5file does not match the stations in station information. Not plotting elevation angles 🤷"))
     end
 
     if length(x) != size(elevmat)[1]
         close(fid)
-        throw(DimensionMismatch("The number of timestamps in $h5file does not match that in the observation. Not plotting elevation angles!"))
+        throw(DimensionMismatch("The number of timestamps in $h5file does not match that in the observation. Not plotting elevation angles 🤷"))
     end
 
     p = plot()
@@ -289,7 +290,8 @@ end
 Plot parallactic angle by station
 """
 function plotparallacticangle(h5file::String, scanno::Vector{Int32}, times::Vector{Float64}, stationnames::Vector{String3})
-    
+    @info("Plotting parallactic angles by station...")
+
     # get unique scan numbers
     uniqscans = unique(scanno)
 
@@ -303,18 +305,18 @@ function plotparallacticangle(h5file::String, scanno::Vector{Int32}, times::Vect
         parangmat = read(fid["polarization"]["parallacticangle"])
     else
         close(fid)
-        @error("$h5file does not contain parallactic angle information. Not plotting parallactic angles!")
+        @error("$h5file does not contain parallactic angle information. Not plotting parallactic angles 🤷")
         throw(KeyError("parallacticangle"))
     end
 
     if length(stationnames) != size(parangmat)[2]
         close(fid)
-        throw(BoundsError("$h5file does not match the stations in station information. Not plotting parallactic angles!"))
+        throw(BoundsError("$h5file does not match the stations in station information. Not plotting parallactic angles 🤷"))
     end
 
     if length(x) != size(parangmat)[1]
         close(fid)
-        throw(DimensionMismatch("The number of timestamps in $h5file does not match that in the observation. Not plotting parallactic angles!"))
+        throw(DimensionMismatch("The number of timestamps in $h5file does not match that in the observation. Not plotting parallactic angles 🤷"))
     end
 
     p = plot()
@@ -329,5 +331,28 @@ function plotparallacticangle(h5file::String, scanno::Vector{Int32}, times::Vect
     @info("Done 🙆")
 end
 
+"""
+    plotdterms(h5file::String, stationnames::Vector{String3})
+
+Plot instrumental leakage terms by station
+"""
+function plotdterms(h5file::String, stationnames::Vector{String3})
+    @info("Plotting cross-hand instrumental leakage (D-terms) by station...")
+
+    # read in the D-terms
+    fid = h5open(h5file, "r")
+    d = read(fid["polarization"]["djonesmatrices"])
+    close(fid)
+
+    p = plot()
+    for ant in eachindex(stationnames)
+        plot!(p, real(d[1,2,:,ant]), imag(d[1,2,:,ant]), seriestype=:scatter, markershape=:circle, ms=3, mc=ColorSchemes.mk_15[ant], msc=ColorSchemes.mk_15[ant], label=stationnames[ant]*"-RL")
+        plot!(p, real(d[2,1,:,ant]), imag(d[2,1,:,ant]), seriestype=:scatter, markershape=:diamond, ms=3, mc=ColorSchemes.mk_15[ant], msc=ColorSchemes.mk_15[ant], label=stationnames[ant]*"-LR")
+    end
+
+    plot!(p, xlabel="Real", ylabel="Imag", title="D-terms", legend=:outertop, legendcolumns=6)
+    savefig(p, "dterms.png")
+    @info("Done 🙆")
+end
 # plot instrumental polarization
 # plot tropospheric quantities

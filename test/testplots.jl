@@ -57,4 +57,7 @@
     ts = deepcopy(obs.times)
     push!(ts, ts[end]+(ts[end]-ts[begin]))
     @test_throws DimensionMismatch plotparallacticangle(h5file, obs.scanno, ts, obs.stationinfo.station)
+
+    # test d-terms plotdterms
+    @inferred plotdterms(h5file, obs.stationinfo.station)
 end
