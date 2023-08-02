@@ -1,4 +1,4 @@
-#=@testset "Troposphere" begin
+@testset "Troposphere" begin
     y = YAML.load_file("data/config1.yaml", dicttype=Dict{String,Any}) # sample dict to test loadms()
     h5file = "tropos.h5"
 
@@ -71,7 +71,7 @@ end
     obs.numchan, obs.chanfreqvec, h5file=h5file)
 
     rm(h5file)
-end=#
+end
 
 @testset "Thermal Noise" begin
     y = YAML.load_file("data/config1.yaml", dicttype=Dict{String,Any}) # sample dict to test loadms()
