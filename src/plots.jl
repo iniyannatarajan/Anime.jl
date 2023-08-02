@@ -1,4 +1,4 @@
-export plotuvcov, plotvis, plotstationgains, plotbandpass, plotpointingerrors, plotelevationangle
+export plotuvcov, plotvis, plotstationgains, plotbandpass, plotpointingerrors, plotelevationangle, plotparallacticangle
 
 """
     plotuvcov(uvw::Matrix{Float64}, flagrow::Vector{Bool}, chanfreqvec::Vector{Float64}; saveprefix="test_")
@@ -284,8 +284,49 @@ function plotelevationangle(h5file::String, scanno::Vector{Int32}, times::Vector
 end
 
 """
+    plotparallacticangle(h5file::String, scanno::Vector{Int32}, times::Vector{Float64}, stationnames::Vector{String3})
+
+Plot parallactic angle by station
 """
-function plotparallacticangle()
+function plotparallacticangle(h5file::String, scanno::Vector{Int32}, times::Vector{Float64}, stationnames::Vector{String3})
+    
+    # get unique scan numbers
+    uniqscans = unique(scanno)
+
+    # get unique times
+    uniqtimes = unique(times)
+    x = uniqtimes .- first(uniqtimes)
+
+    fid = h5open(h5file, "r")
+
+    if "polarization" in keys(fid)
+        parangmat = read(fid["polarization"]["parallacticangle"])
+    else
+        close(fid)
+        @error("$h5file does not contain parallactic angle information. Not plotting parallactic angles!")
+        throw(KeyError("parallacticangle"))
+    end
+
+    if length(stationnames) != size(parangmat)[2]
+        close(fid)
+        throw(BoundsError("$h5file does not match the stations in station information. Not plotting parallactic angles!"))
+    end
+
+    if length(x) != size(parangmat)[1]
+        close(fid)
+        throw(DimensionMismatch("The number of timestamps in $h5file does not match that in the observation. Not plotting parallactic angles!"))
+    end
+
+    p = plot()
+    for ant in eachindex(stationnames)
+        plot!(p, x, rad2deg.(parangmat[:,ant]), seriestype=:scatter, ls=:dot, ms=1, mc=ColorSchemes.mk_15[ant], msc=ColorSchemes.mk_15[ant], label=stationnames[ant])
+    end
+
+    plot!(p, xlabel="Relative Time (s)", ylabel="Parallactic angle (°)", legend=:outertop, legendcolumns=6)
+    savefig(p, "parallacticangle.png")
+
+    close(fid)
+    @info("Done 🙆")
 end
 
 # plot instrumental polarization

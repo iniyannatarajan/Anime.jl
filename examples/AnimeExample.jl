@@ -86,7 +86,10 @@ y["troposphere"]["enable"] && troposphere(obs, h5file)
 if y["instrumentalpol"]["enable"]
     instrumentalpol(obs.scanno, obs.times, obs.stationinfo, obs.phasedir, obs.pos, obs.data, obs.numchan, obs.polframe,
     obs.polmode, obs.antenna1, obs.antenna2, obs.exposure, obs.rngcorrupt, h5file=h5file)
-    y["diagnostics"] && plotelevationangle(h5file, obs.scanno, obs.times, obs.stationinfo.station)
+    if y["diagnostics"]
+        plotelevationangle(h5file, obs.scanno, obs.times, obs.stationinfo.station)
+        plotparallacticangle(h5file, obs.scanno, obs.times, obs.stationinfo.station)
+    end
 end
 
 # add pointing errors

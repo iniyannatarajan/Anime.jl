@@ -26,6 +26,7 @@
     rm("pointingoffsets.png")
     rm("pointingamplitudeerrors.png")
 
+    # test elevation angle plotting method
     @inferred plotelevationangle(h5file, obs.scanno, obs.times, obs.stationinfo.station)
     rm("elevationangle.png")
 
@@ -40,4 +41,20 @@
     ts = deepcopy(obs.times)
     push!(ts, ts[end]+(ts[end]-ts[begin]))
     @test_throws DimensionMismatch plotelevationangle(h5file, obs.scanno, ts, obs.stationinfo.station)
+
+    # test parallactic angle plotting method
+    @inferred plotparallacticangle(h5file, obs.scanno, obs.times, obs.stationinfo.station)
+    rm("parallacticangle.png")
+
+    fid = h5open("testing.h5", "w")
+    close(fid)
+    @test_throws KeyError plotparallacticangle("testing.h5", obs.scanno, obs.times, obs.stationinfo.station)
+    rm("testing.h5")
+
+    st = vcat(obs.stationinfo.station, obs.stationinfo.station)
+    @test_throws BoundsError plotparallacticangle(h5file, obs.scanno, obs.times, st)
+
+    ts = deepcopy(obs.times)
+    push!(ts, ts[end]+(ts[end]-ts[begin]))
+    @test_throws DimensionMismatch plotparallacticangle(h5file, obs.scanno, ts, obs.stationinfo.station)
 end
