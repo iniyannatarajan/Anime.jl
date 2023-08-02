@@ -73,10 +73,11 @@ y["troposphere"]["attenuate"], y["troposphere"]["skynoise"], y["troposphere"]["m
 y["instrumentalpol"]["visibilityframe"], y["instrumentalpol"]["mode"], y["pointing"]["interval"], y["pointing"]["mode"], y["stationgains"]["mode"],
 y["bandpass"]["bandpassfile"], delim=",", ignorerepeated=false)
 
+# plot uv-coverage
 y["diagnostics"] && plotuvcov(obs.uvw, obs.flagrow, obs.chanfreqvec)
 
 # make diagnostic plots of uncorrupted data
-y["diagnostics"] && plotvis(obs.uvw, obs.chanfreqvec, obs.flag, obs.data, obs.numchan, obs.times, plotphases=true, saveprefix="modelvis_") 
+y["diagnostics"] && plotvis(obs.uvw, obs.chanfreqvec, obs.flag, obs.data, obs.numchan, obs.times, plotphases=true, saveprefix="modelvis_")
 
 # add tropospheric effects
 y["troposphere"]["enable"] && troposphere(obs, h5file)
@@ -85,6 +86,7 @@ y["troposphere"]["enable"] && troposphere(obs, h5file)
 if y["instrumentalpol"]["enable"]
     instrumentalpol(obs.scanno, obs.times, obs.stationinfo, obs.phasedir, obs.pos, obs.data, obs.numchan, obs.polframe,
     obs.polmode, obs.antenna1, obs.antenna2, obs.exposure, obs.rngcorrupt, h5file=h5file)
+    y["diagnostics"] && plotelevationangle(h5file, obs.scanno, obs.times, obs.stationinfo.station)
 end
 
 # add pointing errors

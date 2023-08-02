@@ -2,6 +2,7 @@ using Anime
 using Test
 using YAML
 using Random
+using HDF5
 
 @testset "Load Observation" begin
     include("testloadobs.jl")

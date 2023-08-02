@@ -1,4 +1,4 @@
-export plotuvcov, plotvis, plotstationgains, plotbandpass, plotpointingerrors
+export plotuvcov, plotvis, plotstationgains, plotbandpass, plotpointingerrors, plotelevationangle
 
 """
     plotuvcov(uvw::Matrix{Float64}, flagrow::Vector{Bool}, chanfreqvec::Vector{Float64}; saveprefix="test_")
@@ -234,3 +234,59 @@ function plotpointingerrors(h5file::String, scanno::Vector{Int32}, stationnames:
     close(fid)
     @info("Done 🙆")
 end
+
+"""
+    plotelevationangle(h5file::String, scanno::Vector{Int32}, times::Vector{Float64}, stationnames::Vector{String3})
+
+Plot elevation angle by station
+"""
+function plotelevationangle(h5file::String, scanno::Vector{Int32}, times::Vector{Float64}, stationnames::Vector{String3})
+    
+    # get unique scan numbers
+    uniqscans = unique(scanno)
+
+    # get unique times
+    uniqtimes = unique(times)
+    x = uniqtimes .- first(uniqtimes)
+
+    fid = h5open(h5file, "r")
+
+    if "troposphere" in keys(fid)
+        elevmat = read(fid["troposphere"]["elevation"])
+    elseif "polarization" in keys(fid)
+        elevmat = read(fid["polarization"]["elevation"])
+    else
+        close(fid)
+        @error("$h5file does not contain elevation angle information. Not plotting elevation angles!")
+        throw(KeyError("elevation"))
+    end
+
+    if length(stationnames) != size(elevmat)[2]
+        close(fid)
+        throw(BoundsError("$h5file does not match the stations in station information. Not plotting elevation angles!"))
+    end
+
+    if length(x) != size(elevmat)[1]
+        close(fid)
+        throw(DimensionMismatch("The number of timestamps in $h5file does not match that in the observation. Not plotting elevation angles!"))
+    end
+
+    p = plot()
+    for ant in eachindex(stationnames)
+        plot!(p, x, rad2deg.(elevmat[:,ant]), seriestype=:scatter, ls=:dot, ms=1, mc=ColorSchemes.mk_15[ant], msc=ColorSchemes.mk_15[ant], label=stationnames[ant])
+    end
+
+    plot!(p, xlabel="Relative Time (s)", ylabel="Elevation angle (°)", legend=:outertop, legendcolumns=6)
+    savefig(p, "elevationangle.png")
+
+    close(fid)
+    @info("Done 🙆")
+end
+
+"""
+"""
+function plotparallacticangle()
+end
+
+# plot instrumental polarization
+# plot tropospheric quantities
