@@ -19,6 +19,7 @@ using PythonCall
 
 quanta = pyimport("casatools" => "quanta")
 importuvfits = pyimport("casatasks" => "importuvfits")
+exportuvfits = pyimport("casatasks" => "exportuvfits")
 table = pyimport("casatools" => "table")
 measures = pyimport("casatools" => "measures")
 simulator = pyimport("casatools" => "simulator")

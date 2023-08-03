@@ -323,7 +323,6 @@ function troposphere(obs::CjlObservation, h5file::String; absorptionfile="", dis
     end
     
     atmdf = run_atm(obs, absorptionfile=absorptionfile, dispersivefile=dispersivefile) # compute necessary atmospheric quantities using atm
-    @info("run_atm successful")
 
     if elevfile != "" && isfile(elevfile)
         fidelev = h5open(elevfile, "r")
@@ -332,12 +331,10 @@ function troposphere(obs::CjlObservation, h5file::String; absorptionfile="", dis
     else
         elevationmatrix = elevationangle(obs.times, obs.phasedir, obs.stationinfo, obs.pos) # compute elevation angle for all stations
     end
-    @info("elevationmatrix ready")
 
     if !(haskey(g, "elevation"))
         g["elevation"] = elevationmatrix
     end
-    @info("written elevationmatrix to $h5file")
 
     transmission = nothing
     if obs.tropattenuate || obs.tropskynoise

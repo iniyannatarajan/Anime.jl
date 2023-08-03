@@ -60,4 +60,9 @@
 
     # test d-terms plotdterms
     @inferred plotdterms(h5file, obs.stationinfo.station)
+    rm("dterms.png")
+
+    # test transmission plots
+    @inferred plottransmission(h5file, obs.stationinfo.station, obs.times, obs.chanfreqvec)
+    rm("transmission.png")
 end

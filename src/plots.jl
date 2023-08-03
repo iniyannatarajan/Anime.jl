@@ -1,4 +1,4 @@
-export plotuvcov, plotvis, plotstationgains, plotbandpass, plotpointingerrors, plotelevationangle, plotparallacticangle, plotdterms
+export plotuvcov, plotvis, plotstationgains, plotbandpass, plotpointingerrors, plotelevationangle, plotparallacticangle, plotdterms, plottransmission
 
 """
     plotuvcov(uvw::Matrix{Float64}, flagrow::Vector{Bool}, chanfreqvec::Vector{Float64}; saveprefix="test_")
@@ -354,5 +354,50 @@ function plotdterms(h5file::String, stationnames::Vector{String3})
     savefig(p, "dterms.png")
     @info("Done 🙆")
 end
-# plot instrumental polarization
-# plot tropospheric quantities
+
+"""
+    plottransmission(h5file::String, stationnames::Vector{String3}, times::Vector{Float64}, chanfreqvec::Vector{Float64})
+
+Plot tropospheric transmission by stations
+"""
+function plottransmission(h5file::String, stationnames::Vector{String3}, times::Vector{Float64}, chanfreqvec::Vector{Float64})
+    @info("Plotting station-based transmission values")
+
+    # get unique times
+    uniqtimes = unique(times)
+    reltimes = (uniqtimes .- first(uniqtimes))/3600.0
+
+    chanfreqvec_ghz = chanfreqvec/1e9 # in GHz
+
+    # read in the computed transmission values
+    fid = h5open(h5file, "r")
+    tr = read(fid["troposphere"]["transmission"])
+    close(fid)
+
+    if length(chanfreqvec_ghz) == 1
+        p = plot()
+        for ant in eachindex(stationnames)
+            plot!(p, tr[1,:,ant], seriestype=:scatter, ls=:dot, ms=1, mc=ColorSchemes.mk_15[ant], msc=ColorSchemes.mk_15[ant], label=stationnames[ant])
+        end
+        plot!(p, xlabel="Relative time (s)", ylabel="Transmission")
+        savefig("transmission.png")
+    else
+        plotarr = []
+        for ant in eachindex(stationnames)
+            xtr = tr[:,:,ant]
+            p = contour(reltimes, chanfreqvec_ghz, xtr, title=stationnames[ant], xlabel="Rel. time (hr)", ylabel="ν (GHz)")
+            push!(plotarr, p)
+        end
+
+        # plot all on the same figure
+        nplots = length(plotarr)
+        ncols = trunc(Int, ceil(sqrt(nplots)))
+        nrows = trunc(Int, ceil(nplots/ncols))
+        plotsize = (ncols*600, nrows*400)
+        fullplot = plot(plotarr...)
+        plot!(fullplot, layout=(nrows, ncols), size=plotsize)
+        savefig(fullplot, "transmission.png")
+    end
+
+    @info("Done 🙆")
+end

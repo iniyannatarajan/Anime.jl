@@ -1,4 +1,4 @@
-export msfromconfig, msfromuvfits
+export msfromconfig, msfromuvfits, mstouvfits
 
 using StatsBase: mode
 
@@ -146,6 +146,24 @@ function msfromuvfits(uvfits::String, msname::String, mscreationmode::String, st
     # WEIGHT_SPECTRUM is added by importuvfits; add only SIGMA_SPECTRUM manually
     addweightcols(msname, mscreationmode, true, true)
 end
+
+#="""
+    mstouvfits(msname::String, uvfits::String, datacolumn::String; field::String="", spw::String="", antenna::String="",
+    timerange::String="", overwrite::Bool=false)
+
+Convert MS to UVFITS format
+"""
+function mstouvfits(msname::String, uvfits::String, datacolumn::String; field::String="", spw::String="", antenna::String="",
+    timerange::String="", overwrite::Bool=false)
+    @info("Creating $uvfits from $msname...")
+
+    if !overwrite && isfile(uvfits)
+        @error("$uvfits exists but overwrite=$overwrite; not exporting to uvfits 🤷")
+        exit()
+    end
+    # convert ms to uvfits
+    exportuvfits(vis=msname, fitsfile=uvfits, datacolumn=datacolumn)#, field=field, spw=spw, antenna=antenna, timerange=timerange, overwrite=overwrite)
+end=#
 
 """
     msfromconfig(msname::String, mscreationmode::String, stations::String, casaanttemplate::String, spw_centrefreq::Array{Float64, 1}, 

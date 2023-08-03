@@ -80,7 +80,12 @@ y["diagnostics"] && plotuvcov(obs.uvw, obs.flagrow, obs.chanfreqvec)
 y["diagnostics"] && plotvis(obs.uvw, obs.chanfreqvec, obs.flag, obs.data, obs.numchan, obs.times, plotphases=true, saveprefix="modelvis_")
 
 # add tropospheric effects
-y["troposphere"]["enable"] && troposphere(obs, h5file)
+if y["troposphere"]["enable"]
+    troposphere(obs, h5file)
+    if y["diagnostics"]
+        plottransmission(h5file, obs.stationinfo.station, obs.times, obs.chanfreqvec)
+    end
+end
 
 # add instrumental polarization
 if y["instrumentalpol"]["enable"]
