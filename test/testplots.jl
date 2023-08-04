@@ -65,4 +65,16 @@
     # test transmission plots
     @inferred plottransmission(h5file, obs.stationinfo.station, obs.times, obs.chanfreqvec)
     rm("transmission.png")
+
+    y2 = YAML.load_file("data/configuvf.yaml", dicttype=Dict{String,Any}) # sample dict to test loadms()
+    h5file2 = "data/insmodeluvf.h5"
+
+    obs2 = loadms(y2["msname"], y2["stations"], Int(y2["corruptseed"]), Int(y2["troposphere"]["tropseed"]), y2["troposphere"]["wetonly"], y2["correff"], 
+    y2["troposphere"]["attenuate"], y2["troposphere"]["skynoise"], y2["troposphere"]["meandelays"], y2["troposphere"]["turbulence"], 
+    y2["instrumentalpol"]["visibilityframe"], y2["instrumentalpol"]["mode"], y2["pointing"]["interval"], y2["pointing"]["mode"], y2["stationgains"]["mode"], 
+    y2["bandpass"]["bandpassfile"], delim=",", ignorerepeated=false)
+
+    @inferred plottransmission(h5file2, obs2.stationinfo.station, obs2.times, obs2.chanfreqvec)
+    rm("transmission.png")
+
 end
