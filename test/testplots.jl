@@ -7,6 +7,14 @@
     y["instrumentalpol"]["visibilityframe"], y["instrumentalpol"]["mode"], y["pointing"]["interval"], y["pointing"]["mode"], y["stationgains"]["mode"], 
     y["bandpass"]["bandpassfile"], delim=",", ignorerepeated=false)
 
+    y2 = YAML.load_file("data/configuvf.yaml", dicttype=Dict{String,Any}) # sample dict to test loadms()
+    h5file2 = "data/insmodeluvf.h5"
+
+    obs2 = loadms(y2["msname"], y2["stations"], Int(y2["corruptseed"]), Int(y2["troposphere"]["tropseed"]), y2["troposphere"]["wetonly"], y2["correff"], 
+    y2["troposphere"]["attenuate"], y2["troposphere"]["skynoise"], y2["troposphere"]["meandelays"], y2["troposphere"]["turbulence"], 
+    y2["instrumentalpol"]["visibilityframe"], y2["instrumentalpol"]["mode"], y2["pointing"]["interval"], y2["pointing"]["mode"], y2["stationgains"]["mode"], 
+    y2["bandpass"]["bandpassfile"], delim=",", ignorerepeated=false)
+
     @inferred plotuvcov(obs.uvw, obs.flagrow, obs.chanfreqvec)
     rm("test_uvcoverage.png")
 
@@ -16,7 +24,10 @@
     rm("test_visampvstime.png")
     rm("test_visphasevstime.png")
 
-    @inferred plotstationgains(h5file, obs.scanno, obs.times, obs.stationinfo.station)
+    @inferred plotstationgains(h5file, obs.scanno, obs.times, obs.exposure, obs.stationinfo.station)
+    rm("stationgainsvstime.png")
+
+    @inferred plotstationgains(h5file2, obs2.scanno, obs2.times, obs2.exposure, obs2.stationinfo.station)
     rm("stationgainsvstime.png")
 
     @inferred plotbandpass(h5file, obs.stationinfo.station, obs.chanfreqvec)
@@ -65,14 +76,6 @@
     # test transmission plots
     @inferred plottransmission(h5file, obs.stationinfo.station, obs.times, obs.chanfreqvec)
     rm("transmission.png")
-
-    y2 = YAML.load_file("data/configuvf.yaml", dicttype=Dict{String,Any}) # sample dict to test loadms()
-    h5file2 = "data/insmodeluvf.h5"
-
-    obs2 = loadms(y2["msname"], y2["stations"], Int(y2["corruptseed"]), Int(y2["troposphere"]["tropseed"]), y2["troposphere"]["wetonly"], y2["correff"], 
-    y2["troposphere"]["attenuate"], y2["troposphere"]["skynoise"], y2["troposphere"]["meandelays"], y2["troposphere"]["turbulence"], 
-    y2["instrumentalpol"]["visibilityframe"], y2["instrumentalpol"]["mode"], y2["pointing"]["interval"], y2["pointing"]["mode"], y2["stationgains"]["mode"], 
-    y2["bandpass"]["bandpassfile"], delim=",", ignorerepeated=false)
 
     @inferred plottransmission(h5file2, obs2.stationinfo.station, obs2.times, obs2.chanfreqvec)
     rm("transmission.png")

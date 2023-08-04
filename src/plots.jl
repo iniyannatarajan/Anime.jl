@@ -124,11 +124,11 @@ function plotvis(uvw::Matrix{Float64}, chanfreqvec::Array{Float64,1}, flag::Arra
 end
 
 """
-    plotstationgains(h5file::String, scanno::Vector{Int32}, times::Vector{Float64}, stationnames::Vector{String3}; saveas="stationgainsvstime.png")
+    plotstationgains(h5file::String, scanno::Vector{Int32}, times::Vector{Float64}, exposure::Float64, stationnames::Vector{String3}; saveas="stationgainsvstime.png")
 
 Plot station gains against time
 """
-function plotstationgains(h5file::String, scanno::Vector{Int32}, times::Vector{Float64}, stationnames::Vector{String3}; saveas="stationgainsvstime.png")
+function plotstationgains(h5file::String, scanno::Vector{Int32}, times::Vector{Float64}, exposure::Float64, stationnames::Vector{String3}; saveas="stationgainsvstime.png")
     @info("Plotting station gains against time...")
     fid = h5open(h5file, "r")
 
@@ -143,17 +143,33 @@ function plotstationgains(h5file::String, scanno::Vector{Int32}, times::Vector{F
     indexstart = 1
     indexend = 0
     for scan in uniqscans
-        gterms = read(fid["stationgains"]["gjones_scan$(scan)"])
-        indexend = indexend + size(gterms)[3]
 
+        # determine indices of missing values
+        actualtscanvec = unique(getindex(times, findall(scanno.==scan)))
+    	actualtscanveclen = length(actualtscanvec)
+	    idealtscanvec = collect(first(actualtscanvec):exposure:last(actualtscanvec))
+	    idealtscanveclen = length(idealtscanvec)
+
+        gterms = read(fid["stationgains"]["gjones_scan$(scan)"])
+        #indexend = indexend + size(gterms)[3]
+
+        # loop over time/row and apply gjones terms corresponding to each baseline
+	    findnearest(A,x) = argmin(abs.(A .- x)) # define function to find nearest neighbour
+        indvector = []
+        for t in 1:actualtscanveclen
+            idealtimeindex = findnearest(idealtscanvec, actualtscanvec[t])
+            push!(indvector, idealtimeindex)
+        end
+            
         for ant in eachindex(stationnames)
+            gtoplot = abs.(gterms[1,1,indvector,ant]) # plot only the indices selected in the previous step
             if scan == 1
-                plot!(p, x[indexstart:indexend], abs.(gterms[1,1,:,ant]), lw=1, lc=ColorSchemes.mk_15[ant], label=stationnames[ant])
+                plot!(p, actualtscanvec, gtoplot, lw=1, lc=ColorSchemes.mk_15[ant], label=stationnames[ant])
             else
-                plot!(p, x[indexstart:indexend], abs.(gterms[1,1,:,ant]), lw=1, lc=ColorSchemes.mk_15[ant], label="")
+                plot!(p, actualtscanvec, gtoplot, lw=1, lc=ColorSchemes.mk_15[ant], label="")
             end
         end
-        indexstart = indexend + 1
+        #indexstart = indexend + 1
        
     end
     plot!(p, xlabel="Time offset from start of observation (s)", ylabel="Gain amplitudes", legend=:outertop, legendcolumns=6)
