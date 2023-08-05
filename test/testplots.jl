@@ -15,14 +15,14 @@
     y2["instrumentalpol"]["visibilityframe"], y2["instrumentalpol"]["mode"], y2["pointing"]["interval"], y2["pointing"]["mode"], y2["stationgains"]["mode"], 
     y2["bandpass"]["bandpassfile"], delim=",", ignorerepeated=false)
 
-    #=@inferred plotuvcov(obs.uvw, obs.flagrow, obs.chanfreqvec)
+    @inferred plotuvcov(obs.uvw, obs.flagrow, obs.chanfreqvec)
     rm("test_uvcoverage.png")
 
     @inferred plotvis(obs.uvw, obs.chanfreqvec, obs.flag, obs.data, obs.numchan, obs.times, plotphases=true, saveprefix="test_")
     rm("test_visampvspbs.png")
     rm("test_visphasevspbs.png")
     rm("test_visampvstime.png")
-    rm("test_visphasevstime.png")=#
+    rm("test_visphasevstime.png")
 
     @inferred plotstationgains(h5file, obs.scanno, obs.times, obs.exposure, obs.stationinfo.station)
     rm("gainamplitudes_vs_time.png")
@@ -35,7 +35,7 @@
     @inferred plotbandpass(h5file, obs.stationinfo.station, obs.chanfreqvec)
     rm("bpamplitudes_vs_frequency.png")
 
-    #=@inferred plotpointingerrors(h5file, obs.scanno, obs.stationinfo.station)
+    @inferred plotpointingerrors(h5file, obs.scanno, obs.stationinfo.station)
     rm("pointingoffsets.png")
     rm("pointingamplitudeerrors.png")
 
@@ -80,6 +80,6 @@
     rm("transmission.png")
 
     @inferred plottransmission(h5file2, obs2.stationinfo.station, obs2.times, obs2.chanfreqvec)
-    rm("transmission.png")=#
+    rm("transmission.png")
 
 end
