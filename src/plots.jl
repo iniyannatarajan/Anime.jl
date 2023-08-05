@@ -124,11 +124,11 @@ function plotvis(uvw::Matrix{Float64}, chanfreqvec::Array{Float64,1}, flag::Arra
 end
 
 """
-    plotstationgains(h5file::String, scanno::Vector{Int32}, times::Vector{Float64}, exposure::Float64, stationnames::Vector{String3}; saveas="stationgainsvstime.png")
+    plotstationgains(h5file::String, scanno::Vector{Int32}, times::Vector{Float64}, exposure::Float64, stationnames::Vector{String3})
 
 Plot station gains against time
 """
-function plotstationgains(h5file::String, scanno::Vector{Int32}, times::Vector{Float64}, exposure::Float64, stationnames::Vector{String3}; saveas="stationgainsvstime.png")
+function plotstationgains(h5file::String, scanno::Vector{Int32}, times::Vector{Float64}, exposure::Float64, stationnames::Vector{String3})
     @info("Plotting station gains against time...")
     fid = h5open(h5file, "r")
 
@@ -137,11 +137,11 @@ function plotstationgains(h5file::String, scanno::Vector{Int32}, times::Vector{F
 
     # get unique times
     uniqtimes = unique(times)
-    x = uniqtimes .- first(uniqtimes)
 
-    p = plot()
-    indexstart = 1
-    indexend = 0
+    p1amp = plot()
+    p1phase = plot()
+    p2amp = plot()
+    p2phase = plot()
     for scan in uniqscans
 
         # determine indices of missing values
@@ -162,28 +162,51 @@ function plotstationgains(h5file::String, scanno::Vector{Int32}, times::Vector{F
         end
             
         for ant in eachindex(stationnames)
-            gtoplot = abs.(gterms[1,1,indvector,ant]) # plot only the indices selected in the previous step
+            gpol1amp = abs.(gterms[1,1,indvector,ant]) # plot only the indices selected in the previous step
+            gpol1phase = rad2deg.(angle.(gterms[1,1,indvector,ant]))
+            gpol2amp = abs.(gterms[2,2,indvector,ant]) # plot only the indices selected in the previous step
+            gpol2phase = rad2deg.(angle.(gterms[2,2,indvector,ant]))
+
+            xvals = (actualtscanvec .- first(uniqtimes)) ./ 3600.0 # relative time in hours
             if scan == 1
-                plot!(p, actualtscanvec, gtoplot, lw=1, lc=ColorSchemes.mk_15[ant], label=stationnames[ant])
+                plot!(p1amp, xvals, gpol1amp, ls=:solid, lw=1, lc=ColorSchemes.mk_15[ant], label=stationnames[ant])
+                plot!(p2amp, xvals, gpol2amp, ls=:dash, lw=1, lc=ColorSchemes.mk_15[ant], label=stationnames[ant])
+
+                plot!(p1phase, xvals, gpol1phase, ls=:solid, lw=1, lc=ColorSchemes.mk_15[ant], label=stationnames[ant])
+                plot!(p2phase, xvals, gpol2phase, ls=:dash, lw=1, lc=ColorSchemes.mk_15[ant], label=stationnames[ant])
             else
-                plot!(p, actualtscanvec, gtoplot, lw=1, lc=ColorSchemes.mk_15[ant], label="")
+                plot!(p1amp, xvals, gpol1amp, ls=:solid, lw=1, lc=ColorSchemes.mk_15[ant], label="")
+                plot!(p2amp, xvals, gpol2amp, ls=:dash, lw=1, lc=ColorSchemes.mk_15[ant], label="")
+
+                plot!(p1phase, xvals, gpol1phase, ls=:solid, lw=1, lc=ColorSchemes.mk_15[ant], label="")
+                plot!(p2phase, xvals, gpol2phase, ls=:dash, lw=1, lc=ColorSchemes.mk_15[ant], label="")
             end
         end
         #indexstart = indexend + 1
        
     end
-    plot!(p, xlabel="Time offset from start of observation (s)", ylabel="Gain amplitudes", legend=:outertop, legendcolumns=6)
-    savefig(p, saveas)
+    plot!(p1amp, title="Station gain amplitudes", ylabel="Gain amplitudes")
+    plot!(p2amp, xlabel="Relative time (hr)", ylabel="Gain amplitudes")
+    pamp = plot(p1amp, p2amp, layout=(2, 1))
+    plot!(pamp, legend=:outertop, legendcolumns=6)
+
+    plot!(p1phase, title="Station gain phases", ylabel="Gain phases (°)")
+    plot!(p2phase, xlabel="Relative time (hr)", ylabel="Gain phases (°)")
+    pphase = plot(p1phase, p2phase, layout=(2, 1))
+    plot!(pphase, legend=:outertop, legendcolumns=6)
+    
+    savefig(pamp, "gainamplitudes_vs_time.png")
+    savefig(pphase, "gainphases_vs_time.png")
     close(fid)
     @info("Done 🙆")
 end
 
 """
-    plotbandpass(h5file::String, stationnames::Vector{String3}, chanfreqvec::Vector{Float64}; saveas="bandpassgains.png")
+    plotbandpass(h5file::String, stationnames::Vector{String3}, chanfreqvec::Vector{Float64})
 
 Plot bandpass gains against time
 """
-function plotbandpass(h5file::String, stationnames::Vector{String3}, chanfreqvec::Vector{Float64}; saveas="bandpassgains.png")
+function plotbandpass(h5file::String, stationnames::Vector{String3}, chanfreqvec::Vector{Float64})
     @info("Plotting bandpass gains against time...")
     fid = h5open(h5file, "r")
 
@@ -203,7 +226,7 @@ function plotbandpass(h5file::String, stationnames::Vector{String3}, chanfreqvec
 
     p = plot(p1, p2, layout=(2, 1))
     plot!(p, legend=:outertop, legendcolumns=6)
-    savefig(p, saveas)
+    savefig(p, "bpamplitudes_vs_frequency.png")
     close(fid)
     @info("Done 🙆")
 end

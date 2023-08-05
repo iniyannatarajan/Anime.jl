@@ -22,7 +22,7 @@ end
 """
     gentimeseries!(series::Vector{Float32}, mode::String, location::Float32, scale::Float32, driftrate::Float32, nsamples::Int64, rng::AbstractRNG)
 
-Generate a complex-valued Gaussian process time-series of length nsamples with the given location, scale, and driftrate parameters.
+Generate a Float32-valued Gaussian process time-series of length nsamples with the given location, scale, and driftrate parameters.
 """
 function gentimeseries!(series::Vector{Float32}, mode::String, location::Float32, scale::Float32, driftrate::Float32, nsamples::Int64, rng::AbstractRNG)
     # TODO this is a crude version of a wiener process -- to be updated
@@ -41,10 +41,11 @@ end
 """
     gentimeseries!(series::Vector{Float64}, mode::String, location::Float64, scale::Float64, driftrate::Float64, nsamples::Int64, rng::AbstractRNG)
 
-Generate a complex-valued Gaussian process time-series of length nsamples with the given location, scale, and driftrate parameters.
+Generate a Float64-valued Gaussian process time-series of length nsamples with the given location, scale, and driftrate parameters.
 """
 function gentimeseries!(series::Vector{Float64}, mode::String, location::Float64, scale::Float64, driftrate::Float64, nsamples::Int64, rng::AbstractRNG)
     # TODO this is a crude version of a wiener process -- to be updated
+    # TODO Look up a squared exponential kernel
     if mode == "gp"
         sqrtnsamples = sqrt(nsamples)
         series[1] = location + scale*randn(rng, Float64)
