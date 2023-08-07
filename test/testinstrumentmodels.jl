@@ -22,8 +22,9 @@ end
     y["instrumentalpol"]["visibilityframe"], y["instrumentalpol"]["mode"], y["pointing"]["interval"], y["pointing"]["mode"], y["stationgains"]["mode"], 
     y["bandpass"]["bandpassfile"], delim=",", ignorerepeated=false)
 
-    @inferred instrumentalpol(obs.scanno, obs.times, obs.stationinfo, obs.phasedir, obs.pos, obs.data, obs.numchan, obs.polframe,
-    obs.polmode, obs.antenna1, obs.antenna2, obs.exposure, obs.rngcorrupt, h5file=h5file, elevfile="data/insmodel1.h5", parangfile="data/insmodel1.h5")
+    @inferred instrumentalpol(obs, h5file=h5file, elevfile="data/insmodel1.h5", parangfile="data/insmodel1.h5")
+    #@inferred instrumentalpol(obs.scanno, obs.times, obs.stationinfo, obs.phasedir, obs.pos, obs.data, obs.numchan, obs.polframe,
+    #obs.polmode, obs.antenna1, obs.antenna2, obs.exposure, obs.rngcorrupt, h5file=h5file, elevfile="data/insmodel1.h5", parangfile="data/insmodel1.h5")
 
     rm(h5file)
 end
@@ -37,8 +38,9 @@ end
     y["instrumentalpol"]["visibilityframe"], y["instrumentalpol"]["mode"], y["pointing"]["interval"], y["pointing"]["mode"], y["stationgains"]["mode"], 
     y["bandpass"]["bandpassfile"], delim=",", ignorerepeated=false)
 
-    @inferred pointing(obs.stationinfo, obs.scanno, obs.chanfreqvec, obs.ptginterval, obs.ptgmode, obs.exposure, obs.times, obs.rngcorrupt,
-    obs.antenna1, obs.antenna2, obs.data, obs.numchan, h5file=h5file)
+    @inferred pointing(obs, h5file=h5file)
+    #@inferred pointing(obs.stationinfo, obs.scanno, obs.chanfreqvec, obs.ptginterval, obs.ptgmode, obs.exposure, obs.times, obs.rngcorrupt,
+    #obs.antenna1, obs.antenna2, obs.data, obs.numchan, h5file=h5file)
 
     rm(h5file)
 end

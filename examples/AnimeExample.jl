@@ -89,8 +89,9 @@ end
 
 # add instrumental polarization
 if y["instrumentalpol"]["enable"]
-    instrumentalpol(obs.scanno, obs.times, obs.stationinfo, obs.phasedir, obs.pos, obs.data, obs.numchan, obs.polframe,
-    obs.polmode, obs.antenna1, obs.antenna2, obs.exposure, obs.rngcorrupt, h5file=h5file)
+    #instrumentalpol(obs.scanno, obs.times, obs.stationinfo, obs.phasedir, obs.pos, obs.data, obs.numchan, obs.polframe,
+    #obs.polmode, obs.antenna1, obs.antenna2, obs.exposure, obs.rngcorrupt, h5file=h5file)
+    instrumentalpol(obs, h5file=h5file)
     if y["diagnostics"]
         plotelevationangle(h5file, obs.scanno, obs.times, obs.stationinfo.station)
         plotparallacticangle(h5file, obs.scanno, obs.times, obs.stationinfo.station)
@@ -100,8 +101,9 @@ end
 
 # add pointing errors
 if y["pointing"]["enable"]
-    pointing(obs.stationinfo, obs.scanno, obs.chanfreqvec, obs.ptginterval, obs.ptgmode, obs.exposure, obs.times, obs.rngcorrupt,
-    obs.antenna1, obs.antenna2, obs.data, obs.numchan, h5file=h5file)
+    #pointing(obs.stationinfo, obs.scanno, obs.chanfreqvec, obs.ptginterval, obs.ptgmode, obs.exposure, obs.times, obs.rngcorrupt,
+    #obs.antenna1, obs.antenna2, obs.data, obs.numchan, h5file=h5file)
+    pointing(obs, h5file=h5file)
     y["diagnostics"] && plotpointingerrors(h5file, obs.scanno, obs.stationinfo.station)
 end
 
@@ -109,7 +111,7 @@ end
 if y["stationgains"]["enable"]
     stationgains(obs.scanno, obs.times, obs.exposure, obs.data, obs.stationinfo, obs.stationgainsmode,
     obs.rngcorrupt, obs.antenna1, obs.antenna2, obs.numchan, h5file=h5file)
-    y["diagnostics"] && plotstationgains(h5file, obs.scanno, obs.times, obs.stationinfo.station)
+    y["diagnostics"] && plotstationgains(h5file, obs.scanno, obs.times, obs.exposure, obs.stationinfo.station)
 end
 
 # add bandpasses

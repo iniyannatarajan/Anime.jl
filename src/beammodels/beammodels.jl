@@ -127,3 +127,13 @@ function pointing(stationinfo::DataFrame, scanno::Vector{Int32}, chanfreqvec::Ve
 
     @info("Apply pointing errors to visibilities... 🙆")
 end
+
+"""
+    pointing(obs::CjlObservation; h5file::String="")
+
+Alias for pointing model function
+"""
+function pointing(obs::CjlObservation; h5file::String="")
+    pointing(obs.stationinfo, obs.scanno, obs.chanfreqvec, obs.ptginterval, obs.ptgmode, obs.exposure, obs.times, obs.rngcorrupt,
+    obs.antenna1, obs.antenna2, obs.data, obs.numchan, h5file=h5file)
+end

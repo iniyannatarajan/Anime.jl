@@ -119,3 +119,13 @@ function instrumentalpol(scanno::Vector{Int32}, times::Vector{Float64}, stationi
     @info("Compute and apply instrumental polarization... 🙆")
     
 end
+
+"""
+    instrumentalpol(obs::CjlObservation; h5file::String="", elevfile::String="", parangfile::String="")
+
+Alias for instrumental polarization function
+"""
+function instrumentalpol(obs::CjlObservation; h5file::String="", elevfile::String="", parangfile::String="")
+    instrumentalpol(obs.scanno, obs.times, obs.stationinfo, obs.phasedir, obs.pos, obs.data, obs.numchan, obs.polframe,
+    obs.polmode, obs.antenna1, obs.antenna2, obs.exposure, obs.rngcorrupt, h5file=h5file, elevfile=elevfile, parangfile=parangfile)
+end
