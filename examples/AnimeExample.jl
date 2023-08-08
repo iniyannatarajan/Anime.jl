@@ -83,7 +83,10 @@ y["diagnostics"] && plotvis(obs.uvw, obs.chanfreqvec, obs.flag, obs.data, obs.nu
 if y["troposphere"]["enable"]
     troposphere(obs, h5file)
     if y["diagnostics"]
-        plottransmission(h5file, obs.stationinfo.station, obs.times, obs.chanfreqvec)
+        if obs.tropattenuate || obs.tropskynoise
+            plottransmission(h5file, obs.stationinfo.station, obs.times, obs.chanfreqvec)
+        end
+        plotmeandelays(h5file, obs.stationinfo.station, obs.times, obs.chanfreqvec)
     end
 end
 

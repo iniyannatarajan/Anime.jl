@@ -191,17 +191,29 @@ function compute_meandelays(obs::CjlObservation, atmdf::DataFrame, elevationmatr
     ntimes = size(uniqtimes)[1]
 
     # compute time and frequency varying phase delays for each station
+    meandelays = zeros(Float32, obs.numchan, ntimes, size(obs.stationinfo)[1])
     phasedelays = zeros(eltype(obs.data), obs.numchan, ntimes, size(obs.stationinfo)[1])
     for ant in 1:size(obs.stationinfo)[1]
         # get delta path length
-	deltapathlengthvec = obs.tropwetonly ? atmdf[atmdf.Station .== obs.stationinfo.station[ant],:].Wet_disp + 
-	                     atmdf[atmdf.Station .== obs.stationinfo.station[ant],:].Wet_nondisp : atmdf[atmdf.Station .== obs.stationinfo.station[ant],:].Wet_disp + 
-			     atmdf[atmdf.Station .== obs.stationinfo.station[ant],:].Wet_nondisp + atmdf[atmdf.Station .== obs.stationinfo.station[ant],:].Dry_nondisp
+	    deltapathlengthvec = obs.tropwetonly ? atmdf[atmdf.Station .== obs.stationinfo.station[ant],:].Wet_disp + 
+	            atmdf[atmdf.Station .== obs.stationinfo.station[ant],:].Wet_nondisp : atmdf[atmdf.Station .== obs.stationinfo.station[ant],:].Wet_disp + 
+			    atmdf[atmdf.Station .== obs.stationinfo.station[ant],:].Wet_nondisp + atmdf[atmdf.Station .== obs.stationinfo.station[ant],:].Dry_nondisp
+        
         for t in 1:ntimes
             for chan in 1:obs.numchan
-		phasedelays[chan, t, ant] = 2*pi*(deltapathlengthvec[chan]/lightspeed/sin(elevationmatrix[t, ant]))*obs.chanfreqvec[chan]
+                meandelays[chan, t, ant] = deltapathlengthvec[chan]/lightspeed/sin(elevationmatrix[t, ant])
             end
         end
+
+        for t in 1:ntimes
+            for chan in 1:obs.numchan
+		        phasedelays[chan, t, ant] = 2*pi*meandelays[chan, t, ant]*obs.chanfreqvec[chan]
+            end
+        end
+    end
+
+    if !(haskey(g, "meandelays"))
+        g["meandelays"] = meandelays
     end
 
     if !(haskey(g, "phasedelays"))

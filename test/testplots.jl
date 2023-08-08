@@ -39,7 +39,7 @@
     rm("pointingoffsets.png")
     rm("pointingamplitudeerrors.png")
 
-    # test elevation angle plotting method
+    # test elevation angle plotting
     @inferred plotelevationangle(h5file, obs.scanno, obs.times, obs.stationinfo.station)
     rm("elevationangle.png")
 
@@ -55,7 +55,7 @@
     push!(ts, ts[end]+(ts[end]-ts[begin]))
     @test_throws DimensionMismatch plotelevationangle(h5file, obs.scanno, ts, obs.stationinfo.station)
 
-    # test parallactic angle plotting method
+    # test parallactic angle plotting
     @inferred plotparallacticangle(h5file, obs.scanno, obs.times, obs.stationinfo.station)
     rm("parallacticangle.png")
 
@@ -71,15 +71,17 @@
     push!(ts, ts[end]+(ts[end]-ts[begin]))
     @test_throws DimensionMismatch plotparallacticangle(h5file, obs.scanno, ts, obs.stationinfo.station)
 
-    # test d-terms plotdterms
+    # test d-terms plotting
     @inferred plotdterms(h5file, obs.stationinfo.station)
     rm("dterms.png")
 
-    # test transmission plots
+    # test transmission plotting
     @inferred plottransmission(h5file, obs.stationinfo.station, obs.times, obs.chanfreqvec)
     rm("transmission.png")
 
     @inferred plottransmission(h5file2, obs2.stationinfo.station, obs2.times, obs2.chanfreqvec)
     rm("transmission.png")
 
+    @inferred plotmeandelays(h5file, obs.stationinfo.station, obs.times, obs.chanfreqvec)
+    rm("meandelays.png")
 end

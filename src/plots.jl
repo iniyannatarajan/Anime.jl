@@ -1,4 +1,5 @@
-export plotuvcov, plotvis, plotstationgains, plotbandpass, plotpointingerrors, plotelevationangle, plotparallacticangle, plotdterms, plottransmission
+export plotuvcov, plotvis, plotstationgains, plotbandpass, plotpointingerrors, plotelevationangle, plotparallacticangle, plotdterms, plottransmission,
+plotmeandelays
 
 """
     plotuvcov(uvw::Matrix{Float64}, flagrow::Vector{Bool}, chanfreqvec::Vector{Float64}; saveprefix="test_")
@@ -404,7 +405,7 @@ function plottransmission(h5file::String, stationnames::Vector{String3}, times::
 
     # get unique times
     uniqtimes = unique(times)
-    reltimes = (uniqtimes .- first(uniqtimes))/3600.0
+    reltimes = (uniqtimes .- first(uniqtimes))/3600.0 # in units of hours
 
     chanfreqvec_ghz = chanfreqvec/1e9 # in GHz
 
@@ -416,9 +417,9 @@ function plottransmission(h5file::String, stationnames::Vector{String3}, times::
     if length(chanfreqvec_ghz) == 1
         p = plot()
         for ant in eachindex(stationnames)
-            plot!(p, tr[1,:,ant], seriestype=:scatter, ls=:dot, ms=1, mc=ColorSchemes.mk_15[ant], msc=ColorSchemes.mk_15[ant], label=stationnames[ant])
+            plot!(p, reltimes, tr[1,:,ant], seriestype=:scatter, ls=:dot, ms=1, mc=ColorSchemes.mk_15[ant], msc=ColorSchemes.mk_15[ant], label=stationnames[ant])
         end
-        plot!(p, xlabel="Relative time (s)", ylabel="Transmission")
+        plot!(p, xlabel="Relative time (hr)", ylabel="Transmission")
         savefig("transmission.png")
     else
         plotarr = []
@@ -438,5 +439,33 @@ function plottransmission(h5file::String, stationnames::Vector{String3}, times::
         savefig(fullplot, "transmission.png")
     end
 
+    @info("Done 🙆")
+end
+
+"""
+    plotmeandelays(h5file::String, stationnames::Vector{String3}, times::Vector{Float64}, chanfreqvec::Vector{Float64})
+
+Plot mean delays
+"""
+function plotmeandelays(h5file::String, stationnames::Vector{String3}, times::Vector{Float64}, chanfreqvec::Vector{Float64})
+    @info("Plotting station-based transmission values")
+
+    # get unique times
+    uniqtimes = unique(times)
+    reltimes = (uniqtimes .- first(uniqtimes))/3600.0 # in units of hours
+
+    chanfreqvec_ghz = chanfreqvec/1e9 # in GHz
+
+    # read in the computed mean delay values
+    fid = h5open(h5file, "r")
+    md = read(fid["troposphere"]["meandelays"]) * 1e9 # delays / ns
+    close(fid)
+
+    p = plot()
+    for ant in eachindex(stationnames)
+        plot!(p, reltimes, dropdims(mean(md[:,:,ant], dims=1), dims=1), seriestype=:scatter, ls=:dot, ms=1, mc=ColorSchemes.mk_15[ant], msc=ColorSchemes.mk_15[ant], label=stationnames[ant])
+    end
+    plot!(p, xlabel="Relative time (hr)", ylabel="Mean delays / ns")
+    savefig("meandelays.png")
     @info("Done 🙆")
 end

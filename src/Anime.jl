@@ -12,6 +12,7 @@ using CSV
 using HDF5
 using YAML
 using Random
+using Statistics
 using DataFrames
 using Distributions
 using Casacore.Tables: Tables as CCTables, Table as CCTable
