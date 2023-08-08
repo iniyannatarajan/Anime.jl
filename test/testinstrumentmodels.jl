@@ -23,8 +23,6 @@ end
     y["bandpass"]["bandpassfile"], delim=",", ignorerepeated=false)
 
     @inferred instrumentalpol(obs, h5file=h5file, elevfile="data/insmodel1.h5", parangfile="data/insmodel1.h5")
-    #@inferred instrumentalpol(obs.scanno, obs.times, obs.stationinfo, obs.phasedir, obs.pos, obs.data, obs.numchan, obs.polframe,
-    #obs.polmode, obs.antenna1, obs.antenna2, obs.exposure, obs.rngcorrupt, h5file=h5file, elevfile="data/insmodel1.h5", parangfile="data/insmodel1.h5")
 
     rm(h5file)
 end
@@ -39,8 +37,6 @@ end
     y["bandpass"]["bandpassfile"], delim=",", ignorerepeated=false)
 
     @inferred pointing(obs, h5file=h5file)
-    #@inferred pointing(obs.stationinfo, obs.scanno, obs.chanfreqvec, obs.ptginterval, obs.ptgmode, obs.exposure, obs.times, obs.rngcorrupt,
-    #obs.antenna1, obs.antenna2, obs.data, obs.numchan, h5file=h5file)
 
     rm(h5file)
 end
@@ -54,8 +50,7 @@ end
     y["instrumentalpol"]["visibilityframe"], y["instrumentalpol"]["mode"], y["pointing"]["interval"], y["pointing"]["mode"], y["stationgains"]["mode"], 
     y["bandpass"]["bandpassfile"], delim=",", ignorerepeated=false)
 
-    @inferred stationgains(obs.scanno, obs.times, obs.exposure, obs.data, obs.stationinfo, obs.stationgainsmode,
-    obs.rngcorrupt, obs.antenna1, obs.antenna2, obs.numchan, h5file=h5file)
+    @inferred stationgains(obs, h5file=h5file)
 
     rm(h5file)
 end
@@ -69,8 +64,7 @@ end
     y["instrumentalpol"]["visibilityframe"], y["instrumentalpol"]["mode"], y["pointing"]["interval"], y["pointing"]["mode"], y["stationgains"]["mode"], 
     y["bandpass"]["bandpassfile"], delim=",", ignorerepeated=false)
 
-    @inferred bandpass(obs.bandpassfile, obs.data, obs.stationinfo, obs.rngcorrupt, obs.antenna1, obs.antenna2,
-    obs.numchan, obs.chanfreqvec, h5file=h5file)
+    @inferred bandpass(obs, h5file=h5file)
 
     rm(h5file)
 end
@@ -84,16 +78,13 @@ end
     y["instrumentalpol"]["visibilityframe"], y["instrumentalpol"]["mode"], y["pointing"]["interval"], y["pointing"]["mode"], y["stationgains"]["mode"], 
     y["bandpass"]["bandpassfile"], delim=",", ignorerepeated=false)
 
-    @inferred thermalnoise(obs.times, obs.antenna1, obs.antenna2, obs.data, y["correff"], obs.exposure, obs.chanwidth, obs.rngcorrupt, 
-    obs.stationinfo.sefd_Jy, h5file=h5file)
+    @inferred thermalnoise(obs, h5file=h5file)
     rm(h5file)
 
-    @inferred thermalnoise(obs.times, obs.antenna1, obs.antenna2, obs.data, y["correff"], obs.exposure, obs.chanwidth, obs.rngcorrupt, 
-    obs.stationinfo.sefd_Jy, h5file=h5file, noisefile="data/insmodel1.h5")
+    @inferred thermalnoise(obs, h5file=h5file, noisefile="data/insmodel1.h5")
     rm(h5file)
 
-    @inferred thermalnoise(obs.times, obs.antenna1, obs.antenna2, obs.data, y["correff"], obs.exposure, obs.chanwidth, obs.rngcorrupt, 
-    obs.stationinfo.sefd_Jy, h5file=h5file, noisefile="data/insmodel2.h5")
+    @inferred thermalnoise(obs, h5file=h5file, noisefile="data/insmodel2.h5")
     rm(h5file)
 
 end

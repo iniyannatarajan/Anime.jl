@@ -66,3 +66,13 @@ function bandpass(bandpassfile::String, data::Array{Complex{Float32},4}, station
 
     @info("Compute and apply bandpass gains 🙆")
 end
+
+"""
+    bandpass(obs::CjlObservation; h5file::String="")
+
+Alias function for bandpass gains
+"""
+function bandpass(obs::CjlObservation; h5file::String="")
+    bandpass(obs.bandpassfile, obs.data, obs.stationinfo, obs.rngcorrupt, obs.antenna1, obs.antenna2,
+    obs.numchan, obs.chanfreqvec, h5file=h5file)
+end

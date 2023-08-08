@@ -68,3 +68,13 @@ function stationgains(scanno::Vector{Int32}, times::Vector{Float64}, exposure::F
     
     @info("Compute and apply station gains 🙆")
 end
+
+"""
+    stationgains(obs::CjlObservation; h5file::String="")
+
+Alias function for station gains
+"""
+function stationgains(obs::CjlObservation; h5file::String="")
+    stationgains(obs.scanno, obs.times, obs.exposure, obs.data, obs.stationinfo, obs.stationgainsmode,
+    obs.rngcorrupt, obs.antenna1, obs.antenna2, obs.numchan, h5file=h5file)
+end

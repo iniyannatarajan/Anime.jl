@@ -72,3 +72,13 @@ function thermalnoise(times::Vector{Float64}, antenna1::Vector{Int32}, antenna2:
 
     @info("Compute and apply thermal noise 🙆")
 end
+
+"""
+    thermalnoise(obs::CjlObservation; h5file::String="", noisefile::String="")
+
+Alias function for thermal noise
+"""
+function thermalnoise(obs::CjlObservation; h5file::String="", noisefile::String="")
+    thermalnoise(obs.times, obs.antenna1, obs.antenna2, obs.data, obs.correff, obs.exposure, obs.chanwidth,
+     obs.rngcorrupt, obs.stationinfo.sefd_Jy, h5file=h5file, noisefile=noisefile)
+end
