@@ -78,7 +78,7 @@ function pointing(stationinfo::DataFrame, scanno::Vector{Int32}, chanfreqvec::Ve
         # compute mispoint vector with values spaced by pointing interval
         actualtscanvec = unique(getindex(times, findall(scanno.==scan)))
         actualtscanveclen = length(actualtscanvec)
-        mispointvec = collect(first(actualtscanvec):pointinginterval:last(actualtscanvec)) # 'ideal'tscanvec is actually 'pointinginterval'tscanvec
+        mispointvec = collect(first(actualtscanvec):pointinginterval:last(actualtscanvec)) # regularly spaced time points spaced at intervals of "pointinginterval"
         mispointveclen = length(mispointvec)
 
 	    #mispointsperscan::Int64 = max(1, ceil((last(idealtscanvec)-first(idealtscanvec))/pointinginterval))
@@ -87,7 +87,8 @@ function pointing(stationinfo::DataFrame, scanno::Vector{Int32}, chanfreqvec::Ve
 
 	    # loop through stations and compute offsets and amplitude errors
 	    for ant in 1:nant
-	        perscanoffsets[:, ant] = gentimeseries!(perscanoffsets[:, ant], ptgmode, 0.0, stationinfo.pointingrms_arcsec[ant], 0.0, mispointveclen, rngcorrupt)
+	        #perscanoffsets[:, ant] = gentimeseries!(perscanoffsets[:, ant], ptgmode, 0.0, stationinfo.pointingrms_arcsec[ant], 0.0, mispointveclen, rngcorrupt)
+            perscanoffsets[:, ant] = gentimeseries!(perscanoffsets[:, ant], mispointvec, rngcorrupt, σ=stationinfo.pointingrms_arcsec[ant], ℓ=actualtscanvec[end]-actualtscanvec[begin])
 	        if stationinfo.pbmodel[ant] == "gaussian"
                 perscanamperrors[:, ant] = exp.(-0.5.*(perscanoffsets[:, ant]./(pbfwhm[ant]/2.35)).^2)
 	        end

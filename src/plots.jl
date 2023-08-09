@@ -171,28 +171,28 @@ function plotstationgains(h5file::String, scanno::Vector{Int32}, times::Vector{F
             xvals = (actualtscanvec .- first(uniqtimes)) ./ 3600.0 # relative time in hours
             if scan == 1
                 plot!(p1amp, xvals, gpol1amp, ls=:solid, lw=1, lc=ColorSchemes.mk_15[ant], label=stationnames[ant])
-                plot!(p2amp, xvals, gpol2amp, ls=:dash, lw=1, lc=ColorSchemes.mk_15[ant], label=stationnames[ant])
+                plot!(p2amp, xvals, gpol2amp, ls=:solid, lw=1, lc=ColorSchemes.mk_15[ant], label=stationnames[ant])
 
                 plot!(p1phase, xvals, gpol1phase, ls=:solid, lw=1, lc=ColorSchemes.mk_15[ant], label=stationnames[ant])
-                plot!(p2phase, xvals, gpol2phase, ls=:dash, lw=1, lc=ColorSchemes.mk_15[ant], label=stationnames[ant])
+                plot!(p2phase, xvals, gpol2phase, ls=:solid, lw=1, lc=ColorSchemes.mk_15[ant], label=stationnames[ant])
             else
                 plot!(p1amp, xvals, gpol1amp, ls=:solid, lw=1, lc=ColorSchemes.mk_15[ant], label="")
-                plot!(p2amp, xvals, gpol2amp, ls=:dash, lw=1, lc=ColorSchemes.mk_15[ant], label="")
+                plot!(p2amp, xvals, gpol2amp, ls=:solid, lw=1, lc=ColorSchemes.mk_15[ant], label="")
 
                 plot!(p1phase, xvals, gpol1phase, ls=:solid, lw=1, lc=ColorSchemes.mk_15[ant], label="")
-                plot!(p2phase, xvals, gpol2phase, ls=:dash, lw=1, lc=ColorSchemes.mk_15[ant], label="")
+                plot!(p2phase, xvals, gpol2phase, ls=:solid, lw=1, lc=ColorSchemes.mk_15[ant], label="")
             end
         end
         #indexstart = indexend + 1
        
     end
-    plot!(p1amp, title="Station gain amplitudes", ylabel="Gain amplitudes")
-    plot!(p2amp, xlabel="Relative time (hr)", ylabel="Gain amplitudes")
+    plot!(p1amp, title="Station gain amplitudes", ylabel="Pol1")
+    plot!(p2amp, xlabel="Relative time (hr)", ylabel="Pol2")
     pamp = plot(p1amp, p2amp, layout=(2, 1))
     plot!(pamp, legend=:outertop, legendcolumns=6)
 
-    plot!(p1phase, title="Station gain phases", ylabel="Gain phases (°)")
-    plot!(p2phase, xlabel="Relative time (hr)", ylabel="Gain phases (°)")
+    plot!(p1phase, title="Station gain phases", ylabel="Pol1 (°)")
+    plot!(p2phase, xlabel="Relative time (hr)", ylabel="Pol2 (°)")
     pphase = plot(p1phase, p2phase, layout=(2, 1))
     plot!(pphase, legend=:outertop, legendcolumns=6)
     

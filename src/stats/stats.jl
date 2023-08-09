@@ -57,3 +57,41 @@ function gentimeseries!(series::Vector{Float64}, mode::String, location::Float64
     end
     return series
 end
+
+"""
+    squaredexponentialkernel(x1, x2; σ=1.0, ℓ=1.0)
+
+Generate squared exponential kernel function
+"""
+function squaredexponentialkernel(x1, x2; σ=1.0, ℓ=1.0)
+    return σ^2 * exp(-0.5 * ((x1 - x2)^2 / ℓ^2))
+end
+
+"""
+    gentimeseries!(series::Vector{Float64}, times::Vector{Float64}, rng::AbstractRNG; σ::Float64=1.0, ℓ::Float64=1.0)
+
+Generate time series of Float64 values using a squared exponential kernel function
+"""
+function gentimeseries!(series::Vector{Float64}, times::Vector{Float64}, rng::AbstractRNG; σ::Float64=1.0, ℓ::Float64=1.0)
+    # Compute covariance matrix
+    ntimes = length(times)
+    covmat= zeros(ntimes, ntimes)
+    for i in 1:ntimes
+        for j in 1:ntimes
+            covmat[i, j] = squaredexponentialkernel(times[i], times[j], σ=σ, ℓ=ℓ)
+        end
+    end
+
+    # Add small constant to the diagonal for positive definiteness
+    covmat += 1e-6 * I
+
+    # Generate random samples
+    meanvector = zeros(ntimes)
+
+    ndims = length(meanvector)
+    stdnormalsample = randn(rng, Float64, ndims)
+
+    # Transform to multivariate normal sample
+    series[:] = meanvector .+ cholesky(covmat).L * stdnormalsample
+    return series
+end

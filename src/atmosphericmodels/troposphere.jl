@@ -1,7 +1,6 @@
 export troposphere
 
 using LazyGrids
-using LinearAlgebra
 
 const Boltzmann = 1.380649e-23
 const lightspeed = 2.99792458e8
