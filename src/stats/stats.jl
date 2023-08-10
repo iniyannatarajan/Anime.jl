@@ -68,11 +68,12 @@ function squaredexponentialkernel(x1, x2; σ=1.0, ℓ=1.0)
 end
 
 """
-    gentimeseries!(series::Vector{Float64}, times::Vector{Float64}, rng::AbstractRNG; σ::Float64=1.0, ℓ::Float64=1.0)
+    gentimeseries!(series::Vector{AbstractFloat}, times::Vector{AbstractFloat}, rng::AbstractRNG; μ::AbstractFloat=0.0, σ::AbstractFloat=1.0, ℓ::AbstractFloat=1.0)
 
 Generate time series of Float64 values using a squared exponential kernel function
 """
-function gentimeseries!(series::Vector{Float64}, times::Vector{Float64}, rng::AbstractRNG; σ::Float64=1.0, ℓ::Float64=1.0)
+#function gentimeseries!(series::Vector{AbstractFloat}, times::Vector{AbstractFloat}, rng::AbstractRNG; μ::AbstractFloat=0.0, σ::AbstractFloat=1.0, ℓ::AbstractFloat=1.0)
+function gentimeseries!(series, times, rng::AbstractRNG; μ=0.0, σ=1.0, ℓ=1.0)
     # Compute covariance matrix
     ntimes = length(times)
     covmat= zeros(ntimes, ntimes)
@@ -86,7 +87,7 @@ function gentimeseries!(series::Vector{Float64}, times::Vector{Float64}, rng::Ab
     covmat += 1e-6 * I
 
     # Generate random samples
-    meanvector = zeros(ntimes)
+    meanvector = zeros(ntimes) .+ μ # offset mean to the value of μ
 
     ndims = length(meanvector)
     stdnormalsample = randn(rng, Float64, ndims)

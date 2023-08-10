@@ -32,10 +32,42 @@ function stationgains(scanno::Vector{Int32}, times::Vector{Float64}, exposure::F
 
 	    # create 4d array to hold G-Jones terms per time per station
 	    gjonesmatrices = zeros(eltype(data), 2, 2, idealtscanveclen, size(stationinfo)[1]) # 2 x 2 x ntimes x nant
+        gjonesr = zeros(Float32, idealtscanveclen)
+        gjonesθ = zeros(Float32, idealtscanveclen)
 
 	    for ant in eachindex(stationinfo.station)
-            gjonesmatrices[1, 1, :, ant] = gentimeseries!(gjonesmatrices[1, 1, :, ant], mode, stationinfo.g_pol1_loc[ant], Float32(stationinfo.g_pol1_scale[ant]), Float32(0.0), idealtscanveclen, rngcorrupt)
-	        gjonesmatrices[2, 2, :, ant] = gentimeseries!(gjonesmatrices[2, 2, :, ant], mode, stationinfo.g_pol2_loc[ant], Float32(stationinfo.g_pol2_scale[ant]), Float32(0.0), idealtscanveclen, rngcorrupt)
+            #gjonesmatrices[1, 1, :, ant] = gentimeseries!(gjonesmatrices[1, 1, :, ant], mode, stationinfo.g_pol1_loc[ant], real(stationinfo.g_pol1_scale[ant]), Float32(0.0), idealtscanveclen, rngcorrupt)
+	        #gjonesmatrices[2, 2, :, ant] = gentimeseries!(gjonesmatrices[2, 2, :, ant], mode, stationinfo.g_pol2_loc[ant], real(stationinfo.g_pol2_scale[ant]), Float32(0.0), idealtscanveclen, rngcorrupt)
+
+            # get amplitude and phase of the mean and std for pol1
+            amplmean1 = Float32(abs(stationinfo.g_pol1_loc[ant]))
+            amplstd1 = Float32(abs(stationinfo.g_pol1_scale[ant]))
+            phasemean1 = Float32(angle(stationinfo.g_pol1_loc[ant]))
+            phasestd1 = Float32(angle(stationinfo.g_pol1_scale[ant]))
+
+            # generate time series for amplitudes and phases independently
+            gjonesr[:] = gentimeseries!(gjonesr, idealtscanvec, rngcorrupt, μ=amplmean1, σ=amplstd1, ℓ=actualtscanvec[end]-actualtscanvec[begin])
+            gjonesθ[:] = gentimeseries!(gjonesθ, mode, phasemean1, phasestd1, Float32(0.0), idealtscanveclen, rngcorrupt)
+
+            # convert back to Cartesian form and write to gjonesmatrix
+            reals = gjonesr .* cos.(gjonesθ)
+            imags = gjonesr .* sin.(gjonesθ)
+            gjonesmatrices[1, 1, :, ant] = [complex(r, i) for (r, i) in zip(reals, imags)]
+
+            # get amplitude and phase of the mean and std for pol2
+            amplmean2 = Float32(abs(stationinfo.g_pol2_loc[ant]))
+            amplstd2 = Float32(abs(stationinfo.g_pol2_scale[ant]))
+            phasemean2 = Float32(angle(stationinfo.g_pol2_loc[ant]))
+            phasestd2 = Float32(angle(stationinfo.g_pol2_scale[ant]))
+
+            # generate time series for amplitudes and phases independently
+            gjonesr[:] = gentimeseries!(gjonesr, idealtscanvec, rngcorrupt, μ=amplmean2, σ=amplstd2, ℓ=actualtscanvec[end]-actualtscanvec[begin])
+            gjonesθ[:] = gentimeseries!(gjonesθ, mode, phasemean2, phasestd2, Float32(0.0), idealtscanveclen, rngcorrupt)
+
+            # convert back to Cartesian form and write to gjonesmatrix
+            reals = gjonesr .* cos.(gjonesθ)
+            imags = gjonesr .* sin.(gjonesθ)
+            gjonesmatrices[2, 2, :, ant] = [complex(r, i) for (r, i) in zip(reals, imags)]
 	    end
 
         # loop over time/row and apply gjones terms corresponding to each baseline

@@ -102,10 +102,14 @@ function loadms(msname::String, stations::String, corruptseed::Int64, tropseed::
     # parse strings to complex values for gjones terms
     stationinfo.g_pol1_loc = map(x->parse(ComplexF32,x), stationinfo.g_pol1_loc)
     stationinfo.g_pol2_loc = map(x->parse(ComplexF32,x), stationinfo.g_pol2_loc)
+    stationinfo.g_pol1_scale = map(x->parse(ComplexF32,x), stationinfo.g_pol1_scale)
+    stationinfo.g_pol2_scale = map(x->parse(ComplexF32,x), stationinfo.g_pol2_scale)
 
     # parse strings to complex values for djones terms
     stationinfo.d_pol1_loc = map(x->parse(ComplexF32,x), stationinfo.d_pol1_loc)
     stationinfo.d_pol2_loc = map(x->parse(ComplexF32,x), stationinfo.d_pol2_loc)
+    stationinfo.d_pol1_scale = map(x->parse(ComplexF32,x), stationinfo.d_pol1_scale)
+    stationinfo.d_pol2_scale = map(x->parse(ComplexF32,x), stationinfo.d_pol2_scale)
 
     # parse strings t
     stationinfo.pbmodel = map(strip, stationinfo.pbmodel)
