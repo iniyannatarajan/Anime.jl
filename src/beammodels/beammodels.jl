@@ -87,8 +87,8 @@ function pointing(stationinfo::DataFrame, scanno::Vector{Int32}, chanfreqvec::Ve
 
 	    # loop through stations and compute offsets and amplitude errors
 	    for ant in 1:nant
-	        #perscanoffsets[:, ant] = gentimeseries!(perscanoffsets[:, ant], ptgmode, 0.0, stationinfo.pointingrms_arcsec[ant], 0.0, mispointveclen, rngcorrupt)
-            perscanoffsets[:, ant] = gentimeseries!(perscanoffsets[:, ant], mispointvec, rngcorrupt, σ=stationinfo.pointingrms_arcsec[ant], ℓ=actualtscanvec[end]-actualtscanvec[begin])
+	        #perscanoffsets[:, ant] = genseries1d!(perscanoffsets[:, ant], ptgmode, 0.0, stationinfo.pointingrms_arcsec[ant], 0.0, mispointveclen, rngcorrupt)
+            perscanoffsets[:, ant] = genseries1d!(perscanoffsets[:, ant], mispointvec, rngcorrupt, σ=stationinfo.pointingrms_arcsec[ant], ℓ=actualtscanvec[end]-actualtscanvec[begin])
 	        if stationinfo.pbmodel[ant] == "gaussian"
                 perscanamperrors[:, ant] = exp.(-0.5.*(perscanoffsets[:, ant]./(pbfwhm[ant]/2.35)).^2)
 	        end

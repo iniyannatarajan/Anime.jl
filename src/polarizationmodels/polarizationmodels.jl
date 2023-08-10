@@ -55,8 +55,8 @@ function instrumentalpol(scanno::Vector{Int32}, times::Vector{Float64}, stationi
         end
 
 	    for ant in eachindex(stationinfo.station)
-            #djonesmatrices[1, 2, :, ant] = gentimeseries!(djonesmatrices[1, 2, :, ant], polmode, stationinfo.d_pol1_loc[ant], real(stationinfo.d_pol1_scale[ant]), Float32(0.0), numchan, rngcorrupt)
-            #djonesmatrices[2, 1, :, ant] = gentimeseries!(djonesmatrices[2, 1, :, ant], polmode, stationinfo.d_pol2_loc[ant], real(stationinfo.d_pol2_scale[ant]), Float32(0.0), numchan, rngcorrupt)
+            #djonesmatrices[1, 2, :, ant] = genseries1d!(djonesmatrices[1, 2, :, ant], polmode, stationinfo.d_pol1_loc[ant], real(stationinfo.d_pol1_scale[ant]), Float32(0.0), numchan, rngcorrupt)
+            #djonesmatrices[2, 1, :, ant] = genseries1d!(djonesmatrices[2, 1, :, ant], polmode, stationinfo.d_pol2_loc[ant], real(stationinfo.d_pol2_scale[ant]), Float32(0.0), numchan, rngcorrupt)
 
             # get amplitude and phase of the mean and std for pol1
             amplmean1 = Float32(abs(stationinfo.d_pol1_loc[ant]))
@@ -64,9 +64,13 @@ function instrumentalpol(scanno::Vector{Int32}, times::Vector{Float64}, stationi
             phasemean1 = Float32(angle(stationinfo.d_pol1_loc[ant]))
             phasestd1 = Float32(angle(stationinfo.d_pol1_scale[ant]))
 
-            # generate time series for amplitudes and phases independently
-            djonesr[:] = gentimeseries!(djonesr, chanfreqvec, rngcorrupt, μ=amplmean1, σ=amplstd1, ℓ=chanfreqvec[end]-chanfreqvec[begin])
-            djonesθ[:] = gentimeseries!(djonesθ, polmode, phasemean1, phasestd1, Float32(0.0), numchan, rngcorrupt)
+            # generate 1-D series for amplitudes and phases independently
+            if numchan > 1
+                djonesr[:] = genseries1d!(djonesr, chanfreqvec, rngcorrupt, μ=amplmean1, σ=amplstd1, ℓ=chanfreqvec[end]-chanfreqvec[begin])
+            else
+                djonesr[:] = genseries1d!(djonesr, polmode, amplmean1, amplstd1, Float32(0.0), numchan, rngcorrupt)
+            end
+            djonesθ[:] = genseries1d!(djonesθ, polmode, phasemean1, phasestd1, Float32(0.0), numchan, rngcorrupt)
 
             # convert back to Cartesian form and write to gjonesmatrix
             reals = djonesr .* cos.(djonesθ)
@@ -79,9 +83,13 @@ function instrumentalpol(scanno::Vector{Int32}, times::Vector{Float64}, stationi
             phasemean2 = Float32(angle(stationinfo.g_pol2_loc[ant]))
             phasestd2 = Float32(angle(stationinfo.g_pol2_scale[ant]))
 
-            # generate time series for amplitudes and phases independently
-            djonesr[:] = gentimeseries!(djonesr, chanfreqvec, rngcorrupt, μ=amplmean2, σ=amplstd2, ℓ=chanfreqvec[end]-chanfreqvec[begin])
-            djonesθ[:] = gentimeseries!(djonesθ, polmode, phasemean2, phasestd2, Float32(0.0), numchan, rngcorrupt)
+            # generate 1-D series for amplitudes and phases independently
+            if numchan > 1
+                djonesr[:] = genseries1d!(djonesr, chanfreqvec, rngcorrupt, μ=amplmean2, σ=amplstd2, ℓ=chanfreqvec[end]-chanfreqvec[begin])
+            else
+                djonesr[:] = genseries1d!(djonesr, polmode, amplmean2, amplstd2, Float32(0.0), numchan, rngcorrupt)
+            end
+            djonesθ[:] = genseries1d!(djonesθ, polmode, phasemean2, phasestd2, Float32(0.0), numchan, rngcorrupt)
 
             # convert back to Cartesian form and write to gjonesmatrix
             reals = djonesr .* cos.(djonesθ)

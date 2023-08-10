@@ -1,11 +1,11 @@
-export gentimeseries!
+export genseries1d!
 
 """
-    gentimeseries!(series::Vector{ComplexF32}, mode::String, location::ComplexF32, scale::Float32, driftrate::Float32, nsamples::Int64, rng::AbstractRNG)
+    genseries1d!(series::Vector{ComplexF32}, mode::String, location::ComplexF32, scale::Float32, driftrate::Float32, nsamples::Int64, rng::AbstractRNG)
 
-Generate a complex-valued Gaussian process time-series of length nsamples with the given location, scale, and driftrate parameters.
+Generate a complex-valued Gaussian process 1-D series of length nsamples with the given location, scale, and driftrate parameters.
 """
-function gentimeseries!(series::Vector{ComplexF32}, mode::String, location::ComplexF32, scale::Float32, driftrate::Float32, nsamples::Int64, rng::AbstractRNG)
+function genseries1d!(series::Vector{ComplexF32}, mode::String, location::ComplexF32, scale::Float32, driftrate::Float32, nsamples::Int64, rng::AbstractRNG)
     # TODO this is a crude version of a wiener process -- to be updated
     if mode == "gp"
         sqrtnsamples = sqrt(nsamples)
@@ -20,11 +20,11 @@ function gentimeseries!(series::Vector{ComplexF32}, mode::String, location::Comp
 end
 
 """
-    gentimeseries!(series::Vector{Float32}, mode::String, location::Float32, scale::Float32, driftrate::Float32, nsamples::Int64, rng::AbstractRNG)
+    genseries1d!(series::Vector{Float32}, mode::String, location::Float32, scale::Float32, driftrate::Float32, nsamples::Int64, rng::AbstractRNG)
 
-Generate a Float32-valued Gaussian process time-series of length nsamples with the given location, scale, and driftrate parameters.
+Generate a Float32-valued Gaussian process 1-D series of length nsamples with the given location, scale, and driftrate parameters.
 """
-function gentimeseries!(series::Vector{Float32}, mode::String, location::Float32, scale::Float32, driftrate::Float32, nsamples::Int64, rng::AbstractRNG)
+function genseries1d!(series::Vector{Float32}, mode::String, location::Float32, scale::Float32, driftrate::Float32, nsamples::Int64, rng::AbstractRNG)
     # TODO this is a crude version of a wiener process -- to be updated
     if mode == "gp"
         sqrtnsamples = sqrt(nsamples)
@@ -39,11 +39,11 @@ function gentimeseries!(series::Vector{Float32}, mode::String, location::Float32
 end
 
 """
-    gentimeseries!(series::Vector{Float64}, mode::String, location::Float64, scale::Float64, driftrate::Float64, nsamples::Int64, rng::AbstractRNG)
+    genseries1d!(series::Vector{Float64}, mode::String, location::Float64, scale::Float64, driftrate::Float64, nsamples::Int64, rng::AbstractRNG)
 
-Generate a Float64-valued Gaussian process time-series of length nsamples with the given location, scale, and driftrate parameters.
+Generate a Float64-valued Gaussian process 1-D series of length nsamples with the given location, scale, and driftrate parameters.
 """
-function gentimeseries!(series::Vector{Float64}, mode::String, location::Float64, scale::Float64, driftrate::Float64, nsamples::Int64, rng::AbstractRNG)
+function genseries1d!(series::Vector{Float64}, mode::String, location::Float64, scale::Float64, driftrate::Float64, nsamples::Int64, rng::AbstractRNG)
     # TODO this is a crude version of a wiener process -- to be updated
     # TODO Look up a squared exponential kernel
     if mode == "gp"
@@ -68,12 +68,11 @@ function squaredexponentialkernel(x1, x2; σ=1.0, ℓ=1.0)
 end
 
 """
-    gentimeseries!(series::Vector{AbstractFloat}, times::Vector{AbstractFloat}, rng::AbstractRNG; μ::AbstractFloat=0.0, σ::AbstractFloat=1.0, ℓ::AbstractFloat=1.0)
+    genseries1d!(series, times, rng::AbstractRNG; μ=0.0, σ=1.0, ℓ=1.0)
 
-Generate time series of Float64 values using a squared exponential kernel function
+Generate a 1-D series using SE kernel
 """
-#function gentimeseries!(series::Vector{AbstractFloat}, times::Vector{AbstractFloat}, rng::AbstractRNG; μ::AbstractFloat=0.0, σ::AbstractFloat=1.0, ℓ::AbstractFloat=1.0)
-function gentimeseries!(series, times, rng::AbstractRNG; μ=0.0, σ=1.0, ℓ=1.0)
+function genseries1d!(series, times, rng::AbstractRNG; μ=0.0, σ=1.0, ℓ=1.0)
     # Compute covariance matrix
     ntimes = length(times)
     covmat= zeros(ntimes, ntimes)
@@ -84,6 +83,7 @@ function gentimeseries!(series, times, rng::AbstractRNG; μ=0.0, σ=1.0, ℓ=1.0
     end
 
     # Add small constant to the diagonal for positive definiteness
+    #covmat += 1e-6 * I
     covmat += 1e-6 * I
 
     # Generate random samples
