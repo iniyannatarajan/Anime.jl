@@ -1,4 +1,4 @@
-export thermalnoise
+export thermalnoise!
 
 """
     thermalnoise!(data::Array{Complex{Float32},4}, times::Vector{Float64}, antenna1::Vector{Int32}, antenna2::Vector{Int32}, correff::Float64,
@@ -76,7 +76,7 @@ end
 """
     thermalnoise!(obs::CjlObservation; h5file::String="", noisefile::String="")
 
-Shorthand for thermal noise function when CjolObservation struct object is available.
+Shorthand for thermal noise function when CjlObservation struct object is available.
 """
 function thermalnoise!(obs::CjlObservation; h5file::String="", noisefile::String="")
     thermalnoise!(obs.data, obs.times, obs.antenna1, obs.antenna2, obs.correff, obs.exposure, obs.chanwidth,

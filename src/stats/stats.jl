@@ -61,7 +61,7 @@ end
 """
     squaredexponentialkernel(x1, x2; σ=1.0, ℓ=1.0)
 
-Generate squared exponential kernel function
+Generate squared exponential kernel function.
 """
 function squaredexponentialkernel(x1, x2; σ=1.0, ℓ=1.0)
     return σ^2 * exp(-0.5 * ((x1 - x2)^2 / ℓ^2))
@@ -70,7 +70,7 @@ end
 """
     genseries1d!(series, times, rng::AbstractRNG; μ=0.0, σ=1.0, ℓ=1.0)
 
-Generate a 1-D series using SE kernel
+Generate a 1-D series using SE kernel.
 """
 function genseries1d!(series, times, rng::AbstractRNG; μ=0.0, σ=1.0, ℓ=1.0)
     # Compute covariance matrix
