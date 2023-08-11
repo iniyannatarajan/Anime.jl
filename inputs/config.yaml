@@ -4,7 +4,7 @@
 # settings to generate a new ms
 
 mode: "manual"                                       # "vex", "uvfits", "manual" are the only allowed values
-msname: "eht_perfectrl_rrrllrll.ms"                                  # name of output ms 
+msname: "eht.ms"                                  # name of output ms 
 telescopename: "VLBA"                                # preset telescope known to casa (not important since CASA is not used for predict; just an argument required for setconfig)
 stations: "/home/iniyan/software/dev/Anime.jl/inputs/eht_2017.stations"     # CSV file with station parameters
 casaanttemplate: "/home/iniyan/software/dev/Anime.jl/inputs/antenna_table.template"                 # Input CASA ANTENNA table to use as template
@@ -19,10 +19,10 @@ source:
     RA: "12h30m49.42"                                # right ascension of source position in hours
     Dec: "+12.23.28.04"                              # declination of source position in degrees
     epoch: "J2000"                                   # "J2000" or "B1950"
-scans: 2                                             # number of scans
-scanlengths: [300.0, 300.0]                              # list of lengths of each scan in seconds
-scanlag: 300.0                                     # lag time between scans in seconds
-exposure: 4.0                                          # integration time in seconds
+scans: 5                                             # number of scans
+scanlengths: [600.0, 600.0, 600.0, 600.0, 600.0]                              # list of lengths of each scan in seconds
+scanlag: 180.0                                     # lag time between scans in seconds
+exposure: 0.4                                          # integration time in seconds
 stokes: "RR RL LR LL"                                # CASA understandable Stokes types to simulate (check official MS specification)
 spw:
     centrefreq: [229.0e9]                            # centre frequency of spw in Hz
@@ -49,7 +49,7 @@ diagnostics: true                                  # generate diagnostic plots a
 # settings for atmospheric corruptions
 
 troposphere:                                         # add troposphere
-  enable: false
+  enable: true
   wetonly: false                                     # add only the wet component
   attenuate: true                                   # signal attenuation due to opacity
   skynoise: true                                    # add tropospheric contribution to sky noise
@@ -65,7 +65,7 @@ ionosphere:                                          # add ionosphere
 # beam and pointing settings
 
 pointing:
-  enable: false
+  enable: true
   mode: "gp"                                         # "gp" (Gaussian processes) or "normal" (Gaussian)
   interval: 5.0                          # time interval (in seconds) after which to generate new pointing errors (<=0.0 for "mean(coherencetime)")
   longterm:
@@ -77,7 +77,7 @@ pointing:
 ####################################################
 # settings for instrumental polarization
 
-instrumentalpol: 
+instrumentalpolarization: 
   enable: true                                       # add instrumental polarization
   mode: "gp"                                     # "gp" (Gaussian processes) or "normal" (Gaussian)
   visibilityframe: "sky"                             # visibilities are written out in "sky" frame
@@ -86,14 +86,14 @@ instrumentalpol:
 # settings for gains
 
 stationgains: 
-  enable: false                                      # add antenna gains
+  enable: true                                      # add antenna gains
   mode: "gp"                                     # "gp" or "normal"
 bandpass: 
-  enable: false                                      # add bandpass effects 
+  enable: true                                      # add bandpass effects 
   bandpassfile: "/home/iniyan/software/dev/Anime.jl/inputs/eht_2017.bandpass" # csv file containing bandpass information for all stations
 
 ####################################################
 # noise settings
 
 thermalnoise: 
-  enable: false                                      # toggle thermal noise
+  enable: true                                      # toggle thermal noise

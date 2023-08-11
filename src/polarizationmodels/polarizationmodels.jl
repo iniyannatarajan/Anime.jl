@@ -1,15 +1,16 @@
-export instrumentalpol
+export instrumentalpolarization!
 
 """
-    instrumentalpol(scanno::Vector{Int32}, times::Vector{Float64}, stationinfo::DataFrame, phasedir::Array{Float64,2},
-    pos::Array{Float64, 2}, data::Array{Complex{Float32},4}, chanfreqvec::Vector{Float64}, polframe::String, polmode::String,
-    antenna1::Vector{Int32}, antenna2::Vector{Int32}, exposure::Float64, rngcorrupt::AbstractRNG; h5file::String="", elevfile::String="", parangfile::String="")
+    instrumentalpolarization!(data::Array{Complex{Float32},4}, scanno::Vector{Int32}, times::Vector{Float64}, stationinfo::DataFrame, phasedir::Array{Float64,2},
+    pos::Array{Float64, 2}, chanfreqvec::Vector{Float64}, polframe::String, polmode::String, antenna1::Vector{Int32}, antenna2::Vector{Int32}, 
+    exposure::Float64, rngcorrupt::AbstractRNG; h5file::String="", elevfile::String="", parangfile::String="")
 
 Compute instrumental polarization (leakage, or "D-Jones" terms) and apply to data. The actual numerical values are serialized as HDF5.
 """
-function instrumentalpol(scanno::Vector{Int32}, times::Vector{Float64}, stationinfo::DataFrame, phasedir::Array{Float64,2},
-    pos::Array{Float64, 2}, data::Array{Complex{Float32},4}, chanfreqvec::Vector{Float64}, polframe::String, polmode::String,
-    antenna1::Vector{Int32}, antenna2::Vector{Int32}, exposure::Float64, rngcorrupt::AbstractRNG; h5file::String="", elevfile::String="", parangfile::String="")
+function instrumentalpolarization!(data::Array{Complex{Float32},4}, scanno::Vector{Int32}, times::Vector{Float64}, stationinfo::DataFrame, phasedir::Array{Float64,2},
+    pos::Array{Float64, 2}, chanfreqvec::Vector{Float64}, polframe::String, polmode::String, antenna1::Vector{Int32}, antenna2::Vector{Int32}, 
+    exposure::Float64, rngcorrupt::AbstractRNG; h5file::String="", elevfile::String="", parangfile::String="")
+
     # get unique scan numbers
     uniqscans = unique(scanno)
 
@@ -164,11 +165,11 @@ function instrumentalpol(scanno::Vector{Int32}, times::Vector{Float64}, stationi
 end
 
 """
-    instrumentalpol(obs::CjlObservation; h5file::String="", elevfile::String="", parangfile::String="")
+    instrumentalpolarization!(obs::CjlObservation; h5file::String="", elevfile::String="", parangfile::String="")
 
-Alias for instrumental polarization function
+Shorthand for instrumental polarization function.
 """
-function instrumentalpol(obs::CjlObservation; h5file::String="", elevfile::String="", parangfile::String="")
-    instrumentalpol(obs.scanno, obs.times, obs.stationinfo, obs.phasedir, obs.pos, obs.data, obs.chanfreqvec, obs.polframe,
+function instrumentalpolarization!(obs::CjlObservation; h5file::String="", elevfile::String="", parangfile::String="")
+    instrumentalpol!(obs.data, obs.scanno, obs.times, obs.stationinfo, obs.phasedir, obs.pos, obs.chanfreqvec, obs.polframe,
     obs.polmode, obs.antenna1, obs.antenna2, obs.exposure, obs.rngcorrupt, h5file=h5file, elevfile=elevfile, parangfile=parangfile)
 end

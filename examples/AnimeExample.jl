@@ -70,18 +70,18 @@ run_wsclean(y["msname"], y["skymodel"], y["polarized"], y["channelgroups"], y["o
 # load ms data into custom struct
 obs = loadms(y["msname"], y["stations"], Int(y["corruptseed"]), Int(y["troposphere"]["tropseed"]), y["troposphere"]["wetonly"], y["correff"],
 y["troposphere"]["attenuate"], y["troposphere"]["skynoise"], y["troposphere"]["meandelays"], y["troposphere"]["turbulence"],
-y["instrumentalpol"]["visibilityframe"], y["instrumentalpol"]["mode"], y["pointing"]["interval"], y["pointing"]["mode"], y["stationgains"]["mode"],
+y["instrumentalpolarization"]["visibilityframe"], y["instrumentalpolarization"]["mode"], y["pointing"]["interval"], y["pointing"]["mode"], y["stationgains"]["mode"],
 y["bandpass"]["bandpassfile"], delim=",", ignorerepeated=false)
 
 # plot uv-coverage
-y["diagnostics"] && plotuvcov(obs.uvw, obs.flagrow, obs.chanfreqvec)
+#y["diagnostics"] && plotuvcov(obs.uvw, obs.flagrow, obs.chanfreqvec)
 
 # make diagnostic plots of uncorrupted data
 y["diagnostics"] && plotvis(obs.uvw, obs.chanfreqvec, obs.flag, obs.data, obs.numchan, obs.times, plotphases=true, saveprefix="modelvis_")
 
 # add tropospheric effects
 if y["troposphere"]["enable"]
-    troposphere(obs, h5file)
+    troposphere!(obs, h5file)
     if y["diagnostics"]
         if obs.tropattenuate || obs.tropskynoise
             plottransmission(h5file, obs.stationinfo.station, obs.times, obs.chanfreqvec)
@@ -91,8 +91,8 @@ if y["troposphere"]["enable"]
 end
 
 # add instrumental polarization
-if y["instrumentalpol"]["enable"]
-    instrumentalpol(obs, h5file=h5file)
+if y["instrumentalpolarization"]["enable"]
+    instrumentalpolarization!(obs, h5file=h5file)
     if y["diagnostics"]
         plotelevationangle(h5file, obs.scanno, obs.times, obs.stationinfo.station)
         plotparallacticangle(h5file, obs.scanno, obs.times, obs.stationinfo.station)
@@ -102,7 +102,7 @@ end
 
 # add pointing errors
 if y["pointing"]["enable"]
-    pointing(obs, h5file=h5file)
+    pointing!(obs, h5file=h5file)
     y["diagnostics"] && plotpointingerrors(h5file, obs.scanno, obs.stationinfo.station)
 end
 

@@ -77,7 +77,7 @@ pointing:
 ####################################################
 # settings for instrumental polarization
 
-instrumentalpol: 
+instrumentalpolarization: 
   enable: true                                       # add instrumental polarization
   mode: "gp"                                     # "gp" (Gaussian processes) or "normal" (Gaussian)
   visibilityframe: "sky"                             # visibilities are written out in "sky" frame

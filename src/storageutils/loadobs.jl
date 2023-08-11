@@ -3,7 +3,12 @@ export loadms, CjlObservation
 abstract type AbstractObservation{T} end
 
 """
+    $(TYPEDEF)
+
 Container type for storing observation parameters and data.
+
+# Fields
+$(FIELDS)
 """
 struct CjlObservation{T} <: AbstractObservation{T}
     """
@@ -11,31 +16,31 @@ struct CjlObservation{T} <: AbstractObservation{T}
     """
     msname::String
     """
-    Complex visibility data
+    Complex visibility data (MS `DATA` column)
     """
     data::Array{Complex{Float32},4}
     """
-    Flag array of the same dimensions as data
+    Flag array of the same dimensions as data (MS `FLAG` column)
     """
     flag::Array{Bool,4}
     """
-    Flag row array that holds FLAG_ROW from MS
+    Flag row Boolean vector (MS ```FLAG_ROW``` column)
     """
     flagrow::Array{Bool,1}
     """
-    Antenna 1 in a baseline pair
+    Antenna 1 in a baseline pair (MS `ANTENNA1` column)
     """
     antenna1::Vector{Int32}
     """
-    Antenna 2 in a baseline pair
+    Antenna 2 in a baseline pair (MS `ANTENNA2` column)
     """
     antenna2::Vector{Int32}
     """
-    uvw coordinates
+    uvw coordinates (MS `UVW` column)
     """
     uvw::Matrix{Float64}
     """
-    Timestamps of complex visibilities
+    Timestamps (MS `TIME` column)
     """
     times::Vector{Float64}
     """
@@ -43,7 +48,7 @@ struct CjlObservation{T} <: AbstractObservation{T}
     """
     exposure::Float64
     """
-    Scan numbers from MS
+    Scan numbers (MS ```SCAN_NUMBER``` column)
     """
     scanno::Vector{Int32}
     #=weight::Vector{Vector{Float32}}
@@ -55,7 +60,7 @@ struct CjlObservation{T} <: AbstractObservation{T}
     """
     numchan::Int64
     """
-    Channel frequencies (Hz)
+    Channel frequencies (Hz) (MS ```CHAN_FREQ``` column)
     """
     chanfreqvec::Array{Float64,1}
     """
@@ -104,7 +109,7 @@ struct CjlObservation{T} <: AbstractObservation{T}
     """
     polframe::String
     """
-    Polarization mode
+    Mode to use to create frequency-varying D-term samples
     """
     polmode::String
     """
@@ -112,11 +117,11 @@ struct CjlObservation{T} <: AbstractObservation{T}
     """
     ptginterval::Float64
     """
-    Pointing error mode
+    Mode to use to create pointing error time samples
     """
     ptgmode::String
     """
-    Station gain mode
+    Mode to use to create station gain time samples
     """
     stationgainsmode::String
     """

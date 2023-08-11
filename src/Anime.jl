@@ -15,6 +15,7 @@ using Random
 using Statistics
 using DataFrames
 using Distributions
+using DocStringExtensions
 using LinearAlgebra
 using Casacore.Tables: Tables as CCTables, Table as CCTable
 using PythonCall

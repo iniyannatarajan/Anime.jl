@@ -4,7 +4,7 @@ plotmeandelays
 """
     plotuvcov(uvw::Matrix{Float64}, flagrow::Vector{Bool}, chanfreqvec::Vector{Float64}; saveprefix="test_")
 
-Plot uv-coverage of observation
+Plot uv-coverage of observation.
 """
 function plotuvcov(uvw::Matrix{Float64}, flagrow::Vector{Bool}, chanfreqvec::Vector{Float64}; saveprefix="test_")
     @info("Generating uv-coverage plots...")
@@ -28,7 +28,7 @@ end
     plotvis(uvw::Matrix{Float64}, chanfreqvec::Array{Float64,1}, flag::Array{Bool,4}, data::Array{Complex{Float32},4},
     numchan::Int64, times::Vector{Float64}; saveprefix="data_")
 
-Generate various complex visibility plots
+Plot complex visibilities against time and projected baseline length.
 """
 function plotvis(uvw::Matrix{Float64}, chanfreqvec::Array{Float64,1}, flag::Array{Bool,4}, data::Array{Complex{Float32},4},
     numchan::Int64, times::Vector{Float64}; plotphases::Bool=false, saveprefix="data_")
@@ -127,7 +127,7 @@ end
 """
     plotstationgains(h5file::String, scanno::Vector{Int32}, times::Vector{Float64}, exposure::Float64, stationnames::Vector{String3})
 
-Plot station gains against time
+Plot complex station gains against time.
 """
 function plotstationgains(h5file::String, scanno::Vector{Int32}, times::Vector{Float64}, exposure::Float64, stationnames::Vector{String3})
     @info("Plotting station gains against time...")
@@ -205,7 +205,7 @@ end
 """
     plotbandpass(h5file::String, stationnames::Vector{String3}, chanfreqvec::Vector{Float64})
 
-Plot bandpass gains against time
+Plot bandpass gains against time.
 """
 function plotbandpass(h5file::String, stationnames::Vector{String3}, chanfreqvec::Vector{Float64})
     @info("Plotting bandpass gains against time...")
@@ -235,7 +235,7 @@ end
 """
     plotpointingerrors(h5file::String, scanno::Vector{Int32}, stationnames::Vector{String3})
 
-Plot pointing errors
+Plot pointing errors.
 """
 function plotpointingerrors(h5file::String, scanno::Vector{Int32}, stationnames::Vector{String3})
     @info("Plotting pointing errors...")
@@ -278,7 +278,7 @@ end
 """
     plotelevationangle(h5file::String, scanno::Vector{Int32}, times::Vector{Float64}, stationnames::Vector{String3})
 
-Plot elevation angle by station
+Plot evolution of station elevation angles during the course of the observation.
 """
 function plotelevationangle(h5file::String, scanno::Vector{Int32}, times::Vector{Float64}, stationnames::Vector{String3})
     @info("Plotting elevation angles by station...")
@@ -327,7 +327,7 @@ end
 """
     plotparallacticangle(h5file::String, scanno::Vector{Int32}, times::Vector{Float64}, stationnames::Vector{String3})
 
-Plot parallactic angle by station
+Plot evolution of station parallactic angles during the course of the observation.
 """
 function plotparallacticangle(h5file::String, scanno::Vector{Int32}, times::Vector{Float64}, stationnames::Vector{String3})
     @info("Plotting parallactic angles by station...")
@@ -374,7 +374,7 @@ end
 """
     plotdterms(h5file::String, stationnames::Vector{String3})
 
-Plot instrumental leakage terms by station
+Plot frequency-dependent complex instrumental polarization.
 """
 function plotdterms(h5file::String, stationnames::Vector{String3})
     @info("Plotting cross-hand instrumental leakage (D-terms) by station...")
@@ -398,7 +398,7 @@ end
 """
     plottransmission(h5file::String, stationnames::Vector{String3}, times::Vector{Float64}, chanfreqvec::Vector{Float64})
 
-Plot tropospheric transmission by stations
+Plot tropospheric transmission variation with frequency.
 """
 function plottransmission(h5file::String, stationnames::Vector{String3}, times::Vector{Float64}, chanfreqvec::Vector{Float64})
     @info("Plotting station-based transmission values")
@@ -445,7 +445,7 @@ end
 """
     plotmeandelays(h5file::String, stationnames::Vector{String3}, times::Vector{Float64}, chanfreqvec::Vector{Float64})
 
-Plot mean delays
+Plot mean delays against time.
 """
 function plotmeandelays(h5file::String, stationnames::Vector{String3}, times::Vector{Float64}, chanfreqvec::Vector{Float64})
     @info("Plotting station-based transmission values")

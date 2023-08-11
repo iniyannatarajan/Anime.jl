@@ -1,4 +1,4 @@
-export troposphere
+export troposphere!
 
 using LazyGrids
 
@@ -6,11 +6,12 @@ const Boltzmann = 1.380649e-23
 const lightspeed = 2.99792458e8
 
 """
-    run_atm(obs::CjlObservation; absorptionfile::String="", dispersivefile::String="")::DataFrame
+    run_aatm(obs::CjlObservation; absorptionfile::String="", dispersivefile::String="")::DataFrame
 
-Run ATM (Pardo et al. 2001) to compute absorption by and dispersive delay in the atmosphere
+Run AATM (Bjona Nikolic; Pardo et al. 2001) to compute absorption by and dispersive delay in the troposphere. If AATM is not installed,
+this function can still accept input absorption and dispersion values in a specific CSV format and populate `atm.csv`.
 """
-function run_atm(obs::CjlObservation; absorptionfile::String="", dispersivefile::String="")::DataFrame
+function run_aatm(obs::CjlObservation; absorptionfile::String="", dispersivefile::String="")::DataFrame
     if absorptionfile == ""
         absorptionfile = "absorption.csv"
     end
@@ -77,7 +78,10 @@ end
 """
     compute_transmission!(transmission::Array{Float64, 3}, obs::CjlObservation, atmdf::DataFrame, elevationmatrix::Array{Float64, 2}, g::HDF5.Group)::Array{Float64, 3}
 
-Compute transmission matrix
+Compute elevation-dependent (mean) tropospheric transmission given opacity τ and elevation angle θ for each station.
+```math
+e^{-τ/\\sin{\\theta_{\\rm el}}}
+```
 """
 function compute_transmission!(transmission::Array{Float64, 3}, obs::CjlObservation, atmdf::DataFrame, elevationmatrix::Array{Float64, 2}, g::HDF5.Group)::Array{Float64, 3}
     # compute time and frequency varying transmission matrix for each station
@@ -99,11 +103,14 @@ function compute_transmission!(transmission::Array{Float64, 3}, obs::CjlObservat
 end
 
 """
-    attenuate(obs::CjlObservation, transmission::Array{Float64, 3})
+    attenuate!(obs::CjlObservation, transmission::Array{Float64, 3})
 
-Compute attenuation due to troposphere
+Attenuate the signal as it passes through (mean) troposphere using precomputed transmission values.
+```math
+I = I_0 e^{-τ/\\sin{\\theta_{\\rm el}}}
+```
 """
-function attenuate(obs::CjlObservation, transmission::Array{Float64, 3})
+function attenuate!(obs::CjlObservation, transmission::Array{Float64, 3})
     # get unique times
     uniqtimes = unique(obs.times)
     ntimes = size(uniqtimes)[1]
@@ -125,11 +132,11 @@ function attenuate(obs::CjlObservation, transmission::Array{Float64, 3})
 end
 
 """
-    compute_skynoise(obs::CjlObservation, atmdf::DataFrame, transmission::Array{Float64, 3}, g::HDF5.Group)
+    compute_skynoise!(obs::CjlObservation, atmdf::DataFrame, transmission::Array{Float64, 3}, g::HDF5.Group)
 
-Compute sky noise contribution
+Compute sky contribution to visibility noise using the radiometer equation.
 """
-function compute_skynoise(obs::CjlObservation, atmdf::DataFrame, transmission::Array{Float64, 3}, g::HDF5.Group)
+function compute_skynoise!(obs::CjlObservation, atmdf::DataFrame, transmission::Array{Float64, 3}, g::HDF5.Group)
     # get unique times
     uniqtimes = unique(obs.times)
     ntimes = size(uniqtimes)[1]
@@ -180,11 +187,11 @@ function compute_skynoise(obs::CjlObservation, atmdf::DataFrame, transmission::A
 end
 
 """
-    compute_meandelays(obs::CjlObservation, atmdf::DataFrame, elevationmatrix::Array{Float64, 2}, g::HDF5.Group)
+    compute_meandelays!(obs::CjlObservation, atmdf::DataFrame, elevationmatrix::Array{Float64, 2}, g::HDF5.Group)
 
-Compute mean delays
+Compute delays due to (mean) troposphere.
 """
-function compute_meandelays(obs::CjlObservation, atmdf::DataFrame, elevationmatrix::Array{Float64, 2}, g::HDF5.Group)
+function compute_meandelays!(obs::CjlObservation, atmdf::DataFrame, elevationmatrix::Array{Float64, 2}, g::HDF5.Group)
     # get unique times
     uniqtimes = unique(obs.times)
     ntimes = size(uniqtimes)[1]
@@ -238,11 +245,15 @@ function compute_meandelays(obs::CjlObservation, atmdf::DataFrame, elevationmatr
 end
 
 """
-    compute_turbulence(obs::CjlObservation, atmdf::DataFrame, elevationmatrix::Array{Float64, 2}, g::HDF5.Group)
+    compute_turbulence!(obs::CjlObservation, atmdf::DataFrame, elevationmatrix::Array{Float64, 2}, g::HDF5.Group)
 
-Compute turbulent phases
+Compute phase delays due to tropospheric turbulence. The time series of phase errors for station p is given by
+```math
+\\{{\\delta \\phi_p(t, \\nu)}\\} = \\frac{1}{\\sqrt{\\sin({\\theta_{\\mathrm{el}}(t)})}} \\{\\delta\\phi^{\\prime}_p(t)\\} \\big(\\frac{\\nu}{\\nu_0}\\big)
+```
+where ν is the list of channel frequencies and ν_0 is the reference frequency (lowest in the band).
 """
-function compute_turbulence(obs::CjlObservation, atmdf::DataFrame, elevationmatrix::Array{Float64, 2}, g::HDF5.Group)
+function compute_turbulence!(obs::CjlObservation, atmdf::DataFrame, elevationmatrix::Array{Float64, 2}, g::HDF5.Group)
     beta::Float64 = 5/3 # power law index
 
     # get unique scan numbers
@@ -320,9 +331,9 @@ end
 """
     troposphere(obs::CjlObservation, h5file::String; absorptionfile="", dispersivefile="", elevfile="")
 
-Compute various tropospheric effects and apply to data. The actual numerical values are serialized as HDF5.
+Main function to compute various components of the tropospheric model. The actual numerical values generated are serialized in HDF5 format.
 """
-function troposphere(obs::CjlObservation, h5file::String; absorptionfile="", dispersivefile="", elevfile="")
+function troposphere!(obs::CjlObservation, h5file::String; absorptionfile="", dispersivefile="", elevfile="")
     @info("Computing tropospheric effects...")
 
     # open h5 file for writing
@@ -333,7 +344,7 @@ function troposphere(obs::CjlObservation, h5file::String; absorptionfile="", dis
         attributes(g)["dims"] = "various"
     end
     
-    atmdf = run_atm(obs, absorptionfile=absorptionfile, dispersivefile=dispersivefile) # compute necessary atmospheric quantities using atm
+    atmdf = run_aatm(obs, absorptionfile=absorptionfile, dispersivefile=dispersivefile) # compute necessary atmospheric quantities using atm
 
     if elevfile != "" && isfile(elevfile)
         fidelev = h5open(elevfile, "r")
@@ -354,16 +365,16 @@ function troposphere(obs::CjlObservation, h5file::String; absorptionfile="", dis
     end
 
     # attenuate
-    obs.tropattenuate && attenuate(obs, transmission)
+    obs.tropattenuate && attenuate!(obs, transmission)
 
     # skynoise
-    obs.tropskynoise && compute_skynoise(obs, atmdf, transmission, g)
+    obs.tropskynoise && compute_skynoise!(obs, atmdf, transmission, g)
 
     # meandelays
-    obs.tropmeandelays && compute_meandelays(obs, atmdf, elevationmatrix, g)
+    obs.tropmeandelays && compute_meandelays!(obs, atmdf, elevationmatrix, g)
 
     # turbulence
-    obs.tropturbulence && compute_turbulence(obs, atmdf, elevationmatrix, g)
+    obs.tropturbulence && compute_turbulence!(obs, atmdf, elevationmatrix, g)
 
     # close h5 file
     close(fid)

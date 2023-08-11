@@ -1,4 +1,4 @@
-export pointing
+export pointing!
 
 using Statistics
 
@@ -39,15 +39,15 @@ function longtermpointing()
 end=#
 
 """
-    pointing(stationinfo::DataFrame, scanno::Vector{Int32}, chanfreqvec::Vector{Float64}, ptgint::Float64, ptgmode::String,
-    exposure::Float64, times::Vector{Float64}, rngcorrupt::AbstractRNG, antenna1::Vector{Int32}, antenna2::Vector{Int32},
-    data::Array{Complex{Float32},4}, numchan::Int64; h5file::String="")
+    pointing!(data::Array{Complex{Float32},4}, stationinfo::DataFrame, scanno::Vector{Int32}, chanfreqvec::Vector{Float64}, 
+    ptgint::Float64, ptgmode::String, exposure::Float64, times::Vector{Float64}, rngcorrupt::AbstractRNG, antenna1::Vector{Int32}, 
+    antenna2::Vector{Int32}, numchan::Int64; h5file::String="")
 
-Compute the pointing model and apply to data. The actual numerical values are serialized as HDF5.
+Compute pointing model and apply to data. The actual numerical values are serialized in HDF5 format.
 """
-function pointing(stationinfo::DataFrame, scanno::Vector{Int32}, chanfreqvec::Vector{Float64}, ptgint::Float64, ptgmode::String,
-    exposure::Float64, times::Vector{Float64}, rngcorrupt::AbstractRNG, antenna1::Vector{Int32}, antenna2::Vector{Int32},
-    data::Array{Complex{Float32},4}, numchan::Int64; h5file::String="")
+function pointing!(data::Array{Complex{Float32},4}, stationinfo::DataFrame, scanno::Vector{Int32}, chanfreqvec::Vector{Float64}, 
+    ptgint::Float64, ptgmode::String, exposure::Float64, times::Vector{Float64}, rngcorrupt::AbstractRNG, antenna1::Vector{Int32}, 
+    antenna2::Vector{Int32}, numchan::Int64; h5file::String="")
     @info("Computing pointing errors...")
 
     nant = size(stationinfo)[1]
@@ -130,11 +130,11 @@ function pointing(stationinfo::DataFrame, scanno::Vector{Int32}, chanfreqvec::Ve
 end
 
 """
-    pointing(obs::CjlObservation; h5file::String="")
+    pointing!(obs::CjlObservation; h5file::String="")
 
-Alias for pointing model function
+Shorthand for pointing model function when CjlObservation struct object is available.
 """
-function pointing(obs::CjlObservation; h5file::String="")
-    pointing(obs.stationinfo, obs.scanno, obs.chanfreqvec, obs.ptginterval, obs.ptgmode, obs.exposure, obs.times, obs.rngcorrupt,
-    obs.antenna1, obs.antenna2, obs.data, obs.numchan, h5file=h5file)
+function pointing!(obs::CjlObservation; h5file::String="")
+    pointing!(obs.data, obs.stationinfo, obs.scanno, obs.chanfreqvec, obs.ptginterval, obs.ptgmode, obs.exposure, obs.times, obs.rngcorrupt,
+    obs.antenna1, obs.antenna2, obs.numchan, h5file=h5file)
 end
