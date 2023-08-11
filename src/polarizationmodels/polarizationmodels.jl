@@ -5,7 +5,7 @@ export instrumentalpolarization!
     pos::Array{Float64, 2}, chanfreqvec::Vector{Float64}, polframe::String, polmode::String, antenna1::Vector{Int32}, antenna2::Vector{Int32}, 
     exposure::Float64, rngcorrupt::AbstractRNG; h5file::String="", elevfile::String="", parangfile::String="")
 
-Compute instrumental polarization (leakage, or "D-Jones" terms) and apply to data. The actual numerical values are serialized as HDF5.
+Compute frequency-varying instrumental polarization (leakage, or "D-Jones" terms) and apply to data. The actual numerical values are serialized as HDF5.
 """
 function instrumentalpolarization!(data::Array{Complex{Float32},4}, scanno::Vector{Int32}, times::Vector{Float64}, stationinfo::DataFrame, phasedir::Array{Float64,2},
     pos::Array{Float64, 2}, chanfreqvec::Vector{Float64}, polframe::String, polmode::String, antenna1::Vector{Int32}, antenna2::Vector{Int32}, 
@@ -167,9 +167,9 @@ end
 """
     instrumentalpolarization!(obs::CjlObservation; h5file::String="", elevfile::String="", parangfile::String="")
 
-Shorthand for instrumental polarization function.
+Shorthand for instrumental polarization function when CjlObservation struct object is available.
 """
 function instrumentalpolarization!(obs::CjlObservation; h5file::String="", elevfile::String="", parangfile::String="")
-    instrumentalpol!(obs.data, obs.scanno, obs.times, obs.stationinfo, obs.phasedir, obs.pos, obs.chanfreqvec, obs.polframe,
+    instrumentalpolarization!(obs.data, obs.scanno, obs.times, obs.stationinfo, obs.phasedir, obs.pos, obs.chanfreqvec, obs.polframe,
     obs.polmode, obs.antenna1, obs.antenna2, obs.exposure, obs.rngcorrupt, h5file=h5file, elevfile=elevfile, parangfile=parangfile)
 end
