@@ -70,7 +70,7 @@ end
 """
     bandpass!(obs::CjlObservation; h5file::String="")
 
-Alias function for bandpass gains
+Shorthand for bandpass function when CjlObservation struct object is available.
 """
 function bandpass!(obs::CjlObservation; h5file::String="")
     bandpass!(obs.data, obs.bandpassfile, obs.stationinfo, obs.rngcorrupt, obs.antenna1, obs.antenna2,
