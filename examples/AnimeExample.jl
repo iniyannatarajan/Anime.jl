@@ -108,7 +108,7 @@ end
 
 # add station gains
 if y["stationgains"]["enable"]
-    stationgains(obs, h5file=h5file)
+    stationgains!(obs, h5file=h5file)
     y["diagnostics"] && plotstationgains(h5file, obs.scanno, obs.times, obs.exposure, obs.stationinfo.station)
 end
 

@@ -50,7 +50,7 @@ end
     y["instrumentalpolarization"]["visibilityframe"], y["instrumentalpolarization"]["mode"], y["pointing"]["interval"], y["pointing"]["mode"], y["stationgains"]["mode"], 
     y["bandpass"]["bandpassfile"], delim=",", ignorerepeated=false)
 
-    @inferred stationgains(obs, h5file=h5file)
+    @inferred stationgains!(obs, h5file=h5file)
 
     rm(h5file)
 end

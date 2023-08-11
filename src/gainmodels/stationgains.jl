@@ -1,12 +1,12 @@
-export stationgains
+export stationgains!
 
 """
-    stationgains(scanno::Vector{Int32}, times::Vector{Float64}, exposure::Float64, data::Array{Complex{Float32},4},
+    stationgains!(data::Array{Complex{Float32},4}, scanno::Vector{Int32}, times::Vector{Float64}, exposure::Float64, 
     stationinfo::DataFrame, mode::String, rngcorrupt::AbstractRNG, antenna1::Vector{Int32}, antenna2::Vector{Int32}, numchan::Int64; h5file::String="")
 
-Compute time-variable station gains and apply to data. The actual numerical values are serialized as HDF5.
+Compute time-variable complex station gains and apply to data. The actual numerical values are serialized in HDF5 format.
 """
-function stationgains(scanno::Vector{Int32}, times::Vector{Float64}, exposure::Float64, data::Array{Complex{Float32},4},
+function stationgains!(data::Array{Complex{Float32},4}, scanno::Vector{Int32}, times::Vector{Float64}, exposure::Float64, 
     stationinfo::DataFrame, mode::String, rngcorrupt::AbstractRNG, antenna1::Vector{Int32}, antenna2::Vector{Int32}, numchan::Int64; h5file::String="")
     
     # open h5 file for writing
@@ -102,11 +102,11 @@ function stationgains(scanno::Vector{Int32}, times::Vector{Float64}, exposure::F
 end
 
 """
-    stationgains(obs::CjlObservation; h5file::String="")
+    stationgains!(obs::CjlObservation; h5file::String="")
 
-Alias function for station gains
+Shorthand for station gains function when CjlObservation struct object is available.
 """
-function stationgains(obs::CjlObservation; h5file::String="")
-    stationgains(obs.scanno, obs.times, obs.exposure, obs.data, obs.stationinfo, obs.stationgainsmode,
+function stationgains!(obs::CjlObservation; h5file::String="")
+    stationgains(obs.data, obs.scanno, obs.times, obs.exposure, obs.stationinfo, obs.stationgainsmode,
     obs.rngcorrupt, obs.antenna1, obs.antenna2, obs.numchan, h5file=h5file)
 end
