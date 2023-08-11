@@ -1,11 +1,11 @@
 export postprocessms
 
 """
-    computeweights!(totalrmsspec::Array{Float32, 4}, totalwtspec::Array{Float32, 4}, obs::CjlObservation; h5file::String="")
+    computeweights!(totalrmsspec::Array{Float32, 4}, totalwtspec::Array{Float32, 4}; h5file::String="")
 
-Compute total rms (sigma) values from independent noise sources
+Compute total rms (sigma) values and inverse-squared visibility weights from thermal+sky noise terms stored in input HDF5 file.
 """
-function computeweights!(totalrmsspec::Array{Float32, 4}, totalwtspec::Array{Float32, 4}, obs::CjlObservation; h5file::String="")
+function computeweights!(totalrmsspec::Array{Float32, 4}, totalwtspec::Array{Float32, 4}; h5file::String="")
 
     fid = h5open(h5file, "r")
     if haskey(fid, "thermalnoise") && haskey(fid["thermalnoise"], "thermalnoiserms")
@@ -28,7 +28,7 @@ end
 """
     postprocessms(obs::CjlObservation; h5file::String="")
 
-Add weights and sigma matrices, update data matrix, reshape them all and write to MS
+Add weight and sigma columns, reshape as needed by MS and write to disk.
 """
 function postprocessms(obs::CjlObservation; h5file::String="")
     # replace NaNs with zeros
@@ -41,7 +41,7 @@ function postprocessms(obs::CjlObservation; h5file::String="")
 
     if isfile(h5file)
         @info("Populating weight and sigma spectrum arrays...")
-        computeweights!(totalrmsspec, totalwtspec, obs, h5file=h5file)
+        computeweights!(totalrmsspec, totalwtspec, h5file=h5file)
     end
 
     # convert the sigma_spec and weight_spec arrays to the format required by Casacore.jl

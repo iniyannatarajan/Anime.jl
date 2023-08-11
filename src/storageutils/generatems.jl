@@ -5,7 +5,7 @@ using StatsBase: mode
 """
     makecasaanttable(stations::String, casaanttemplate::String; delim::String=",", ignorerepeated::Bool=false)
 
-Generate a CASA antenna table from CSV station info file in the current working directory.
+Create CASA antenna table from station info file. Requires `casatools`.
 """
 function makecasaanttable(stations::String, casaanttemplate::String; delim::String=",", ignorerepeated::Bool=false)
     # read in the stations CSV file
@@ -47,7 +47,7 @@ end
 """
     addweightcols(msname::String, mode::String, sigmaspec::Bool, weightspec::Bool)
 
-Add WEIGHT_SPECTRUM and SIGMA_SPECTRUM columns to the MS
+Add ```WEIGHT_SPECTRUM``` and ```SIGMA_SPECTRUM``` columns to MS. Requires `casatools`.
 """
 function addweightcols(msname::String, mode::String, sigmaspec::Bool, weightspec::Bool)
     # TODO get mode as arg and if it is "uvfits", delete wtspec and regenerate
@@ -113,7 +113,7 @@ end=#
 """
     msfromuvfits(uvfits::String, msname::String, mscreationmode::String, stations::String; delim::String=",", ignorerepeated::Bool=false)
 
-Generate MS from existing UVFITS file
+Convert UVFITS to MS. Requires `casatools` and `casatasks`.
 """
 function msfromuvfits(uvfits::String, msname::String, mscreationmode::String, stations::String; delim::String=",", ignorerepeated::Bool=false)
     # convert uvfits to ms
@@ -147,11 +147,11 @@ function msfromuvfits(uvfits::String, msname::String, mscreationmode::String, st
     addweightcols(msname, mscreationmode, true, true)
 end
 
-#="""
+"""
     mstouvfits(msname::String, uvfits::String, datacolumn::String; field::String="", spw::String="", antenna::String="",
     timerange::String="", overwrite::Bool=false)
 
-Convert MS to UVFITS format
+Convert MS to UVFITS. Requires `casatasks`.
 """
 function mstouvfits(msname::String, uvfits::String, datacolumn::String; field::String="", spw::String="", antenna::String="",
     timerange::String="", overwrite::Bool=false)
@@ -163,7 +163,7 @@ function mstouvfits(msname::String, uvfits::String, datacolumn::String; field::S
     end
     # convert ms to uvfits
     exportuvfits(vis=msname, fitsfile=uvfits, datacolumn=datacolumn)#, field=field, spw=spw, antenna=antenna, timerange=timerange, overwrite=overwrite)
-end=#
+end
 
 """
     msfromconfig(msname::String, mscreationmode::String, stations::String, casaanttemplate::String, spw_centrefreq::Array{Float64, 1}, 
@@ -171,7 +171,7 @@ end=#
     scanlengths::Array{Float64, 1}, scanlag::Float64; autocorr::Bool=false, telescopename::String="VLBA", feed::String="perfect R L",
     shadowlimit::Float64=1e-6, elevationlimit::String="10deg", stokes::String="RR RL LR LL", delim::String=",", ignorerepeated::Bool=false)
 
-Generate measurement set from scratch from input observation parameters
+Create Measurement Set from observation parameters. Requires `casatools`.
 """
 function msfromconfig(msname::String, mscreationmode::String, stations::String, casaanttemplate::String, spw_centrefreq::Array{Float64, 1}, 
     spw_bw::Array{Float64, 1}, spw_channels::Array{Int64, 1}, sourcedict::Dict{String, Any}, starttime::String, exposure::Float64, scans::Int64,

@@ -2,6 +2,11 @@ export run_wsclean
 
 tb = table()
 
+"""
+    copymodeltodata(msname::String)
+
+Copy ```MODEL_DATA``` to ```DATA``` in MS.
+"""
 function copymodeltodata(msname::String)
     # copying model data to data
     tb.open(msname, nomodify=false)
@@ -13,7 +18,7 @@ end
 """
     run_wsclean(msname::String, fitsdir::String, polarized::Bool, channelgroups::Int64, osfactor::Int64)
 
-Compute source coherency using WSClean
+Compute source coherency matrix using `WSClean` and populate MS.
 """
 function run_wsclean(msname::String, fitsdir::String, polarized::Bool, channelgroups::Int64, osfactor::Int64)
     fitsfiles = readdir(fitsdir, sort=true)

@@ -2,42 +2,134 @@ export loadms, CjlObservation
 
 abstract type AbstractObservation{T} end
 
-# TODO the entire data structure to hold MS data needs to be rewritten
+"""
+Container type for storing observation parameters and data.
+"""
 struct CjlObservation{T} <: AbstractObservation{T}
+    """
+    Name of the Measurement Set
+    """
     msname::String
+    """
+    Complex visibility data
+    """
     data::Array{Complex{Float32},4}
+    """
+    Flag array of the same dimensions as data
+    """
     flag::Array{Bool,4}
+    """
+    Flag row array that holds FLAG_ROW from MS
+    """
     flagrow::Array{Bool,1}
+    """
+    Antenna 1 in a baseline pair
+    """
     antenna1::Vector{Int32}
+    """
+    Antenna 2 in a baseline pair
+    """
     antenna2::Vector{Int32}
+    """
+    uvw coordinates
+    """
     uvw::Matrix{Float64}
+    """
+    Timestamps of complex visibilities
+    """
     times::Vector{Float64}
+    """
+    Integration time
+    """
     exposure::Float64
+    """
+    Scan numbers from MS
+    """
     scanno::Vector{Int32}
     #=weight::Vector{Vector{Float32}}
     weightspec::Array{Float32,3}
     sigma::Vector{Vector{Float32}}
     sigmaspec::Array{Float32,3}=#
+    """
+    Number of frequency channels
+    """
     numchan::Int64
+    """
+    Channel frequencies (Hz)
+    """
     chanfreqvec::Array{Float64,1}
+    """
+    Width of frequency channel
+    """
     chanwidth::Float64
+    """
+    Direction of phase centre
+    """
     phasedir::Array{Float64,2}
+    """
+    Antenna positions in x,y,z coordinates
+    """
     pos::Array{Float64, 2}
+    """
+    Dataframe of station information input by user
+    """
     stationinfo::DataFrame
     #yamlconf::Dict
+    """
+    Consider only water vapour in the troposphere
+    """
     tropwetonly::Bool
+    """
+    Correlator efficiency
+    """
     correff::Float64
+    """
+    Introduce attenuation by the troposphere
+    """
     tropattenuate::Bool
+    """
+    Introduce noise due to troposphere
+    """
     tropskynoise::Bool
+    """
+    Introduce mean delays due to troposphere
+    """
     tropmeandelays::Bool
+    """
+    Introduce turbulence in troposphere
+    """
     tropturbulence::Bool
+    """
+    Polarization frame
+    """
     polframe::String
+    """
+    Polarization mode
+    """
     polmode::String
+    """
+    Pointing interval (s)
+    """
     ptginterval::Float64
+    """
+    Pointing error mode
+    """
     ptgmode::String
+    """
+    Station gain mode
+    """
     stationgainsmode::String
+    """
+    Input bandpass file
+    """
     bandpassfile::String
+    """
+    RNG for all models except troposphere
+    """
     rngcorrupt::AbstractRNG
+    """
+    RNG for tropospheric models
+    """
     rngtrop::AbstractRNG
 end
 
@@ -53,7 +145,7 @@ struct CpyObservation{T} <: AbstractObservation{T} end
     tropskynoise::Bool, tropmeandelays::Bool, tropturbulence::Bool, polframe::String, polmode::String, ptginterval::Float64, ptgmode::String,
     stationgainsmode::String, bandpassfile::String; delim::String=",", ignorerepeated::Bool=false)
 
-Load data and metadata from MS and station table and return a CjlObservation object.
+Load data and metadata from MS, station and bandpass tables and return a CjlObservation object.
 """
 function loadms(msname::String, stations::String, corruptseed::Int64, tropseed::Int64, tropwetonly::Bool, correff::Float64, tropattenuate::Bool,
     tropskynoise::Bool, tropmeandelays::Bool, tropturbulence::Bool, polframe::String, polmode::String, ptginterval::Float64, ptgmode::String,
