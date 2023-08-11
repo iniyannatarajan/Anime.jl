@@ -114,12 +114,12 @@ end
 
 # add bandpasses
 if y["bandpass"]["enable"]
-    bandpass(obs, h5file=h5file)
+    bandpass!(obs, h5file=h5file)
     y["diagnostics"] && plotbandpass(h5file, obs.stationinfo.station, obs.chanfreqvec)
 end
 
 # add thermal noise
-y["thermalnoise"]["enable"] && thermalnoise(obs, h5file=h5file)
+y["thermalnoise"]["enable"] && thermalnoise!(obs, h5file=h5file)
 
 # make diagnostic plots
 y["diagnostics"] && plotvis(obs.uvw, obs.chanfreqvec, obs.flag, obs.data, obs.numchan, obs.times, saveprefix="datavis_") 

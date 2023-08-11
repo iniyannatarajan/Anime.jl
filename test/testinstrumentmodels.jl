@@ -64,7 +64,7 @@ end
     y["instrumentalpolarization"]["visibilityframe"], y["instrumentalpolarization"]["mode"], y["pointing"]["interval"], y["pointing"]["mode"], y["stationgains"]["mode"], 
     y["bandpass"]["bandpassfile"], delim=",", ignorerepeated=false)
 
-    @inferred bandpass(obs, h5file=h5file)
+    @inferred bandpass!(obs, h5file=h5file)
 
     rm(h5file)
 end
@@ -78,13 +78,13 @@ end
     y["instrumentalpolarization"]["visibilityframe"], y["instrumentalpolarization"]["mode"], y["pointing"]["interval"], y["pointing"]["mode"], y["stationgains"]["mode"], 
     y["bandpass"]["bandpassfile"], delim=",", ignorerepeated=false)
 
-    @inferred thermalnoise(obs, h5file=h5file)
+    @inferred thermalnoise!(obs, h5file=h5file)
     rm(h5file)
 
-    @inferred thermalnoise(obs, h5file=h5file, noisefile="data/insmodel1.h5")
+    @inferred thermalnoise!(obs, h5file=h5file, noisefile="data/insmodel1.h5")
     rm(h5file)
 
-    @inferred thermalnoise(obs, h5file=h5file, noisefile="data/insmodel2.h5")
+    @inferred thermalnoise!(obs, h5file=h5file, noisefile="data/insmodel2.h5")
     rm(h5file)
 
 end

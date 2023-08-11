@@ -1,12 +1,12 @@
 export thermalnoise
 
 """
-    thermalnoise(times::Vector{Float64}, antenna1::Vector{Int32}, antenna2::Vector{Int32}, data::Array{Complex{Float32},4}, correff::Float64,
+    thermalnoise!(data::Array{Complex{Float32},4}, times::Vector{Float64}, antenna1::Vector{Int32}, antenna2::Vector{Int32}, correff::Float64,
     exposure::Float64, chanwidth::Float64, rngcorrupt::AbstractRNG, sefd::Vector{Float64}; h5file::String="", noisefile::String="")
 
-Compute per-baseline thermal noise in visibility domain and apply to data. The actual numerical values are serialized as HDF5.
+Compute per-baseline thermal noise using radiometer equation and apply to data. The actual numerical values are serialized in HDF5 format.
 """
-function thermalnoise(times::Vector{Float64}, antenna1::Vector{Int32}, antenna2::Vector{Int32}, data::Array{Complex{Float32},4}, correff::Float64,
+function thermalnoise!(data::Array{Complex{Float32},4}, times::Vector{Float64}, antenna1::Vector{Int32}, antenna2::Vector{Int32}, correff::Float64,
     exposure::Float64, chanwidth::Float64, rngcorrupt::AbstractRNG, sefd::Vector{Float64}; h5file::String="", noisefile::String="")
     # get unique times
     uniqtimes = unique(times)
@@ -74,11 +74,11 @@ function thermalnoise(times::Vector{Float64}, antenna1::Vector{Int32}, antenna2:
 end
 
 """
-    thermalnoise(obs::CjlObservation; h5file::String="", noisefile::String="")
+    thermalnoise!(obs::CjlObservation; h5file::String="", noisefile::String="")
 
-Alias function for thermal noise
+Shorthand for thermal noise function when CjolObservation struct object is available.
 """
-function thermalnoise(obs::CjlObservation; h5file::String="", noisefile::String="")
-    thermalnoise(obs.times, obs.antenna1, obs.antenna2, obs.data, obs.correff, obs.exposure, obs.chanwidth,
+function thermalnoise!(obs::CjlObservation; h5file::String="", noisefile::String="")
+    thermalnoise!(obs.data, obs.times, obs.antenna1, obs.antenna2, obs.correff, obs.exposure, obs.chanwidth,
      obs.rngcorrupt, obs.stationinfo.sefd_Jy, h5file=h5file, noisefile=noisefile)
 end

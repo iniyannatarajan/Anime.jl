@@ -1,14 +1,14 @@
-export bandpass
+export bandpass!
 
 using Interpolations
 
 """
-    bandpass(bandpassfile::String, data::Array{Complex{Float32},4}, stationinfo::DataFrame, rngcorrupt::AbstractRNG,
+    bandpass!(data::Array{Complex{Float32},4}, bandpassfile::String, stationinfo::DataFrame, rngcorrupt::AbstractRNG,
     antenna1::Vector{Int32}, antenna2::Vector{Int32}, numchan::Int64, chanfreqvec::Vector{Float64}; h5file::String="")
 
-Compute the bandpass model and apply to data. The actual numerical values are serialized as HDF5.
+Compute the complex bandpass model and apply to data. The actual numerical values are serialized in HDF5 format.
 """
-function bandpass(bandpassfile::String, data::Array{Complex{Float32},4}, stationinfo::DataFrame, rngcorrupt::AbstractRNG,
+function bandpass!(data::Array{Complex{Float32},4}, bandpassfile::String, stationinfo::DataFrame, rngcorrupt::AbstractRNG,
     antenna1::Vector{Int32}, antenna2::Vector{Int32}, numchan::Int64, chanfreqvec::Vector{Float64}; h5file::String="")
     # read in the station bandpass file
     bpinfo = CSV.read(bandpassfile, DataFrame; delim=",", ignorerepeated=false)
@@ -68,11 +68,11 @@ function bandpass(bandpassfile::String, data::Array{Complex{Float32},4}, station
 end
 
 """
-    bandpass(obs::CjlObservation; h5file::String="")
+    bandpass!(obs::CjlObservation; h5file::String="")
 
 Alias function for bandpass gains
 """
-function bandpass(obs::CjlObservation; h5file::String="")
-    bandpass(obs.bandpassfile, obs.data, obs.stationinfo, obs.rngcorrupt, obs.antenna1, obs.antenna2,
+function bandpass!(obs::CjlObservation; h5file::String="")
+    bandpass!(obs.data, obs.bandpassfile, obs.stationinfo, obs.rngcorrupt, obs.antenna1, obs.antenna2,
     obs.numchan, obs.chanfreqvec, h5file=h5file)
 end
