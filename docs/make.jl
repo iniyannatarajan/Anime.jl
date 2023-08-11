@@ -18,6 +18,7 @@ makedocs(;
     pages=[
         "Home" => "index.md",
         "Installation" => "install.md",
+        "Instrument Modelling" => "insmodelling.md",
         "Anime API" => "api.md",
     ],
 )

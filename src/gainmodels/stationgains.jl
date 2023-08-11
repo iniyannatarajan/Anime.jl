@@ -107,6 +107,6 @@ end
 Shorthand for station gains function when CjlObservation struct object is available.
 """
 function stationgains!(obs::CjlObservation; h5file::String="")
-    stationgains(obs.data, obs.scanno, obs.times, obs.exposure, obs.stationinfo, obs.stationgainsmode,
+    stationgains!(obs.data, obs.scanno, obs.times, obs.exposure, obs.stationinfo, obs.stationgainsmode,
     obs.rngcorrupt, obs.antenna1, obs.antenna2, obs.numchan, h5file=h5file)
 end
