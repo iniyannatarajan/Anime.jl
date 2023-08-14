@@ -40,7 +40,7 @@ include("beammodels/beammodels.jl")
 include("gainmodels/gainmodels.jl")
 include("noisemodels/noisemodels.jl")
 include("stats/stats.jl")
-include("util.jl")
+include("casautils.jl")
 include("plots.jl")
 
 end

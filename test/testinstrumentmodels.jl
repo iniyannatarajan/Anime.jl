@@ -22,8 +22,10 @@ end
     y["instrumentalpolarization"]["visibilityframe"], y["instrumentalpolarization"]["mode"], y["pointing"]["interval"], y["pointing"]["scale"], y["pointing"]["mode"], y["stationgains"]["mode"], 
     y["bandpass"]["bandpassfile"], delim=",", ignorerepeated=false)
 
-    @inferred instrumentalpolarization!(obs, h5file=h5file, elevfile="data/insmodel1.h5", parangfile="data/insmodel1.h5")
+    @inferred instrumentalpolarization!(obs, h5file=h5file)
+    rm(h5file)
 
+    @inferred instrumentalpolarization!(obs, h5file=h5file, elevfile="data/insmodel1.h5", parangfile="data/insmodel1.h5")
     rm(h5file)
 end
 

@@ -21,8 +21,6 @@
     delim = ","
     ignorerepeated = false
 
-    @info(pwd())
-
     @test "somevalue" != Anime.msfromconfig(msname, mode, stations, casaanttemplate, spw_centrefreq, spw_bw, spw_channels, sourcedict, starttime,
     exposure, scans, scanlengths, scanlag, autocorr=autocorr, telescopename=telescopename, feed=feed, shadowlimit=shadowlimit, elevationlimit=elevationlimit,
     stokes=stokes, delim=delim, ignorerepeated=ignorerepeated)
