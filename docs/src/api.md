@@ -79,4 +79,5 @@ Anime.compute_skynoise!
 Anime.compute_meandelays!
 Anime.compute_turbulence!
 Anime.squaredexponentialkernel
+Anime.rationalquadratickernel
 ```

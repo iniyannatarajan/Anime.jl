@@ -16,7 +16,8 @@ Within the EHT, two software packages are generally used for simulating interfer
 Pages = [
     "index.md",
     "install.md",
-    "insmodelling.md",
+    "components.md",
+    "instrumentmodels.md",
     "examples.md",
     "api.md"
 ]
