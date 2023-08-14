@@ -13,6 +13,7 @@ using HDF5
 using YAML
 using Random
 using Statistics
+using SpecialFunctions
 using DataFrames
 using Distributions
 using DocStringExtensions

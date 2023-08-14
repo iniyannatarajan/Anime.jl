@@ -46,7 +46,7 @@ function stationgains!(data::Array{Complex{Float32},4}, scanno::Vector{Int32}, t
             phasestd1 = Float32(angle(stationinfo.g_pol1_scale[ant]))
 
             # generate time series for amplitudes and phases independently
-            gjonesr[:] = genseries1d!(gjonesr, idealtscanvec, rngcorrupt, μ=amplmean1, σ=amplstd1, ℓ=actualtscanvec[end]-actualtscanvec[begin])
+            gjonesr[:] = genseries1d!(gjonesr, idealtscanvec, rngcorrupt, μ=amplmean1, σ=amplstd1, ρ=actualtscanvec[end]-actualtscanvec[begin])
             gjonesθ[:] = genseries1d!(gjonesθ, mode, phasemean1, phasestd1, Float32(0.0), idealtscanveclen, rngcorrupt)
 
             # convert back to Cartesian form and write to gjonesmatrix
@@ -61,7 +61,7 @@ function stationgains!(data::Array{Complex{Float32},4}, scanno::Vector{Int32}, t
             phasestd2 = Float32(angle(stationinfo.g_pol2_scale[ant]))
 
             # generate time series for amplitudes and phases independently
-            gjonesr[:] = genseries1d!(gjonesr, idealtscanvec, rngcorrupt, μ=amplmean2, σ=amplstd2, ℓ=actualtscanvec[end]-actualtscanvec[begin])
+            gjonesr[:] = genseries1d!(gjonesr, idealtscanvec, rngcorrupt, μ=amplmean2, σ=amplstd2, ρ=actualtscanvec[end]-actualtscanvec[begin])
             gjonesθ[:] = genseries1d!(gjonesθ, mode, phasemean2, phasestd2, Float32(0.0), idealtscanveclen, rngcorrupt)
 
             # convert back to Cartesian form and write to gjonesmatrix

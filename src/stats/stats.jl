@@ -59,32 +59,34 @@ function genseries1d!(series::Vector{Float64}, mode::String, location::Float64, 
 end
 
 """
-    squaredexponentialkernel(x1, x2; σ=1.0, ℓ=1.0)
+    squaredexponentialkernel(x1, x2; σ=1.0, ρ=1.0)
 
-Generate squared exponential kernel function.
+Generate squared exponential kernel function of the form
+```math
+k_{SE}(x-x') = \\sigma^2 e^{-\\frac{(x-x')^2}{2\\rho^2}}
+```
+where σ^2 is the variance and ρ is the characteristic length.
 """
-function squaredexponentialkernel(x1, x2; σ=1.0, ℓ=1.0)
-    return σ^2 * exp(-0.5 * ((x1 - x2)^2 / ℓ^2))
+function squaredexponentialkernel(x1, x2; σ=1.0, ρ=1.0)
+    return σ^2 * exp(-0.5 * ((x1 - x2)^2 / ρ^2))
 end
 
 """
-    genseries1d!(series, times, rng::AbstractRNG; μ=0.0, σ=1.0, ℓ=1.0)
+    genseries1d!(series, times, rng::AbstractRNG; μ=0.0, σ=1.0, ρ=1.0)
 
-Generate a 1-D series using SE kernel.
+Generate 1-D series using SE kernel.
 """
-function genseries1d!(series, times, rng::AbstractRNG; μ=0.0, σ=1.0, ℓ=1.0)
+function genseries1d!(series, times, rng::AbstractRNG; μ=0.0, σ=1.0, ρ=1.0)
     # Compute covariance matrix
     ntimes = length(times)
     covmat= zeros(ntimes, ntimes)
     for i in 1:ntimes
         for j in 1:ntimes
-            covmat[i, j] = squaredexponentialkernel(times[i], times[j], σ=σ, ℓ=ℓ)
+            covmat[i, j] = squaredexponentialkernel(times[i], times[j], σ=σ, ρ=ρ)
         end
     end
 
-    # Add small constant to the diagonal for positive definiteness
-    #covmat += 1e-6 * I
-    covmat += 1e-6 * I
+    covmat += 1e-6 * I # add small constant to make the covariance matrix positive definite
 
     # Generate random samples
     meanvector = zeros(ntimes) .+ μ # offset mean to the value of μ
@@ -96,3 +98,83 @@ function genseries1d!(series, times, rng::AbstractRNG; μ=0.0, σ=1.0, ℓ=1.0)
     series[:] = meanvector .+ cholesky(covmat).L * stdnormalsample
     return series
 end
+
+"""
+    rationalquadratickernel(x1, x2; σ=1.0, α=1.0, ρ=2.0)
+
+Generate rational quadratic kernel of the form
+```math
+k_{RQ}(x-x') = \\sigma^2 \\big(1+\\frac{(x-x')^2}{2\\alpha\\rho^2}\\big)^{-\\alpha}
+```
+"""
+function rationalquadratickernel(x1, x2; σ=1.0, α=1.0, ρ=2.0)
+    return σ^2 * (1 + ((x1 - x2)^2 / 2*α*ρ^2))^-α
+end
+
+"""
+    genseries1d!(series, times, rng::AbstractRNG, α::Float64; μ=0.0, σ=1.0, ρ=2.0)
+
+Generate 1-D series using RQ kernel.
+"""
+function genseries1d!(series, times, rng::AbstractRNG, α::Float64; μ=0.0, σ=1.0, ρ=2.0)
+    # Compute covariance matrix
+    ntimes = length(times)
+    covmat= zeros(ntimes, ntimes)
+    for i in 1:ntimes
+        for j in 1:ntimes
+            covmat[i, j] = rationalquadratickernel(times[i], times[j], σ=σ, α=α, ρ=ρ)
+        end
+    end
+
+    covmat += 1e-6 * I # add small constant to make the covariance matrix positive definite
+
+    # Generate random samples
+    meanvector = zeros(ntimes) .+ μ # offset mean to the value of μ
+
+    ndims = length(meanvector)
+    stdnormalsample = randn(rng, Float64, ndims)
+
+    # Transform to multivariate normal sample
+    series[:] = meanvector .+ cholesky(covmat).L * stdnormalsample
+    return series
+end
+
+#="""
+    euclideandistance(x1, x2)
+
+Compute Euclidean distance between two vectors.
+"""
+function euclideandistance(x1, x2)
+    return sqrt(sum((x1 .- x2).^2))
+end
+
+"""
+    maternkernel(r, ν, ρ)
+
+Compute Matern Kernel.
+"""
+function maternkernel(r, ν, ρ)
+    return (2^(1 - ν) / gamma(ν)) * (sqrt(2 * ν) * r / ρ)^ν * exp(-sqrt(2 * ν) * r / ρ)
+end
+
+"""
+    gen1dseries!(series, samplepoints; ν=2.0, ρ=1.0)
+
+Generate a 1-D series using Matern kernel.
+"""
+function genseries1d!(series, samplepoints; ν=2.0, ρ=1.0)
+    npoints = size(samplepoints, 1)
+    distancematrix = zeros(npoints, npoints)
+    
+    for i in 1:npoints
+        for j in 1:npoints
+            distancematrix[i, j] = euclideandistance(samplepoints[i, :], samplepoints[j, :])
+        end
+    end
+    
+    covmat = maternkernel.(distancematrix, ν, ρ)
+    covmat += 1e-6 * I
+
+    series[:] = cholesky(covmat).L
+    return series
+end=#

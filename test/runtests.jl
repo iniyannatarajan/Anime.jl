@@ -1,8 +1,38 @@
-using Anime
+include("../src/Anime.jl")
+using .Anime
+#using Anime
 using Test
+
+using Plots, ColorSchemes, LaTeXStrings
+using Tables
+using Logging
+using CSV
+using HDF5
 using YAML
 using Random
-using HDF5
+using Statistics
+using SpecialFunctions
+using DataFrames
+using Distributions
+using DocStringExtensions
+using LinearAlgebra
+using Casacore.Tables: Tables as CCTables, Table as CCTable
+using PythonCall
+
+quanta = pyimport("casatools" => "quanta")
+importuvfits = pyimport("casatasks" => "importuvfits")
+exportuvfits = pyimport("casatasks" => "exportuvfits")
+table = pyimport("casatools" => "table")
+measures = pyimport("casatools" => "measures")
+simulator = pyimport("casatools" => "simulator")
+qa = quanta()
+tb = table()
+me = measures()
+sm = simulator()
+
+@testset "Create data set" begin
+    include("testcreatems.jl")
+end
 
 @testset "Load Observation" begin
     include("testloadobs.jl")

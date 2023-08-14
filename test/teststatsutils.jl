@@ -10,4 +10,7 @@
 
     series = genseries1d!(zeros(Float64, 100), collect(range(start=1.0, stop=10.0, length=100)), Xoshiro(42))
     @test size(series) == (100,)
+
+    series = genseries1d!(zeros(Float64, 100), collect(range(start=1.0, stop=10.0, length=100)), Xoshiro(42), 1.5)
+    @test size(series) == (100,)
 end

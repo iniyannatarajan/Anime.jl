@@ -67,7 +67,7 @@ function instrumentalpolarization!(data::Array{Complex{Float32},4}, scanno::Vect
 
             # generate 1-D series for amplitudes and phases independently
             if numchan > 1
-                djonesr[:] = genseries1d!(djonesr, chanfreqvec, rngcorrupt, μ=amplmean1, σ=amplstd1, ℓ=chanfreqvec[end]-chanfreqvec[begin])
+                djonesr[:] = genseries1d!(djonesr, chanfreqvec, rngcorrupt, μ=amplmean1, σ=amplstd1, ρ=chanfreqvec[end]-chanfreqvec[begin])
             else
                 djonesr[:] = genseries1d!(djonesr, polmode, amplmean1, amplstd1, Float32(0.0), numchan, rngcorrupt)
             end
@@ -86,7 +86,7 @@ function instrumentalpolarization!(data::Array{Complex{Float32},4}, scanno::Vect
 
             # generate 1-D series for amplitudes and phases independently
             if numchan > 1
-                djonesr[:] = genseries1d!(djonesr, chanfreqvec, rngcorrupt, μ=amplmean2, σ=amplstd2, ℓ=chanfreqvec[end]-chanfreqvec[begin])
+                djonesr[:] = genseries1d!(djonesr, chanfreqvec, rngcorrupt, μ=amplmean2, σ=amplstd2, ρ=chanfreqvec[end]-chanfreqvec[begin])
             else
                 djonesr[:] = genseries1d!(djonesr, polmode, amplmean2, amplstd2, Float32(0.0), numchan, rngcorrupt)
             end

@@ -68,11 +68,7 @@ pointing:
   enable: true
   mode: "gp"                                         # "gp" (Gaussian processes) or "normal" (Gaussian)
   interval: 5.0                          # time interval (in seconds) after which to generate new pointing errors (<=0.0 for "mean(coherencetime)")
-  longterm:
-    enable: false                                    # enable longterm, multiscan pointing drifts
-    nscan: 5                                         # no. of scans after which to reset long term pointing drift
-    sigmascale: 1.2                                  # scale pointing rms by this value
-    epsilon: 0.1                                     # growth factor multiplied with the scaled up sigma
+  scale: 100.0                                   # scale mixture parameter for long-term smoothness
 
 ####################################################
 # settings for instrumental polarization

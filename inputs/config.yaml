@@ -3,7 +3,7 @@
 ####################################################
 # settings to generate a new ms
 
-mode: "manual"                                       # "vex", "uvfits", "manual" are the only allowed values
+mode: "uvfits"                                       # "vex", "uvfits", "manual" are the only allowed values
 msname: "eht.ms"                                  # name of output ms 
 telescopename: "VLBA"                                # preset telescope known to casa (not important since CASA is not used for predict; just an argument required for setconfig)
 stations: "/home/iniyan/software/dev/Anime.jl/inputs/eht_2017.stations"     # CSV file with station parameters
@@ -49,7 +49,7 @@ diagnostics: true                                  # generate diagnostic plots a
 # settings for atmospheric corruptions
 
 troposphere:                                         # add troposphere
-  enable: true
+  enable: false
   wetonly: false                                     # add only the wet component
   attenuate: true                                   # signal attenuation due to opacity
   skynoise: true                                    # add tropospheric contribution to sky noise
@@ -68,17 +68,13 @@ pointing:
   enable: true
   mode: "gp"                                         # "gp" (Gaussian processes) or "normal" (Gaussian)
   interval: 5.0                          # time interval (in seconds) after which to generate new pointing errors (<=0.0 for "mean(coherencetime)")
-  longterm:
-    enable: false                                    # enable longterm, multiscan pointing drifts
-    nscan: 5                                         # no. of scans after which to reset long term pointing drift
-    sigmascale: 1.2                                  # scale pointing rms by this value
-    epsilon: 0.1                                     # growth factor multiplied with the scaled up sigma
+  scale: 100.0                                   # scale mixture parameter for long-term smoothness
 
 ####################################################
 # settings for instrumental polarization
 
 instrumentalpolarization: 
-  enable: true                                       # add instrumental polarization
+  enable: false                                       # add instrumental polarization
   mode: "gp"                                     # "gp" (Gaussian processes) or "normal" (Gaussian)
   visibilityframe: "sky"                             # visibilities are written out in "sky" frame
 
@@ -86,14 +82,14 @@ instrumentalpolarization:
 # settings for gains
 
 stationgains: 
-  enable: true                                      # add antenna gains
+  enable: false                                      # add antenna gains
   mode: "gp"                                     # "gp" or "normal"
 bandpass: 
-  enable: true                                      # add bandpass effects 
+  enable: false                                      # add bandpass effects 
   bandpassfile: "/home/iniyan/software/dev/Anime.jl/inputs/eht_2017.bandpass" # csv file containing bandpass information for all stations
 
 ####################################################
 # noise settings
 
 thermalnoise: 
-  enable: true                                      # toggle thermal noise
+  enable: false                                      # toggle thermal noise

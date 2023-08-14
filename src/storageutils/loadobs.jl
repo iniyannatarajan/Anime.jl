@@ -117,6 +117,10 @@ struct CjlObservation{T} <: AbstractObservation{T}
     """
     ptginterval::Float64
     """
+    Pointing scale mixture parameter
+    """
+    ptgscale::Float64
+    """
     Mode to use to create pointing error time samples
     """
     ptgmode::String
@@ -147,13 +151,13 @@ struct CpyObservation{T} <: AbstractObservation{T} end
 
 """
     loadms(msname::String, stations::String, corruptseed::Int64, tropseed::Int64, tropwetonly::Bool, correff::Float64, tropattenuate::Bool,
-    tropskynoise::Bool, tropmeandelays::Bool, tropturbulence::Bool, polframe::String, polmode::String, ptginterval::Float64, ptgmode::String,
+    tropskynoise::Bool, tropmeandelays::Bool, tropturbulence::Bool, polframe::String, polmode::String, ptginterval::Float64, ptgscale::Float64, ptgmode::String,
     stationgainsmode::String, bandpassfile::String; delim::String=",", ignorerepeated::Bool=false)
 
 Load data and metadata from MS, station and bandpass tables and return a CjlObservation object.
 """
 function loadms(msname::String, stations::String, corruptseed::Int64, tropseed::Int64, tropwetonly::Bool, correff::Float64, tropattenuate::Bool,
-    tropskynoise::Bool, tropmeandelays::Bool, tropturbulence::Bool, polframe::String, polmode::String, ptginterval::Float64, ptgmode::String,
+    tropskynoise::Bool, tropmeandelays::Bool, tropturbulence::Bool, polframe::String, polmode::String, ptginterval::Float64, ptgscale::Float64, ptgmode::String,
     stationgainsmode::String, bandpassfile::String; delim::String=",", ignorerepeated::Bool=false)
 
     tab = CCTable(msname, CCTables.Old)
@@ -219,7 +223,7 @@ function loadms(msname::String, stations::String, corruptseed::Int64, tropseed::
     # construct CjlObservation object    
     observation = CjlObservation{Float64}(msname,data3dresandperm,flag3dresandperm,flagrow,antenna1,antenna2,uvw,times,exposure,scanno,numchan,chanfreqvec,
     chanwidth,phasedir,pos,stationinfo,tropwetonly,correff,tropattenuate,tropskynoise,tropmeandelays,tropturbulence,polframe,polmode,
-    ptginterval,ptgmode,stationgainsmode,bandpassfile,rngcorrupt,rngtrop)
+    ptginterval,ptgscale,ptgmode,stationgainsmode,bandpassfile,rngcorrupt,rngtrop)
 
     @info("Load data for processing 🙆")
     return observation
