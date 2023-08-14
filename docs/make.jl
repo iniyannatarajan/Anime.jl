@@ -9,8 +9,6 @@ DocMeta.setdocmeta!(Anime, :DocTestSetup, :(using Anime); recursive=true)
 
 # Setup Literate
 OUTDIR = joinpath(@__DIR__, "src", "examples")
-println(pathof(Anime))
-println(joinpath(dirname(pathof(Anime)), "..", "examples"))
 SOURCE_FILES = Glob.glob("*.jl", joinpath(dirname(pathof(Anime)), "..", "examples"))
 println(SOURCE_FILES)
 foreach(fn -> Literate.markdown(fn, OUTDIR, documenter=true), SOURCE_FILES)
