@@ -233,11 +233,11 @@ function plotbandpass(h5file::String, stationnames::Vector{String3}, chanfreqvec
 end
 
 """
-    plotpointingerrors(h5file::String, scanno::Vector{Int32}, stationnames::Vector{String3})
+    plotpointingerrors(h5file::String, scanno::Vector{Int32}, stationnames::Vector{String3}; save::Bool=true)::Plots.Plot{Plots.GRBackend}
 
 Plot pointing errors.
 """
-function plotpointingerrors(h5file::String, scanno::Vector{Int32}, stationnames::Vector{String3}; save::Bool=true)
+function plotpointingerrors(h5file::String, scanno::Vector{Int32}, stationnames::Vector{String3}; save::Bool=true)::Plots.Plot{Plots.GRBackend}
     @info("Plotting pointing errors...")
     fid = h5open(h5file, "r")
 
@@ -275,15 +275,15 @@ function plotpointingerrors(h5file::String, scanno::Vector{Int32}, stationnames:
     
     close(fid)
     @info("Done 🙆")
-    return p_off, p_amperr
+    return p_amperr
 end
 
 """
-    plotelevationangle(h5file::String, scanno::Vector{Int32}, times::Vector{Float64}, stationnames::Vector{String3})
+    plotelevationangle(h5file::String, scanno::Vector{Int32}, times::Vector{Float64}, stationnames::Vector{String3}; save::Bool=true)::Plots.Plot{Plots.GRBackend}
 
 Plot evolution of station elevation angles during the course of the observation.
 """
-function plotelevationangle(h5file::String, scanno::Vector{Int32}, times::Vector{Float64}, stationnames::Vector{String3}; save::Bool=true)
+function plotelevationangle(h5file::String, scanno::Vector{Int32}, times::Vector{Float64}, stationnames::Vector{String3}; save::Bool=true)::Plots.Plot{Plots.GRBackend}
     @info("Plotting elevation angles by station...")
     
     # get unique scan numbers
@@ -403,11 +403,11 @@ function plotdterms(h5file::String, stationnames::Vector{String3})
 end
 
 """
-    plottransmission(h5file::String, stationnames::Vector{String3}, times::Vector{Float64}, chanfreqvec::Vector{Float64})
+    plottransmission(h5file::String, stationnames::Vector{String3}, times::Vector{Float64}, chanfreqvec::Vector{Float64}; save::Bool=true)::Plots.Plot{Plots.GRBackend}
 
 Plot tropospheric transmission variation with frequency.
 """
-function plottransmission(h5file::String, stationnames::Vector{String3}, times::Vector{Float64}, chanfreqvec::Vector{Float64}; save::Bool=true)
+function plottransmission(h5file::String, stationnames::Vector{String3}, times::Vector{Float64}, chanfreqvec::Vector{Float64}; save::Bool=true)::Plots.Plot{Plots.GRBackend}
     @info("Plotting station-based transmission values")
 
     # get unique times
@@ -455,11 +455,11 @@ function plottransmission(h5file::String, stationnames::Vector{String3}, times::
 end
 
 """
-    plotmeandelays(h5file::String, stationnames::Vector{String3}, times::Vector{Float64}, chanfreqvec::Vector{Float64})
+    plotmeandelays(h5file::String, stationnames::Vector{String3}, times::Vector{Float64}, chanfreqvec::Vector{Float64}; save::Bool=true)::Plots.Plot{Plots.GRBackend}
 
 Plot mean delays against time.
 """
-function plotmeandelays(h5file::String, stationnames::Vector{String3}, times::Vector{Float64}, chanfreqvec::Vector{Float64}; save::Bool=true)
+function plotmeandelays(h5file::String, stationnames::Vector{String3}, times::Vector{Float64}, chanfreqvec::Vector{Float64}; save::Bool=true)::Plots.Plot{Plots.GRBackend}
     @info("Plotting station-based transmission values")
 
     # get unique times
