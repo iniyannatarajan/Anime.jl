@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Components · Anime.jl</title><script data-outdated-warner src="../assets/warner.js"></script><link rel="canonical" href="https://iniyannatarajan.github.io/Anime.jl/components/"/><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL=".."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../assets/documenter.js"></script><script src="../siteinfo.js"></script><script src="../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><a class="docs-logo" href="../"><img src="../assets/logo.png" alt="Anime.jl logo"/></a><div class="docs-package-name"><span class="docs-autofit"><a href="../">Anime.jl</a></span></div><form class="docs-search" action="../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../">Home</a></li><li><a class="tocitem" href="../install/">Installation</a></li><li class="is-active"><a class="tocitem" href>Components</a><ul class="internal"><li><a class="tocitem" href="#Input-files"><span>Input files</span></a></li><li><a class="tocitem" href="#Output-files"><span>Output files</span></a></li></ul></li><li><a class="tocitem" href="../instrumentmodels/">Instrument Models</a></li><li><span class="tocitem">Tutorial</span><ul><li><a class="tocitem" href="../examples/createdataset/">Creating data sets</a></li><li><a class="tocitem" href="../examples/computecoherency/">Compute coherency matrix</a></li><li><a class="tocitem" href="../examples/loadobservation/">Load observation into memory</a></li><li><a class="tocitem" href="../examples/addmodels/">Compute instrument models</a></li><li><a class="tocitem" href="../examples/pipeline/">Running in pipeline mode</a></li></ul></li><li><a class="tocitem" href="../api/">Anime API</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li class="is-active"><a href>Components</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Components</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/iniyannatarajan/Anime.jl/blob/main/docs/src/components.md#" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Components"><a class="docs-heading-anchor" href="#Components">Components</a><a id="Components-1"></a><a class="docs-heading-anchor-permalink" href="#Components" title="Permalink"></a></h1><p><code>Anime</code> can be run in two modes: imported as a module with callable functions or as a single pipeline that accepts input settings in <code>YAML</code> and <code>CSV</code> files and runs without human intervention.</p><h2 id="Input-files"><a class="docs-heading-anchor" href="#Input-files">Input files</a><a id="Input-files-1"></a><a class="docs-heading-anchor-permalink" href="#Input-files" title="Permalink"></a></h2><h3 id="Observation-parameters"><a class="docs-heading-anchor" href="#Observation-parameters">Observation parameters</a><a id="Observation-parameters-1"></a><a class="docs-heading-anchor-permalink" href="#Observation-parameters" title="Permalink"></a></h3><p>Functions such as <a href="../api/#Anime.msfromconfig"><code>msfromconfig</code></a> require the user to input various arguments that define the parameters of observation. For ease of use, these parameters can be collected in a YAML file which can be passed directly to <code>Anime</code> in pipeline mode.</p><pre><code class="language-yaml hljs">####################################################
+# sample config file for AnimeDriver.jl
+####################################################
+# settings to generate a new ms
+
+mode: &quot;manual&quot;                                       # &quot;uvfits&quot; and &quot;manual&quot; are the only allowed values
+msname: &quot;eht.ms&quot;                                  # name of output ms 
+telescopename: &quot;VLBA&quot;                                # preset telescope known to casa (not important since CASA is not used for predict; just an argument required for setconfig)
+stations: &quot;inputs/eht_2017.stations&quot;     # CSV file with station parameters
+casaanttemplate: &quot;inputs/antenna_table.template&quot;                 # Input CASA ANTENNA table to use as template
+vex: &quot;inputs/vexfiles/e17e11.vex&quot;    # name of the VEX schedule to use for observing
+uvfits: &quot;inputs/vfitsfiles/hops_lo_3601_M87+zbl-dtcal_selfcal.uvfits&quot; # name of uvfits file to convert to ms
+autocorr: false                                      # toggle whether to include autocorrelations
+feed: &quot;perfect R L&quot;                                  # &quot;perfect R L&quot; or &quot;perfect X Y&quot;
+shadowlimit: 1e-6                                    # maximum fraction of geometrically shadowed area before flagging occurs
+elevationlimit: &quot;10deg&quot;                              # minimum elevation angle before flagging occurs
+source:
+  M87:
+    RA: &quot;12h30m49.42&quot;                                # right ascension of source position in hours
+    Dec: &quot;+12.23.28.04&quot;                              # declination of source position in degrees
+    epoch: &quot;J2000&quot;                                   # &quot;J2000&quot; or &quot;B1950&quot;
+scans: 5                                             # number of scans
+scanlengths: [600.0, 600.0, 600.0, 600.0, 600.0]                              # list of lengths of each scan in seconds
+scanlag: 180.0                                     # lag time between scans in seconds
+exposure: 0.4                                          # integration time in seconds
+stokes: &quot;RR RL LR LL&quot;                                # CASA understandable Stokes types to simulate (check official MS specification)
+spw:
+    centrefreq: [229.0e9]                            # centre frequency of spw in Hz
+    bandwidth: [2e9]                               # bandwidth of spw in Hz
+    channels: [16]                                   # number of channels in spw
+starttime: &quot;UTC,2021/04/28/00:00:00.00&quot;              # starting time of the first scan in the observation
+
+####################################################
+# settings for wsclean predict
+
+osfactor: 8191                                       # oversampling factor for WSClean
+skymodel: &quot;inputs/sourcemodels/point&quot;       # HDF5 file or directory containing FITS files
+polarized: false                                     # toggle source model polarization
+channelgroups: 1                                     # number of groups to divide the channels into for computing source coherencies
+
+####################################################
+# common settings
+
+correff: 0.88                                      # correlator efficiency for 2 quantization bits (use 0.636 for 1-bit)
+corruptseed: 456                                     # seed to be used for generating random variables for corruptions (except for troposphere)
+diagnostics: true                                  # generate diagnostic plots and logs
+
+####################################################
+# settings for atmospheric corruptions
+
+troposphere:                                         # add troposphere
+  enable: false
+  wetonly: false                                     # add only the wet component
+  attenuate: true                                   # signal attenuation due to opacity
+  skynoise: true                                    # add tropospheric contribution to sky noise
+  meandelays: true                                   # add mean delays
+  fixdelays: false                                   # add fixed delays 
+  turbulence: true                                  # add turbulent phases
+  tropseed: 873256                                      # independent seed for generating random variables for troposphere
+
+ionosphere:                                          # add ionosphere
+  enable: false
+
+####################################################
+# beam and pointing settings
+
+pointing:
+  enable: true
+  mode: &quot;gp&quot;                                         # &quot;gp&quot; (Gaussian processes) or &quot;normal&quot; (Gaussian)
+  interval: 5.0                          # time interval (in seconds) after which to generate new pointing errors (&lt;=0.0 for &quot;mean(coherencetime)&quot;)
+  scale: 100.0                                   # scale mixture parameter for long-term smoothness
+
+####################################################
+# settings for instrumental polarization
+
+instrumentalpolarization: 
+  enable: false                                       # add instrumental polarization
+  mode: &quot;gp&quot;                                     # &quot;gp&quot; (Gaussian processes) or &quot;normal&quot; (Gaussian)
+  visibilityframe: &quot;sky&quot;                             # visibilities are written out in &quot;sky&quot; frame
+
+####################################################
+# settings for gains
+
+stationgains: 
+  enable: false                                      # add antenna gains
+  mode: &quot;gp&quot;                                     # &quot;gp&quot; or &quot;normal&quot;
+bandpass: 
+  enable: false                                      # add bandpass effects 
+  bandpassfile: &quot;inputs/eht_2017.bandpass&quot; # csv file containing bandpass information for all stations
+
+####################################################
+# noise settings
+
+thermalnoise: 
+  enable: false                                      # toggle thermal noise</code></pre><p>Section 1 contains parameters for creating a new MS from scratch. If <code>mode = &quot;uvfits&quot;</code> then most of these are irrelevant (see <a href="../examples/createdataset/#in-uvfits-mode">here</a>). The following sections contain parameters specific to the computation of various instrument models to be passed as arguments to corresponding functions.</p><h3 id="Site-and-station-parameters"><a class="docs-heading-anchor" href="#Site-and-station-parameters">Site and station parameters</a><a id="Site-and-station-parameters-1"></a><a class="docs-heading-anchor-permalink" href="#Site-and-station-parameters" title="Permalink"></a></h3><p><code>CSV</code> files containing station and weather parameters are used for a more detailed specification of the necessary input information. The station information file contains, for each station, the position of the antennas, weather parameters for computing atmospheric models, complex receiver gains and polarization leakage, and mount and feed information. An example station information file looks like this:</p><pre><code class="language-csv hljs">station,x_m,y_m,z_m,dishdiameter_m,sefd_Jy,pwv_mm,gpress_mb,gtemp_K,ctime_sec,pointingrms_arcsec,pbfwhm230_arcsec,pbmodel,aperture_eff,g_pol1_loc,g_pol1_scale,g_pol2_loc,g_pol2_scale,d_pol1_loc,d_pol1_scale,d_pol2_loc,d_pol2_scale,feedangle_deg,mount,feed
+AA,2225060.8136,-5440059.59994,-2481681.15054,73,60.0,1.5,555,271,10,1.0,27,gaussian,0.73,1.0+0.0im,0.1+0.1im,1.06+0.0im,0.1+0.1im,-0.05+0.03im,0.001+0.001im,0.03-0.04im,0.001+0.001im,0.0,ALT-AZ,linear
+AP,2225039.52970,-5441197.62920,-2479303.35970,12,3300.0,1.5,555,271,10,1.0,27,gaussian,0.63,0.95+0.06im,0.1+0.1im,1.0+0.07im,0.1+0.1im,0.03-0.03im,0.001+0.001im,0.05+0.03im,0.001+0.001im,0.0,ALT-AZ+NASMYTH-R,circular
+AZ,-1828796.20000,-5054406.80000,3427865.20000,10,7700.0,4.4,695,276,3,1.0,32,gaussian,0.57,1.1+0.0im,0.1+0.1im,0.9+0.0im,0.1+0.1im,0.03+0.04im,0.001+0.001im,0.035-0.03im,0.001+0.001im,0.0,ALT-AZ+NASMYTH-R,circular
+LM,-768715.63200,-5988507.07200,2063354.85200,32,2400.0,5.7,604,273,6,1.0,10,gaussian,0.31,1.1+0.05im,0.1+0.1im,1.2+0.1im,0.1+0.1im,0.03-0.03im,0.001+0.001im,0.03+0.0im,0.001+0.001im,0.0,ALT-AZ+NASMYTH-L,circular
+PV,5088967.74544,-301681.18586,3825012.20561,30,1000.0,2.9,723,273,4,0.5,11,gaussian,0.43,1.04+0.0im,0.1+0.1im,1.05+0.0im,0.1+0.1im,0.03+0.06im,0.001+0.001im,-0.04+0.03im,0.001+0.001im,0.0,ALT-AZ+NASMYTH-L,circular
+SM,-5464555.49300,-2492927.98900,2150797.17600,15,3300.0,1.5,626,278,5,1.5,55,gaussian,0.73,0.97+0.1im,0.1+0.1im,1.1+0.05im,0.1+0.1im,-0.03+0.03im,0.001+0.001im,0.045+0.0im,0.001+0.001im,45.0,ALT-AZ+NASMYTH-L,circular</code></pre><p>The bandpass information file contains the amplitude and phase range of bandpass variations at different representative frequencies for each station, for each polarization. An example bandpass information file looks like this:</p><pre><code class="language-csv hljs">station,freq_Hz,pol1_amp,pol2_amp,pol1_phaserange_deg,pol2_phaserange_deg
+AA, 227.9, 0.5, 0.5, 30, 30
+AA, 228.5, 0.95, 0.95, 30, 30
+AA, 229.0, 1.0, 1.0, 30, 30
+AA, 229.5, 0.95, 0.95, 30, 30
+AA, 230.0, 0.5, 0.5, 30, 30
+AP, 227.9, 0.65, 0.65, 30, 30
+AP, 228.5, 0.95, 0.95, 30, 30
+AP, 229.0, 1.0, 1.0, 30, 30
+AP, 229.5, 0.95, 0.95, 30, 30
+AP, 230.0, 0.5, 0.5, 30, 30
+AZ, 227.9, 0.5, 0.5, 30, 30
+AZ, 228.5, 0.95, 0.95, 30, 30
+AZ, 229.0, 1.0, 1.0, 30, 30
+AZ, 229.5, 0.95, 0.95, 30, 30
+AZ, 230.0, 0.6, 0.6, 30, 30
+LM, 227.9, 0.5, 0.5, 30, 30
+LM, 228.5, 0.95, 0.95, 30, 30
+LM, 229.0, 1.0, 1.0, 30, 30
+LM, 229.5, 0.99, 0.99, 30, 30
+LM, 230.0, 0.5, 0.5, 30, 30
+PV, 227.9, 0.5, 0.5, 30, 30
+PV, 228.5, 0.95, 0.95, 30, 30
+PV, 229.0, 1.0, 1.0, 30, 30
+PV, 229.5, 0.95, 0.95, 30, 30
+PV, 230.0, 0.5, 0.5, 30, 30
+SM, 227.9, 0.7, 0.7, 30, 30
+SM, 228.5, 0.98, 0.98, 30, 30
+SM, 229.0, 1.0, 1.0, 30, 30
+SM, 229.5, 0.98, 0.98, 30, 30
+SM, 230.0, 0.7, 0.7, 30, 30</code></pre><h3 id="Other-input-files"><a class="docs-heading-anchor" href="#Other-input-files">Other input files</a><a id="Other-input-files-1"></a><a class="docs-heading-anchor-permalink" href="#Other-input-files" title="Permalink"></a></h3><p>Examples of all types of input files are available under <code>inputs/</code>:</p><ul><li><code>antenna_table.template/</code> is a template <code>CASA</code> ANTENNA table used to generate a complete ANTENNA table specific to the current observation. </li><li><code>sourcemodels/</code> contains sky models (each model directory containing multiple FITS files named in a format that <code>WSClean</code> recognises) for computing source coherency matrix.</li><li><code>uvfitsfiles/</code> contains sample uvfits files with visibility data for conversion to MS prior to applying instrument models.</li></ul><h2 id="Output-files"><a class="docs-heading-anchor" href="#Output-files">Output files</a><a id="Output-files-1"></a><a class="docs-heading-anchor-permalink" href="#Output-files" title="Permalink"></a></h2><p>Various outputs such as a new MS, HDF5 file(s) containing generated instrument models and diagnostic plots are created at the end of a complete pipeline run. All these outputs are optional if a pre-existing MS is used. More details on these can be found in the Tutorial section.</p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../install/">« Installation</a><a class="docs-footer-nextpage" href="../instrumentmodels/">Instrument Models »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.23 on <span class="colophon-date" title="Tuesday 15 August 2023 14:53">Tuesday 15 August 2023</span>. Using Julia version 1.9.2.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
