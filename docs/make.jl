@@ -34,8 +34,9 @@ makedocs(;
     pages=[
         "Home" => "index.md",
         "Installation" => "install.md",
+        "Components" => "components.md",
         "Instrument Models" => "instrumentmodels.md",
-        "Examples" => EXAMPLES,
+        "Tutorial" => EXAMPLES,
         "Anime API" => "api.md"
     ],
 )

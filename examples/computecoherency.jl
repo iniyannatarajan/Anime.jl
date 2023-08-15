@@ -29,7 +29,8 @@
 # run_wsclean(msname, skymodel, polarized, channelgroups, oversamplingfactor)
 # ```
 
-# This function cannot be used if `WSClean` is not installed. This will soon be replaced by native computation of source coherency matrices.
+# !!! note
+#     This function cannot be used if `WSClean` is not installed. This will soon be replaced by native computation of source coherency matrices.
 
 # ### References
 # [^HBS]: Hamaker J.P, Bregman J.D., Sault R.J. Understanding radio polarimetry (1996) [AAPS](https://articles.adsabs.harvard.edu/pdf/1996A%26AS..117..137H)
