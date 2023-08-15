@@ -291,7 +291,7 @@ function plotelevationangle(h5file::String, scanno::Vector{Int32}, times::Vector
 
     # get unique times
     uniqtimes = unique(times)
-    x = uniqtimes .- first(uniqtimes)
+    x = (uniqtimes .- first(uniqtimes)) / 3600.0
 
     fid = h5open(h5file, "r")
 
@@ -320,7 +320,7 @@ function plotelevationangle(h5file::String, scanno::Vector{Int32}, times::Vector
         plot!(p, x, rad2deg.(elevmat[:,ant]), seriestype=:scatter, ls=:dot, ms=1, mc=ColorSchemes.mk_15[ant], msc=ColorSchemes.mk_15[ant], label=stationnames[ant])
     end
 
-    plot!(p, xlabel="Relative Time (s)", ylabel="Elevation angle (°)", legend=:outertop, legendcolumns=6)
+    plot!(p, xlabel="Relative time (hr)", ylabel="Elevation angle (°)", legend=:outertop, legendcolumns=6)
 
     if save
     savefig(p, "elevationangle.png")
@@ -332,11 +332,11 @@ function plotelevationangle(h5file::String, scanno::Vector{Int32}, times::Vector
 end
 
 """
-    plotparallacticangle(h5file::String, scanno::Vector{Int32}, times::Vector{Float64}, stationnames::Vector{String3})
+    plotparallacticangle(h5file::String, scanno::Vector{Int32}, times::Vector{Float64}, stationnames::Vector{String3}; save::Bool=true)::Plots.Plot{Plots.GRBackend}
 
 Plot evolution of station parallactic angles during the course of the observation.
 """
-function plotparallacticangle(h5file::String, scanno::Vector{Int32}, times::Vector{Float64}, stationnames::Vector{String3})
+function plotparallacticangle(h5file::String, scanno::Vector{Int32}, times::Vector{Float64}, stationnames::Vector{String3}; save::Bool=true)::Plots.Plot{Plots.GRBackend}
     @info("Plotting parallactic angles by station...")
 
     # get unique scan numbers
@@ -344,7 +344,7 @@ function plotparallacticangle(h5file::String, scanno::Vector{Int32}, times::Vect
 
     # get unique times
     uniqtimes = unique(times)
-    x = uniqtimes .- first(uniqtimes)
+    x = (uniqtimes .- first(uniqtimes)) / 3600.0
 
     fid = h5open(h5file, "r")
 
@@ -371,19 +371,23 @@ function plotparallacticangle(h5file::String, scanno::Vector{Int32}, times::Vect
         plot!(p, x, rad2deg.(parangmat[:,ant]), seriestype=:scatter, ls=:dot, ms=1, mc=ColorSchemes.mk_15[ant], msc=ColorSchemes.mk_15[ant], label=stationnames[ant])
     end
 
-    plot!(p, xlabel="Relative Time (s)", ylabel="Parallactic angle (°)", legend=:outertop, legendcolumns=6)
-    savefig(p, "parallacticangle.png")
+    plot!(p, xlabel="Relative time (hr)", ylabel="Parallactic angle (°)", legend=:outertop, legendcolumns=6)
+
+    if save
+        savefig(p, "parallacticangle.png")
+    end
 
     close(fid)
     @info("Done 🙆")
+    return p
 end
 
 """
-    plotdterms(h5file::String, stationnames::Vector{String3})
+    plotdterms(h5file::String, stationnames::Vector{String3}, chanfreqvec::Vector{Float64}; save::Bool=true)::Plots.Plot{Plots.GRBackend}
 
 Plot frequency-dependent complex instrumental polarization.
 """
-function plotdterms(h5file::String, stationnames::Vector{String3})
+function plotdterms(h5file::String, stationnames::Vector{String3}, chanfreqvec::Vector{Float64}; save::Bool=true)::Plots.Plot{Plots.GRBackend}
     @info("Plotting cross-hand instrumental leakage (D-terms) by station...")
 
     # read in the D-terms
@@ -391,15 +395,29 @@ function plotdterms(h5file::String, stationnames::Vector{String3})
     d = read(fid["polarization"]["djonesmatrices"])
     close(fid)
 
-    p = plot()
+    chanfreqvec_ghz = chanfreqvec/1e9 # in GHz
+
+    #=p = plot()
     for ant in eachindex(stationnames)
         plot!(p, real(d[1,2,:,ant]), imag(d[1,2,:,ant]), seriestype=:scatter, markershape=:circle, ms=3, mc=ColorSchemes.mk_15[ant], msc=ColorSchemes.mk_15[ant], label=stationnames[ant]*"-RL")
         plot!(p, real(d[2,1,:,ant]), imag(d[2,1,:,ant]), seriestype=:scatter, markershape=:diamond, ms=3, mc=ColorSchemes.mk_15[ant], msc=ColorSchemes.mk_15[ant], label=stationnames[ant]*"-LR")
     end
 
-    plot!(p, xlabel="Real", ylabel="Imag", title="D-terms", legend=:outertop, legendcolumns=6)
-    savefig(p, "dterms.png")
+    plot!(p, xlabel="Real", ylabel="Imag", title="D-terms", legend=:outertop, legendcolumns=6)=#
+
+    p = plot()
+    for ant in eachindex(stationnames)
+        plot!(p, chanfreqvec_ghz, abs.(d[1,2,:,ant]), seriestype=:scatter, markershape=:circle, ms=3, mc=ColorSchemes.mk_15[ant], msc=ColorSchemes.mk_15[ant], label=stationnames[ant]*"-RL")
+        plot!(p, chanfreqvec_ghz, abs.(d[2,1,:,ant]), seriestype=:scatter, markershape=:diamond, ms=3, mc=ColorSchemes.mk_15[ant], msc=ColorSchemes.mk_15[ant], label=stationnames[ant]*"-LR")
+    end
+    plot!(p, xlabel="ν (GHz)", ylabel="D-term ampl.", legend=:outertop, legendcolumns=6)
+
+    if save
+        savefig(p, "dterms.png")
+    end
+
     @info("Done 🙆")
+    return p
 end
 
 """

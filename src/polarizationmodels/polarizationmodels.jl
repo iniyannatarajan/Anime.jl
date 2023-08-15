@@ -52,7 +52,7 @@ function instrumentalpolarization!(data::Array{Complex{Float32},4}, scanno::Vect
         if polframe != "sky"
 	        @warn("Visibility frame set to $(polframe). Computing visibilities in 'sky' frame...")
         else
-            @info("Applying instrumental polarization and recording visibilities in 'sky' frame...")
+            @info("Applying instrumental polarization...")
         end
 
 	    for ant in eachindex(stationinfo.station)
@@ -160,7 +160,7 @@ function instrumentalpolarization!(data::Array{Complex{Float32},4}, scanno::Vect
         close(fid)
     end
 
-    @info("Compute and apply instrumental polarization... 🙆")
+    @info("Done 🙆")
     
 end
 

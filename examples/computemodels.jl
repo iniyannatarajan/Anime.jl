@@ -87,5 +87,22 @@ plotpointingerrors(h5file, obs.scanno, obs.stationinfo.station, save=false)
 # Mispointings of station LM (Large Millimeter Telescope, Mexico), the largest dish in the array, result in the largest attenuation of amplitude.
 rm(h5file) # hide
 
+# ## Instrumental polarization
+# The feed receptors are designed to be sensitive to orthogonal polarization states in either circular or linear bases. Due to imperfections in the feed
+# (either mechanical or electronic), the orthogonal measurements "leak" into the other feed, thereby giving rise to a multiplicative Jones matrix with
+# small non-zero off-diagonal terms. This *feed error* or *leakage* matrix is also known as the D-Jones term. In practice, this term can vary with frequency.
+
+# `Anime` generates smoothly varying frequency-dependent D-terms using Gaussian processes, taking a location and a scale parameter that determine the
+# amount of leakage at each station.
+inh5file = joinpath(relativepath, "test", "data", "insmodeluvf.h5")
+instrumentalpolarization!(obs, h5file=h5file, elevfile=inh5file, parangfile=inh5file)
+#-
+plotparallacticangle(h5file, obs.scanno, obs.times, obs.stationinfo.station, save=false)
+#-
+plotdterms(h5file, obs.stationinfo.station, obs.chanfreqvec)
+# There is only one frequency channel since this is a channel-averaged data set.
+
+rm(h5file) # hide
+
 # ### References
 # [^1]: Natarajan I. et al. MeqSilhouette v2 (2022) [MNRAS](https://academic.oup.com/mnras/article/512/1/490/6537429)

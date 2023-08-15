@@ -72,7 +72,7 @@
     @test_throws DimensionMismatch plotparallacticangle(h5file, obs.scanno, ts, obs.stationinfo.station)
 
     # test d-terms plotting
-    @inferred plotdterms(h5file, obs.stationinfo.station)
+    @inferred plotdterms(h5file, obs.stationinfo.station, obs.chanfreqvec)
     rm("dterms.png")
 
     # test transmission plotting
