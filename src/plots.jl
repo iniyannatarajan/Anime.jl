@@ -237,7 +237,7 @@ end
 
 Plot pointing errors.
 """
-function plotpointingerrors(h5file::String, scanno::Vector{Int32}, stationnames::Vector{String3})
+function plotpointingerrors(h5file::String, scanno::Vector{Int32}, stationnames::Vector{String3}; save::Bool=true)
     @info("Plotting pointing errors...")
     fid = h5open(h5file, "r")
 
@@ -266,13 +266,16 @@ function plotpointingerrors(h5file::String, scanno::Vector{Int32}, stationnames:
        
     end
     plot!(p_off, xlabel="Time (mispointing number)", ylabel="Pointing offsets (arcsec)", legend=:outertop, legendcolumns=6)
-    savefig(p_off, "pointingoffsets.png")
-
     plot!(p_amperr, xlabel="Time (mispointing number)", ylabel="Primary beam response", legend=:outertop, legendcolumns=6)
-    savefig(p_amperr, "pointingamplitudeerrors.png")
+
+    if save
+        savefig(p_off, "pointingoffsets.png")
+        savefig(p_amperr, "pointingamplitudeerrors.png")
+    end
     
     close(fid)
     @info("Done 🙆")
+    return p_off, p_amperr
 end
 
 """
@@ -280,7 +283,7 @@ end
 
 Plot evolution of station elevation angles during the course of the observation.
 """
-function plotelevationangle(h5file::String, scanno::Vector{Int32}, times::Vector{Float64}, stationnames::Vector{String3})
+function plotelevationangle(h5file::String, scanno::Vector{Int32}, times::Vector{Float64}, stationnames::Vector{String3}; save::Bool=true)
     @info("Plotting elevation angles by station...")
     
     # get unique scan numbers
@@ -318,10 +321,14 @@ function plotelevationangle(h5file::String, scanno::Vector{Int32}, times::Vector
     end
 
     plot!(p, xlabel="Relative Time (s)", ylabel="Elevation angle (°)", legend=:outertop, legendcolumns=6)
+
+    if save
     savefig(p, "elevationangle.png")
+    end
 
     close(fid)
     @info("Done 🙆")
+    return p
 end
 
 """
@@ -400,7 +407,7 @@ end
 
 Plot tropospheric transmission variation with frequency.
 """
-function plottransmission(h5file::String, stationnames::Vector{String3}, times::Vector{Float64}, chanfreqvec::Vector{Float64})
+function plottransmission(h5file::String, stationnames::Vector{String3}, times::Vector{Float64}, chanfreqvec::Vector{Float64}; save::Bool=true)
     @info("Plotting station-based transmission values")
 
     # get unique times
@@ -420,7 +427,9 @@ function plottransmission(h5file::String, stationnames::Vector{String3}, times::
             plot!(p, reltimes, tr[1,:,ant], seriestype=:scatter, ls=:dot, ms=1, mc=ColorSchemes.mk_15[ant], msc=ColorSchemes.mk_15[ant], label=stationnames[ant])
         end
         plot!(p, xlabel="Relative time (hr)", ylabel="Transmission")
-        savefig("transmission.png")
+        if save
+            savefig("transmission.png")
+        end
     else
         plotarr = []
         for ant in eachindex(stationnames)
@@ -434,12 +443,15 @@ function plottransmission(h5file::String, stationnames::Vector{String3}, times::
         ncols = trunc(Int, ceil(sqrt(nplots)))
         nrows = trunc(Int, ceil(nplots/ncols))
         plotsize = (ncols*600, nrows*400)
-        fullplot = plot(plotarr...)
-        plot!(fullplot, layout=(nrows, ncols), size=plotsize)
-        savefig(fullplot, "transmission.png")
+        p = plot(plotarr...)
+        plot!(p, layout=(nrows, ncols), size=plotsize)
+        if save
+            savefig(p, "transmission.png")
+        end
     end
 
     @info("Done 🙆")
+    return p
 end
 
 """
@@ -447,7 +459,7 @@ end
 
 Plot mean delays against time.
 """
-function plotmeandelays(h5file::String, stationnames::Vector{String3}, times::Vector{Float64}, chanfreqvec::Vector{Float64})
+function plotmeandelays(h5file::String, stationnames::Vector{String3}, times::Vector{Float64}, chanfreqvec::Vector{Float64}; save::Bool=true)
     @info("Plotting station-based transmission values")
 
     # get unique times
@@ -465,7 +477,12 @@ function plotmeandelays(h5file::String, stationnames::Vector{String3}, times::Ve
     for ant in eachindex(stationnames)
         plot!(p, reltimes, dropdims(mean(md[:,:,ant], dims=1), dims=1), seriestype=:scatter, ls=:dot, ms=1, mc=ColorSchemes.mk_15[ant], msc=ColorSchemes.mk_15[ant], label=stationnames[ant])
     end
-    plot!(p, xlabel="Relative time (hr)", ylabel="Mean delays / ns")
-    savefig("meandelays.png")
+    plot!(p, xlabel="Relative time (hr)", ylabel="Mean delays (ns)")
+
+    if save
+        savefig("meandelays.png")
+    end
+
     @info("Done 🙆")
+    return p
 end

@@ -154,11 +154,12 @@ SM, 230.0, 0.7, 0.7, 30, 30
 ```
 
 ### Other input files
-Examples of all types of input files are available under `inputs/`:
-
+Some other optional input file types required for creating an MS and computing source coherency are given below:
 - `antenna_table.template/` is a template `CASA` ANTENNA table used to generate a complete ANTENNA table specific to the current observation. 
 - `sourcemodels/` contains sky models (each model directory containing multiple FITS files named in a format that `WSClean` recognises) for computing source coherency matrix.
 - `uvfitsfiles/` contains sample uvfits files with visibility data for conversion to MS prior to applying instrument models.
+
+Examples of all types of input files are available under `inputs/`. More can be found under `test/data`.
 
 ## Output files
 Various outputs such as a new MS, HDF5 file(s) containing generated instrument models and diagnostic plots are created at the end of a complete pipeline run.

@@ -16,7 +16,7 @@ foreach(fn -> Literate.markdown(fn, OUTDIR, documenter=true), SOURCE_FILES)
 EXAMPLES = [joinpath("examples", "createdataset.md"),
             joinpath("examples", "computecoherency.md"),
             joinpath("examples", "loadobservation.md"),
-            joinpath("examples", "addmodels.md"),
+            joinpath("examples", "computemodels.md"),
             joinpath("examples", "pipeline.md")
            ]
 
@@ -35,7 +35,7 @@ makedocs(;
         "Home" => "index.md",
         "Installation" => "install.md",
         "Components" => "components.md",
-        "Instrument Models" => "instrumentmodels.md",
+        #"Instrument Models" => "instrumentmodels.md",
         "Tutorial" => EXAMPLES,
         "Anime API" => "api.md"
     ],
