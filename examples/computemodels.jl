@@ -35,6 +35,10 @@ ignorerepeated = false
 obs = loadms(msname, stations, corruptseed, tropseed, tropwetonly, correff, tropattenuate, tropskynoise, tropmeandelays, tropturbulence, polvisframe,
 polmode, ptginterval, ptgscale, ptgmode, gainsmode, bpfile, delim=",", ignorerepeated=false)
 
+# A multi-frequency data set
+obs1 = loadms(joinpath(relativepath, "test", "data", "eht1.ms"), stations, corruptseed, tropseed, tropwetonly, correff, tropattenuate, tropskynoise, tropmeandelays, tropturbulence, polvisframe,
+polmode, ptginterval, ptgscale, ptgmode, gainsmode, bpfile, delim=",", ignorerepeated=false)
+
 # ## Atmospheric models
 # At mm-wavelengths (230 GHz), the troposphere has significant effects on signal propagation. `Anime` re-implements in `Julia` all the tropospheric effects
 # simulated by `MEQSv2`[^1]. The advantage here is that apart from being faster and not requiring a regular grid of complex visibilities, they can be
@@ -102,6 +106,25 @@ plotparallacticangle(h5file, obs.scanno, obs.times, obs.stationinfo.station, sav
 plotdterms(h5file, obs.stationinfo.station, obs.chanfreqvec)
 # There is only one frequency channel since this is a channel-averaged data set.
 
+rm(h5file) # hide
+
+# ## Receiver gains
+# Temporal variations in complex receiver gainsfor both feeds are modelled independently. The amplitudes are modelled using a Gaussian process kernel
+# (such as SE) while the phases are modelled using a Wiener process with a given location and scale parameters.
+
+# We use an observation with only 2 scans to illustrate this better.
+stationgains!(obs1, h5file=h5file)
+#-
+plotstationgains(h5file, obs1.scanno, obs1.times, obs1.exposure, obs1.stationinfo.station)
+#-
+rm(h5file) # hide
+
+# Also there is a complex bandpass gain variation that is modelled by using representative bandpass amplitude values at certain frequencies across the bandwidth
+# and interpolated for the missing frequency channels.
+bandpass!(obs1, h5file=h5file)
+#-
+plotbandpass(h5file, obs1.stationinfo.station, obs1.chanfreqvec)
+#-
 rm(h5file) # hide
 
 # ### References

@@ -25,12 +25,10 @@
     rm("test_visphasevstime.png")
 
     @inferred plotstationgains(h5file, obs.scanno, obs.times, obs.exposure, obs.stationinfo.station)
-    rm("gainamplitudes_vs_time.png")
-    rm("gainphases_vs_time.png")
+    rm("gains_vs_time.png")
 
     @inferred plotstationgains(h5file2, obs2.scanno, obs2.times, obs2.exposure, obs2.stationinfo.station)
-    rm("gainamplitudes_vs_time.png")
-    rm("gainphases_vs_time.png")
+    rm("gains_vs_time.png")
 
     @inferred plotbandpass(h5file, obs.stationinfo.station, obs.chanfreqvec)
     rm("bpamplitudes_vs_frequency.png")

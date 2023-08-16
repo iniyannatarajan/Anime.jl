@@ -125,11 +125,11 @@ function plotvis(uvw::Matrix{Float64}, chanfreqvec::Array{Float64,1}, flag::Arra
 end
 
 """
-    plotstationgains(h5file::String, scanno::Vector{Int32}, times::Vector{Float64}, exposure::Float64, stationnames::Vector{String3})
+    plotstationgains(h5file::String, scanno::Vector{Int32}, times::Vector{Float64}, exposure::Float64, stationnames::Vector{String3}; save::Bool=true)::Plots.Plot{Plots.GRBackend}
 
 Plot complex station gains against time.
 """
-function plotstationgains(h5file::String, scanno::Vector{Int32}, times::Vector{Float64}, exposure::Float64, stationnames::Vector{String3})
+function plotstationgains(h5file::String, scanno::Vector{Int32}, times::Vector{Float64}, exposure::Float64, stationnames::Vector{String3}; save::Bool=true)::Plots.Plot{Plots.GRBackend}
     @info("Plotting station gains against time...")
     fid = h5open(h5file, "r")
 
@@ -196,40 +196,57 @@ function plotstationgains(h5file::String, scanno::Vector{Int32}, times::Vector{F
     pphase = plot(p1phase, p2phase, layout=(2, 1))
     plot!(pphase, legend=:outertop, legendcolumns=6)
     
-    savefig(pamp, "gainamplitudes_vs_time.png")
-    savefig(pphase, "gainphases_vs_time.png")
+    ncols = 2
+    nrows = 1
+    #plotsize = (ncols*600, nrows*400)
+    parr = [pamp, pphase]
+    p = plot(parr...)
+    plot!(p, layout=(nrows, ncols)) #, size=plotsize)
+
+    if save
+        savefig(p, "gains_vs_time.png")
+    end
+    
     close(fid)
     @info("Done 🙆")
+    return p
 end
 
 """
-    plotbandpass(h5file::String, stationnames::Vector{String3}, chanfreqvec::Vector{Float64})
+    plotbandpass(h5file::String, stationnames::Vector{String3}, chanfreqvec::Vector{Float64}; save::Bool=true)::Plots.Plot{Plots.GRBackend}
 
 Plot bandpass gains against time.
 """
-function plotbandpass(h5file::String, stationnames::Vector{String3}, chanfreqvec::Vector{Float64})
+function plotbandpass(h5file::String, stationnames::Vector{String3}, chanfreqvec::Vector{Float64}; save::Bool=true)::Plots.Plot{Plots.GRBackend}
     @info("Plotting bandpass gains against time...")
     fid = h5open(h5file, "r")
+
+    chanfreqvec_ghz = chanfreqvec / 1e9 # in GHz
 
     b = read(fid["bandpass"]["bjonesmatrices"])
 
     p1 = plot()
     for ant in eachindex(stationnames)
-        plot!(p1, chanfreqvec./1e9, abs.(b[1, 1, :, ant]), lw=1, lc=ColorSchemes.mk_15[ant], label="")
+        plot!(p1, chanfreqvec_ghz, abs.(b[1, 1, :, ant]), lw=1, lc=ColorSchemes.mk_15[ant], label="")
     end
     plot!(p1, title="Station bandpass gain amplitudes", ylabel="Pol1 gain amp") #, legend=:outertop, legendcolumns=6)
 
     p2 = plot()
     for ant in eachindex(stationnames)
-        plot!(p2, chanfreqvec./1e9, abs.(b[2, 2, :, ant]), lw=1, lc=ColorSchemes.mk_15[ant], label=stationnames[ant])
+        plot!(p2, chanfreqvec_ghz, abs.(b[2, 2, :, ant]), lw=1, lc=ColorSchemes.mk_15[ant], label=stationnames[ant])
     end
-    plot!(p2, xlabel="Channel frequency (GHz)", ylabel="Pol2 gain amp") # legend=:outertop, legendcolumns=6)
+    plot!(p2, xlabel="ν (GHz)", ylabel="Pol2 gain amp") # legend=:outertop, legendcolumns=6)
 
     p = plot(p1, p2, layout=(2, 1))
     plot!(p, legend=:outertop, legendcolumns=6)
-    savefig(p, "bpamplitudes_vs_frequency.png")
+
+    if save
+        savefig(p, "bpamplitudes_vs_frequency.png")
+    end
+
     close(fid)
     @info("Done 🙆")
+    return p
 end
 
 """
