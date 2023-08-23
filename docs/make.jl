@@ -35,7 +35,7 @@ makedocs(;
         "Home" => "index.md",
         "Installation" => "install.md",
         "Components" => "components.md",
-        #"Instrument Models" => "instrumentmodels.md",
+        "Instrument Models" => "instrumentmodels.md",
         "Tutorial" => EXAMPLES,
         "Anime API" => "api.md"
     ],
