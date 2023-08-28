@@ -1,6 +1,14 @@
 # Components
 
-`Anime` can be run in two modes: imported as a module with callable functions or as a single pipeline that accepts input settings in `YAML` and `CSV` files and runs without human intervention.
+`Anime` can be run in two modes: imported as a module with callable functions or as a single pipeline that accepts input settings in `YAML` and `CSV` files and runs without human intervention. The following diagram gives an overview of the design.
+
+![Design overview](components.png)
+
+`Anime` loads the metadata of the VLBI observation and the observed data into a Structure-of-Arrays (SoA) in-memory representation with which all the functions that compute instrument models are expected to interface. The generated models (also referred to as *gain tables*) are written out to an HDF5 file. The functionality within the dotted boxes are not considered essential to the generation of instrument models, but are provided for completion. These include
+1. generation of an MS from scratch,
+2. computing and writing source coherency to MS, and
+3. applying instrument models to data and writing them back to the MS.
+In modular mode, any calibration or imaging software can call any function in the box "Compute instrument model" and process the gain tables as they see fit. In pipeline mode, the entire control flow is automated by using a YAML file as shown below.
 
 ## Input files
 
