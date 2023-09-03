@@ -26,6 +26,7 @@
     stokes=stokes, delim=delim, ignorerepeated=ignorerepeated)
 
     rm(msname, force=true, recursive=true)
+    rm("ANTENNA_eht_2017", force=true, recursive=true)
 end
 
 @testset "MS from UVFITS" begin
