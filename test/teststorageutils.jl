@@ -7,5 +7,9 @@
     y["instrumentalpolarization"]["visibilityframe"], y["instrumentalpolarization"]["mode"], y["pointing"]["interval"], y["pointing"]["scale"], y["pointing"]["mode"], y["stationgains"]["mode"], 
     y["bandpass"]["bandpassfile"], delim=",", ignorerepeated=false)
 
-    postprocessms(obs, h5file=h5file)
+    @inferred postprocessms(obs, h5file=h5file)
+end
+
+@testset "Read alist v6" begin
+    @inferred readalistv6("data/alist.v6")
 end
