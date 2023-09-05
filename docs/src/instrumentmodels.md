@@ -14,17 +14,28 @@ where the summation is carried out over all the sources $s$, and $\boldsymbol{E}
 Forward modelling the instrument consists of generating the Jones matrices in a physically meaningful way. `Anime` can currently model effects such as tropospheric absorption and emission and phase delays, instrumental polarization, primary beam attenuation due to mispointing, and complex bandpass and receiver gains. The additive noise terms due to the troposphere and thermal noise are also modelled.
 
 ## Gaussian Process Modelling
-`Anime` uses Gaussian processes to model time series. Gaussian processes are a generalization of the Gaussian probability distribution for functions (not just random variables). They define a probability distribution over possible functions that fit the data. A prior over the function space is encoded by the *kernel* function which takes two input data points and returns a measure of the covariance between them. Some kernel functions are manually implemented within `Anime`, with the *squared exponential (SE)* kernel (aka the *Gaussian* or the *radial basis function (RBF)* kernel) used as the default.
+`Anime` uses Gaussian processes to model time series. Gaussian processes are a generalization of the Gaussian probability distribution for functions (not just random variables). They define a probability distribution over possible functions that fit the data. A prior over the function space is encoded by the *kernel* function which takes two input data points and returns a measure of the covariance between them. Some kernel functions are manually implemented within `Anime`, with the *squared exponential (SE)* kernel (aka the *Gaussian* or the *radial basis function (RBF)* kernel) used as the default:
 
 The SE kernel is defined as
 ```math
-k_{SE}(x-x') = \\sigma^2 e^{-\\frac{(x-x')^2}{2\\rho^2}}
+k_{SE}(x-x') = \sigma^2 e^{-\frac{(x-x')^2}{2\rho^2}}
 ```
+The variance $\sigma^2$ is the scale factor and $\rho$ is the characteristic length scale which determines the smoothness of the function.
 
 ## The Earth's Atmosphere
 Starting from a few GHz and above, the lowest layer of Earth's atmosphere, the troposphere, comes into play and is a significant contributor to signal corruptions at mm and sub-mm wavelengths. In `Anime` we characterize it as consisting of a "mean" component and an additional rapidly varying turbulent component, following `MEQSv2`[^IN2022].
 
-The mean troposphere introduces smoothly varying time delays that result in phase slopes with frequency. The path length due to the wet (H$_2$O) and non-wet troposphere is computed using [`AATM`](https://www.mrao.cam.ac.uk/~bn204/alma/atmomodel.html#aatm-download)[^JRP2001] and is used to generate the delays. The troposphere also introduces 
+The mean troposphere introduces smoothly varying time delays that result in phase slopes with frequency. The turbulence in the troposphere introduces rapidly-varying "ad hoc" delays. The troposphere also absorbs radiation due to molecular transitions (rotational transitions of H$_2$O and O$_2$). This, along with a frequency-dependent component to the opacity of the troposphere results in an attenuation of visibility amplitudes. In thermodynamic equilibrium, the troposphere also emits radiation which increases the system temperature.
+
+The path length due to the wet (H$_2$O) and non-wet troposphere is computed using [`AATM`](https://www.mrao.cam.ac.uk/~bn204/alma/atmomodel.html#aatm-download)[^JRP2001] and is used to generate the delays due to mean troposphere. Delays due to turbulence are simulated using Brownian random walk. The sky noise due to increased system temperature is accounted for in the noise budget.
+
+## Instrumental polarization
+
+## Primary Beams
+
+## Bandpass and Recevier gains
+
+## Noise components
 
 ### References
 [^HBS]: Hamaker J.P., Bregman J.D., Sault R.J. Understanding radio polarimetry I (1996) [A&AS](https://articles.adsabs.harvard.edu/pdf/1996A%26AS..117..137H)
