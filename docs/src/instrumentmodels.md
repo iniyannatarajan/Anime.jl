@@ -1,6 +1,6 @@
 # Instrument Models
 
-VLBI enables the highest angular resolution achievable in astronomy, up to ~20 μas in the case of the Event Horizon Telescope (EHT) that produced the first ever images of a black hole in 2019. Since VLBI uses a sparse, heterogeneous array of radio telescopes situated around the planet, reconstructing images of observed astronomical sources is an ill-posed problem, and a deeper understanding of not only the astronomical source of interest but the instrument itself becomes crucial. Detailed explanation of the various instrument models that are simulated can be found in standard textbooks[^TMS] and other references scattered throughout this documentation.
+VLBI enables the highest angular resolution achievable in astronomy, up to ~20 μas in the case of the Event Horizon Telescope (EHT) that produced the first ever images of a black hole in 2019. Since VLBI uses a sparse, heterogeneous array of radio telescopes situated around the planet, reconstructing images of observed astronomical sources is an ill-posed problem, and a deeper understanding of not only the astronomical source of interest but the instrument itself becomes crucial. Detailed explanation of the theory behind the aspects of the instrument that are modelled can be found in standard textbooks[^TMS] and other references scattered throughout this documentation.
 
 ## Radio Interferometer Measurement Equation
 The Radio Interferometer Measurement Equation (RIME)[^HBS][^OMS] lies at the heart of modelling interferometric observations. A generic discrete RIME can be written as
@@ -20,10 +20,10 @@ The SE kernel is defined as
 ```math
 k_{SE}(x-x') = \sigma^2 e^{-\frac{(x-x')^2}{2\rho^2}}
 ```
-The variance $\sigma^2$ is the scale factor and $\rho$ is the characteristic length scale that determines the smoothness of the function.
+The variance $\sigma^2$ is the scale factor and $\rho$ is the characteristic length scale that determines the smoothness of the function. More information on GPs can be found in standard references[^GPML].
 
 ## The Earth's Atmosphere
-Starting from a few GHz and above, the lowest layer of Earth's atmosphere, the troposphere, comes into play and is a significant contributor to signal corruptions at mm and sub-mm wavelengths. In `Anime` we characterize it as consisting of a "mean" component and an additional rapidly varying turbulent component, following the implementation in `MEQSv2`[^IN2022].
+Starting from a few GHz and above, the lowest layer of Earth's atmosphere, the troposphere, comes into play and is a significant contributor to signal corruptions at mm and sub-mm wavelengths. In `Anime` we characterize it as consisting of a "mean" component and an additional rapidly varying turbulent component, following the python implementation in `MEQSv2`[^IN2022].
 
 The mean troposphere introduces smoothly varying time delays that result in phase slopes with frequency. The turbulence in the troposphere introduces rapidly-varying "ad hoc" delays. The troposphere also absorbs radiation due to molecular transitions (rotational transitions of H$_2$O and O$_2$). This, along with a frequency-dependent component to the opacity of the troposphere results in an attenuation of visibility amplitudes. In thermodynamic equilibrium, the troposphere also emits radiation which increases the system temperature.
 
@@ -68,14 +68,17 @@ The generic receiver gain matrix can have both a time-varying and a frequency-va
 
 The time-dependent gain matrix (often just referred to as *G-Jones* matrix) per station is generated using GP, with representative station-based scale parameters and the characteristic length set to the scan length to ensure smooth variation of gains over the duration of a scan. The amplitudes and phases of these terms are generated with different smoothness scales to capture the statistical properties of receiver gain evolution over time in real observations.
 
-Both terms are modelled using diagonal 2 x 2 Jones terms, assuming that the polarization basis of the gain matrices is the same as that of the visibilities. Currently, this is the default and only option in which to represent the basis of the gain matrices.
+Both terms are modelled using diagonal 2 x 2 Jones terms, assuming that the polarization basis of the gain matrices is the same as that of the visibilities. Currently, the basis in which complex visibilities are represented is the default and only option in which to represent the basis of the gain matrices.
+```math
+G_p(t) = \begin{pmatrix} g_{pR}(t) && 0 \\ 0 && g_{pL}(t) \end{pmatrix}; B_p(\nu) = \begin{pmatrix} b_{pR}(\nu) && 0 \\ 0 && b_{pL}(\nu) \end{pmatrix}
+```
 
 ## Noise Components
-Apart from the sky noise contribution mentioned earlier, a receiver thermal noise model is also included in the noise budget. Station-based SEFD values are used to determine the per-visibility rms noise, $\sigma^{th}_{pq}$:
+Apart from the sky noise contribution mentioned earlier, a receiver thermal noise model is also included in the noise budget. Station-based SEFD values are used to determine the per-visibility rms noise, $\sigma_{th_{pq}}$:
 ```math
-\sigma_{pq} = \frac{1}{\eta} \sqrt{\frac{{\mathrm{SEFD}}_p {\mathrm{SEFD}}_q}{2\Delta \nu \tau}}
+\sigma_{th_{pq}} = \frac{1}{\eta} \sqrt{\frac{{\mathrm{SEFD}}_p {\mathrm{SEFD}}_q}{2\Delta \nu \tau}}
 ```
-where $A_{\mathrm e}$ denotes the effective area of the telescope and $\eta$ comprises any relevant efficiency terms, such as the antenna aperture efficiency, $\eta_{\rm ap}$ and the correlator efficiency, $\eta_{\rm corr}$, $\Delta\nu$ is the bandwidth and $\tau$ the integration time. For standard 2-bit quantization, $\eta$ is set to 0.88. The SEFD itself is defined as
+where $A_{\mathrm e}$ denotes the effective area of the telescope and $\eta$ comprises any relevant efficiency terms, such as the antenna aperture efficiency, $\eta_{\rm ap}$, and the correlator efficiency, $\eta_{\rm corr}$, $\Delta\nu$ is the bandwidth and $\tau$ the integration time. For standard 2-bit quantization, $\eta$ is set to 0.88. The SEFD itself is defined as
 ```math
 \mathrm{SEFD} = \frac{2 k_{\mathrm B} T_{\mathrm{sys}}}{\eta_{\mathrm{ant}} A_{\mathrm e}}
 ```
@@ -86,6 +89,7 @@ where $\eta_{mathrm{ant}}$ is the antenna efficiency and $A_{\mathrm e}$ is the 
 [^TMS]: Thompson A.R., Moran J.M., Swenson Jr. G.W. Interferometry and Synthesis in Radio Astronomy (2017) [Springer](https://link.springer.com/book/10.1007/978-3-319-44431-4)
 [^HBS]: Hamaker J.P., Bregman J.D., Sault R.J. Understanding radio polarimetry I (1996) [A&AS](https://articles.adsabs.harvard.edu/pdf/1996A%26AS..117..137H)
 [^OMS]: Smirnov O.M. Revisiting the radio interferometry measurement equation I (2011) [A&A](https://www.aanda.org/articles/aa/pdf/2011/03/aa16082-10.pdf)
+[^GPML]: Rasmussen C.E., and Williams C. Gaussian Processes for Machine Learning [MIT](https://gaussianprocess.org/gpml/)
 [^IN2022]: Natarajan I. et al. MeqSilhouette v2: spectrally resolved polarimetric synthetic data generation for EHT (2022) [MNRAS](https://academic.oup.com/mnras/article/512/1/490/6537429)
 [^JRP2001]: Pardo J.R., et al. Atmospheric transmission at microwaves (ATM): an improved model for mm/submm applications (2001) [IEEE Xplore](https://ieeexplore.ieee.org/document/982447)
 [^Hales2017]: Hales C., Calibration Errors in Interferometric Radio Polarimetry (2017) [The Astronomical Journal](https://iopscience.iop.org/article/10.3847/1538-3881/aa7aef)
