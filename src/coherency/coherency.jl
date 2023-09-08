@@ -5,7 +5,7 @@ tb = table()
 """
     copymodeltodata(msname::String)
 
-Copy ```MODEL_DATA``` to ```DATA``` in MS.
+Copy ```MODEL_DATA``` to ```DATA``` in MS `msname`.
 """
 function copymodeltodata(msname::String)
     # copying model data to data
@@ -18,7 +18,9 @@ end
 """
     run_wsclean(msname::String, fitsdir::String, polarized::Bool, channelgroups::Int64, osfactor::Int64)
 
-Compute source coherency matrix using `WSClean` and populate MS.
+Compute source coherency matrix using `WSClean` and populate MS. `fitsdir` is the directory containing FITS source models,
+`polarized` indicates if source model is polarized, and `channelgroups` is the number of images in frequency.
+`osfactor` is the oversampling factor which is a `WSClean` argument that controls prediction/imaging accuracy.
 """
 function run_wsclean(msname::String, fitsdir::String, polarized::Bool, channelgroups::Int64, osfactor::Int64)
     fitsfiles = readdir(fitsdir, sort=true)

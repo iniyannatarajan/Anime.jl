@@ -3,7 +3,7 @@ export postprocessms
 """
     computeweights!(totalrmsspec::Array{Float32, 4}, totalwtspec::Array{Float32, 4}; h5file::String="")
 
-Compute total rms (sigma) values and inverse-squared visibility weights from thermal+sky noise terms stored in input HDF5 file.
+Compute total rms (sigma) values and inverse-squared visibility weights from thermal+sky noise terms stored in `h5file`.
 """
 function computeweights!(totalrmsspec::Array{Float32, 4}, totalwtspec::Array{Float32, 4}; h5file::String="")
 
@@ -28,7 +28,7 @@ end
 """
     postprocessms(obs::CjlObservation; h5file::String="")
 
-Add weight and sigma columns, reshape as needed by MS and write to disk.
+Add weight and sigma columns (write optionally to `h5file`), reshape as needed by MS, and write data stored in `obs` to disk.
 """
 function postprocessms(obs::CjlObservation; h5file::String="")
     # replace NaNs with zeros

@@ -154,7 +154,7 @@ struct CpyObservation{T} <: AbstractObservation{T} end
     tropskynoise::Bool, tropmeandelays::Bool, tropturbulence::Bool, polframe::String, polmode::String, ptginterval::Float64, ptgscale::Float64, ptgmode::String,
     stationgainsmode::String, bandpassfile::String; delim::String=",", ignorerepeated::Bool=false)
 
-Load data and metadata from MS, station and bandpass tables and return a CjlObservation object.
+Load data and metadata from MS and station & bandpass tables and return a CjlObservation object.
 """
 function loadms(msname::String, stations::String, corruptseed::Int64, tropseed::Int64, tropwetonly::Bool, correff::Float64, tropattenuate::Bool,
     tropskynoise::Bool, tropmeandelays::Bool, tropturbulence::Bool, polframe::String, polmode::String, ptginterval::Float64, ptgscale::Float64, ptgmode::String,
