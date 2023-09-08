@@ -5,7 +5,7 @@ using StatsBase: mode
 """
     makecasaanttable(stations::String, casaanttemplate::String; delim::String=",", ignorerepeated::Bool=false)
 
-Create CASA antenna table from station info file. Requires `casatools`.
+Create CASA antenna table from station info file `stations` using `casaanttemplate` as template. Requires `casatools` to be installed.
 """
 function makecasaanttable(stations::String, casaanttemplate::String; delim::String=",", ignorerepeated::Bool=false)
     # read in the stations CSV file
@@ -47,10 +47,9 @@ end
 """
     addweightcols(msname::String, mode::String, sigmaspec::Bool, weightspec::Bool)
 
-Add ```WEIGHT_SPECTRUM``` and ```SIGMA_SPECTRUM``` columns to MS. Requires `casatools`.
+Add ```WEIGHT_SPECTRUM``` and ```SIGMA_SPECTRUM``` columns to MS. Requires `casatools` to be installed.
 """
 function addweightcols(msname::String, mode::String, sigmaspec::Bool, weightspec::Bool)
-    # TODO get mode as arg and if it is "uvfits", delete wtspec and regenerate
     # get quantities to define array shapes
     tb.open("$(msname)::SPECTRAL_WINDOW")
     numchan = pyconvert(Int64, tb.getcol("NUM_CHAN")[0])
@@ -111,15 +110,15 @@ function msfromvex()
 end=#
 
 """
-    msfromuvfits(uvfits::String, msname::String, mscreationmode::String, stations::String; delim::String=",", ignorerepeated::Bool=false)
+    msfromuvfits(uvfits::String, msname::String, mscreationmode::String)
 
-Convert UVFITS to MS. Requires `casatools` and `casatasks`.
+Convert `uvfits` file to MS named `msname`. Requires `casatools` and `casatasks` to be installed.
 """
-function msfromuvfits(uvfits::String, msname::String, mscreationmode::String, stations::String; delim::String=",", ignorerepeated::Bool=false)
+function msfromuvfits(uvfits::String, msname::String, mscreationmode::String)
     # convert uvfits to ms
     importuvfits(fitsfile=uvfits, vis=msname)
 
-    # compare ANTENNA table in ms with stations file
+    #= # compare ANTENNA table in ms with stations file
     df = CSV.read(stations, DataFrame; delim=delim, ignorerepeated=ignorerepeated)
 
     tb.open("$(msname)::ANTENNA")
@@ -128,7 +127,7 @@ function msfromuvfits(uvfits::String, msname::String, mscreationmode::String, st
 
     if !(issetequal(msstations, df.station))
         error("Station info file $(stations) and MS ANTENNA table do not match 🤷")
-    end
+    end=#
    
     # setup polarization info
     #setup_polarization(msname, stations)
@@ -151,7 +150,7 @@ end
     mstouvfits(msname::String, uvfits::String, datacolumn::String; field::String="", spw::String="", antenna::String="",
     timerange::String="", overwrite::Bool=false)
 
-Convert MS to UVFITS. Requires `casatasks`.
+Convert MS to UVFITS. Requires `casatasks` to be installed.
 """
 function mstouvfits(msname::String, uvfits::String, datacolumn::String; field::String="", spw::String="", antenna::String="",
     timerange::String="", overwrite::Bool=false)
@@ -162,7 +161,7 @@ function mstouvfits(msname::String, uvfits::String, datacolumn::String; field::S
         exit()
     end
     # convert ms to uvfits
-    exportuvfits(vis=msname, fitsfile=uvfits, datacolumn=datacolumn)#, field=field, spw=spw, antenna=antenna, timerange=timerange, overwrite=overwrite)
+    exportuvfits(vis=msname, fitsfile=uvfits, datacolumn=datacolumn, field=field, spw=spw, antenna=antenna, timerange=timerange, overwrite=overwrite)
 end
 
 """
@@ -184,7 +183,6 @@ function msfromconfig(msname::String, mscreationmode::String, stations::String, 
     Bool(autocorr) ? sm.setauto(autocorrwt=1.0) : sm.setauto(autocorrwt=0.0)
     
     # set antenna config -- create a new CASA ANTENNA table if the station info is in a CSV file
-    #stationtable = ""
     if isfile(stations) && isdir(casaanttemplate)
         @info("Creating new ANTENNA table from CSV station info file...")
 	    stationtable = makecasaanttable(stations, casaanttemplate; delim=delim, ignorerepeated=ignorerepeated)

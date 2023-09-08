@@ -55,12 +55,9 @@ rm("ANTENNA_eht_2017", force=true, recursive=true) # hide
 # This is done via [`msfromuvfits`](@ref Anime.msfromuvfits):
 uvfits = joinpath(relativepath, "inputs", "uvfitsfiles", "hops_lo_3601_M87+zbl-dtcal_selfcal.uvfits")
 msname = "eht.ms"
-stations = joinpath(relativepath, "inputs", "eht_2017.stations")
 mode = "uvfits"
-delim = ","
-ignorerepeated = false
 
-msfromuvfits(uvfits, msname, mode, stations, delim=delim, ignorerepeated=ignorerepeated)
+msfromuvfits(uvfits, msname, mode)
 
 # It is the responsibility of the user to ensure that the input uvfits file contains all the necessary information that `CASA` would need to create an MS.
 # `eht-imaging` output files are consistent with these specifications.

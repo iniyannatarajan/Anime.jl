@@ -37,7 +37,7 @@ end
     delim = ","
     ignorerepeated = false
 
-    @test "somevalue" != Anime.msfromuvfits(uvfits, msname, mode, stations, delim=delim, ignorerepeated=ignorerepeated)
+    @test "somevalue" != Anime.msfromuvfits(uvfits, msname, mode)
 
     rm(msname, force=true, recursive=true)
 end

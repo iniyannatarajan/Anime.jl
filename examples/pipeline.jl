@@ -75,7 +75,7 @@
 #     y["source"], y["starttime"], y["exposure"], y["scans"], y["scanlengths"], y["scanlag"]; autocorr=y["autocorr"], telescopename=y["telescopename"],
 #     feed=y["feed"], shadowlimit=y["shadowlimit"], elevationlimit=y["elevationlimit"], stokes=y["stokes"], delim=",", ignorerepeated=false)
 # elseif y["mode"] == "uvfits"
-#     msfromuvfits(y["uvfits"], y["msname"], y["mode"], y["stations"], delim=",", ignorerepeated=false)
+#     msfromuvfits(y["uvfits"], y["msname"], y["mode"])
 # else
 #     error("MS generation mode '$(y["mode"])' not recognised 🤷")
 # end
