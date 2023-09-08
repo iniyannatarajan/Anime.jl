@@ -3,7 +3,7 @@ export parallacticangle, elevationangle
 """
     parallacticangle(times::Vector{Float64}, phasedir::Array{Float64,2}, stationinfo::DataFrame, pos::Array{Float64,2})
 
-Compute parallactic angle for all stations for all times.
+Compute parallactic angle for all stations in `stationinfo` for all `times` using `phasedir` and `pos` information.
 """
 function parallacticangle(times::Vector{Float64}, phasedir::Array{Float64,2}, stationinfo::DataFrame, pos::Array{Float64,2})
     # get unique times
@@ -39,8 +39,7 @@ end
 """
     elevationangle(times::Vector{Float64}, phasedir::Array{Float64,2}, stationinfo::DataFrame, pos::Array{Float64, 2})
 
-Compute elevation angle for all stations for all times.
-
+Compute elevation angle for all stations in `stationinfo` for all `times` using `phasedir` and `pos` information.
 """
 function elevationangle(times::Vector{Float64}, phasedir::Array{Float64,2}, stationinfo::DataFrame, pos::Array{Float64, 2})
     # get unique times

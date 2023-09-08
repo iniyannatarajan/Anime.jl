@@ -3,7 +3,8 @@ export genseries1d!
 """
     genseries1d!(series::Vector{ComplexF32}, mode::String, location::ComplexF32, scale::Float32, driftrate::Float32, nsamples::Int64, rng::AbstractRNG)
 
-Generate a complex-valued Gaussian process 1-D series of length nsamples with the given location, scale, and driftrate parameters.
+Generate a complex-valued Gaussian process 1-D series of length nsamples with the given `location`, `scale`, and `driftrate` parameters. `mode` determines
+if "normal" distribution or "gaussian processes" is used to generate the samples.
 """
 function genseries1d!(series::Vector{ComplexF32}, mode::String, location::ComplexF32, scale::Float32, driftrate::Float32, nsamples::Int64, rng::AbstractRNG)
     # TODO this is a crude version of a wiener process -- to be updated
@@ -22,7 +23,8 @@ end
 """
     genseries1d!(series::Vector{Float32}, mode::String, location::Float32, scale::Float32, driftrate::Float32, nsamples::Int64, rng::AbstractRNG)
 
-Generate a Float32-valued Gaussian process 1-D series of length nsamples with the given location, scale, and driftrate parameters.
+Generate a Float32-valued Gaussian process 1-D series of length nsamples with the given `location`, `scale`, and `driftrate` parameters. `mode` determines
+if "normal" distribution or "gaussian processes" is used to generate the samples.
 """
 function genseries1d!(series::Vector{Float32}, mode::String, location::Float32, scale::Float32, driftrate::Float32, nsamples::Int64, rng::AbstractRNG)
     # TODO this is a crude version of a wiener process -- to be updated
@@ -41,7 +43,8 @@ end
 """
     genseries1d!(series::Vector{Float64}, mode::String, location::Float64, scale::Float64, driftrate::Float64, nsamples::Int64, rng::AbstractRNG)
 
-Generate a Float64-valued Gaussian process 1-D series of length nsamples with the given location, scale, and driftrate parameters.
+Generate a Float64-valued Gaussian process 1-D series of length nsamples with the given `location`, `scale`, and `driftrate` parameters. `mode` determines
+if "normal" distribution or "gaussian processes" is used to generate the samples.
 """
 function genseries1d!(series::Vector{Float64}, mode::String, location::Float64, scale::Float64, driftrate::Float64, nsamples::Int64, rng::AbstractRNG)
     # TODO this is a crude version of a wiener process -- to be updated
