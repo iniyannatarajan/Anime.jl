@@ -325,7 +325,9 @@ function compute_turbulence!(obs::CjlObservation, atmdf::DataFrame, elevationmat
     end
 
     # add datatype attribute
-    attributes(g)["datatype"] = string(typeof(read(g[keys(g)[1]])))
+    if !haskey(attributes(g), "datatype")
+        attributes(g)["datatype"] = string(typeof(read(g[keys(g)[1]])))
+    end
 
     @info("Introduce turbulence in the troposphere 🙆")
 end
