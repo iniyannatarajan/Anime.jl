@@ -222,7 +222,7 @@ function compute_meandelays!(obs::CjlObservation, atmdf::DataFrame, elevationmat
         g["meandelays"] = meandelays
     end
 
-    if !(haskey(g, "phasedelays"))
+    if !(haskey(g, "mean_phasedelays"))
         g["mean_phasedelays"] = phasedelays
     end
 
@@ -318,7 +318,9 @@ function compute_turbulence!(obs::CjlObservation, atmdf::DataFrame, elevationmat
             end
         end	
 
-	g["turbulence_phasedelays_scan$(scan)"] = turbulence_phasedelays
+    if !haskey(g, "turbulence_phasedelays_scan$(scan)")
+	    g["turbulence_phasedelays_scan$(scan)"] = turbulence_phasedelays
+    end
 
     end
 
@@ -329,19 +331,23 @@ function compute_turbulence!(obs::CjlObservation, atmdf::DataFrame, elevationmat
 end
 
 """
-    troposphere(obs::CjlObservation, h5file::String; absorptionfile="", dispersivefile="", elevfile="")
+    troposphere!(obs::CjlObservation, h5file::String; absorptionfile::String="", dispersivefile::String="", elevfile::String="")
 
 Main function to compute various components of the tropospheric model. The actual numerical values generated are serialized in HDF5 format.
 """
-function troposphere!(obs::CjlObservation, h5file::String; absorptionfile="", dispersivefile="", elevfile="")
+function troposphere!(obs::CjlObservation, h5file::String; absorptionfile::String="", dispersivefile::String="", elevfile::String="")
     @info("Computing tropospheric effects...")
 
     # open h5 file for writing
     if !isempty(h5file)
         fid = h5open(h5file, "cw")
-        g = create_group(fid, "troposphere")
-        attributes(g)["desc"] = "all tropospheric signal corruptions"
-        attributes(g)["dims"] = "various"
+        if !haskey(fid, "troposphere")
+            g = create_group(fid, "troposphere")
+            attributes(g)["desc"] = "all tropospheric signal corruptions"
+            attributes(g)["dims"] = "various"
+        else
+            g = fid["troposphere"]
+        end
     end
     
     atmdf = run_aatm(obs, absorptionfile=absorptionfile, dispersivefile=dispersivefile) # compute necessary atmospheric quantities using atm
@@ -354,8 +360,10 @@ function troposphere!(obs::CjlObservation, h5file::String; absorptionfile="", di
         elevationmatrix = elevationangle(obs.times, obs.phasedir, obs.stationinfo, obs.pos) # compute elevation angle for all stations
     end
 
-    if !(haskey(g, "elevation"))
-        g["elevation"] = elevationmatrix
+    if !isempty(h5file)
+        if !(haskey(g, "elevation"))
+            g["elevation"] = elevationmatrix
+        end
     end
 
     transmission = nothing
