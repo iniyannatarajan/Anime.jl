@@ -97,7 +97,8 @@ rm(h5file) # hide
 # small non-zero off-diagonal terms. This *feed error* or *leakage* matrix is also known as the D-Jones term. In practice, this term can vary with frequency.
 
 # `Anime` generates smoothly varying frequency-dependent D-terms using Gaussian processes, taking a location and a scale parameter that determine the
-# amount of leakage at each station.
+# amount of leakage at each station. If the user requests to apply instrumental polarization to visibilities, they can be written out either in sky frame or
+# antenna frame i.e., with or without parallactic angle de-rotation respectively.
 inh5file = joinpath(relativepath, "test", "data", "insmodeluvf.h5")
 instrumentalpolarization!(obs, h5file=h5file, elevfile=inh5file, parangfile=inh5file)
 #-
