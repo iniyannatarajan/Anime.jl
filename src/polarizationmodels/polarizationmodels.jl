@@ -94,14 +94,14 @@ function instrumentalpolarization!(data::Array{Complex{Float32},4}, scanno::Vect
 
 	        for t in 1:ntimes
     	        if uppercase(stationinfo.mount[ant]) == "ALT-AZ"
-		            pjonesmatrices[1, 1, chan, t, ant] = exp(-1*im)*(deg2rad(stationinfo.feedangle_deg[ant])+parallacticanglematrix[t, ant])
-		            pjonesmatrices[2, 2, chan, t, ant] = exp(1*im)*(deg2rad(stationinfo.feedangle_deg[ant])+parallacticanglematrix[t, ant])
+		            pjonesmatrices[1, 1, t, ant] = exp(-1*im)*(deg2rad(stationinfo.feedangle_deg[ant])+parallacticanglematrix[t, ant])
+		            pjonesmatrices[2, 2, t, ant] = exp(1*im)*(deg2rad(stationinfo.feedangle_deg[ant])+parallacticanglematrix[t, ant])
 		        elseif uppercase(stationinfo.mount[ant]) == "ALT-AZ+NASMYTH-L"
-    		        pjonesmatrices[1, 1, chan, t, ant] = exp(-1*im)*(deg2rad(stationinfo.feedangle_deg[ant])+parallacticanglematrix[t, ant]-elevationmatrix[t, ant])
-		            pjonesmatrices[2, 2, chan, t, ant] = exp(1*im)*(deg2rad(stationinfo.feedangle_deg[ant])+parallacticanglematrix[t, ant]-elevationmatrix[t, ant])
+    		        pjonesmatrices[1, 1, t, ant] = exp(-1*im)*(deg2rad(stationinfo.feedangle_deg[ant])+parallacticanglematrix[t, ant]-elevationmatrix[t, ant])
+		            pjonesmatrices[2, 2, t, ant] = exp(1*im)*(deg2rad(stationinfo.feedangle_deg[ant])+parallacticanglematrix[t, ant]-elevationmatrix[t, ant])
 		        elseif uppercase(stationinfo.mount[ant]) == "ALT-AZ+NASMYTH-R"
-		            pjonesmatrices[1, 1, chan, t, ant] = exp(-1*im)*(deg2rad(stationinfo.feedangle_deg[ant])+parallacticanglematrix[t, ant]+elevationmatrix[t, ant])
-		            pjonesmatrices[2, 2, chan, t, ant] = exp(1*im)*(deg2rad(stationinfo.feedangle_deg[ant])+parallacticanglematrix[t, ant]+elevationmatrix[t, ant])
+		            pjonesmatrices[1, 1, t, ant] = exp(-1*im)*(deg2rad(stationinfo.feedangle_deg[ant])+parallacticanglematrix[t, ant]+elevationmatrix[t, ant])
+		            pjonesmatrices[2, 2, t, ant] = exp(1*im)*(deg2rad(stationinfo.feedangle_deg[ant])+parallacticanglematrix[t, ant]+elevationmatrix[t, ant])
 		        end
 	        end
         end

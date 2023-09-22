@@ -76,7 +76,7 @@ pointing:
 instrumentalpolarization: 
   enable: false                                       # add instrumental polarization
   mode: "gp"                                     # "gp" (Gaussian processes) or "normal" (Gaussian)
-  visibilityframe: "sky"                             # visibilities are written out in "sky" frame
+  visibilityframe: "sky"                             # visibilities are written out in "sky" frame; any other string => antenna frame
 
 ####################################################
 # settings for gains

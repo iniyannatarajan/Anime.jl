@@ -27,6 +27,15 @@ end
 
     @inferred instrumentalpolarization!(obs, h5file=h5file, elevfile="data/insmodel1.h5", parangfile="data/insmodel1.h5")
     rm(h5file)
+
+    # write vis in antenna frame
+    obs = loadms(y["msname"], y["stations"], Int(y["corruptseed"]), Int(y["troposphere"]["tropseed"]), y["troposphere"]["wetonly"], y["correff"], 
+    y["troposphere"]["attenuate"], y["troposphere"]["skynoise"], y["troposphere"]["meandelays"], y["troposphere"]["turbulence"], 
+    "antenna", y["instrumentalpolarization"]["mode"], y["pointing"]["interval"], y["pointing"]["scale"], y["pointing"]["mode"], y["stationgains"]["mode"], 
+    y["bandpass"]["bandpassfile"], delim=",", ignorerepeated=false)
+
+    @inferred instrumentalpolarization!(obs, h5file=h5file, elevfile="data/insmodel1.h5", parangfile="data/insmodel1.h5")
+    rm(h5file)
 end
 
 @testset "Primary Beam" begin
