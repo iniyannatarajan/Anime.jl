@@ -43,17 +43,96 @@ function instrumentalpolarization!(data::Array{Complex{Float32},4}, scanno::Vect
     djonesr = zeros(Float32, numchan)
     djonesθ = zeros(Float32, numchan)
 	polrotmatrices = ones(eltype(data), 2, 2, numchan, ntimes, size(stationinfo)[1])
+    pjonesmatrices = ones(eltype(data), 2, 2, ntimes, size(stationinfo)[1])
 
     # compute D-terms
-    if polframe == "antenna"
+    if polframe != "sky"
         # compute in antenna frame
-        @warn("Visibilities in antenna frame not implemented yet. Skipping instrumental polarization... ")
-    else
-        if polframe != "sky"
-	        @warn("Visibility frame set to $(polframe). Computing visibilities in 'sky' frame...")
-        else
-            @info("Applying instrumental polarization...")
+        @info("Applying instrumental polarization and NOT rotating back to sky frame (i.e. retain vis. in antenna frame) ...")
+        
+	    for ant in eachindex(stationinfo.station)
+            #djonesmatrices[1, 2, :, ant] = genseries1d!(djonesmatrices[1, 2, :, ant], polmode, stationinfo.d_pol1_loc[ant], real(stationinfo.d_pol1_scale[ant]), Float32(0.0), numchan, rngcorrupt)
+            #djonesmatrices[2, 1, :, ant] = genseries1d!(djonesmatrices[2, 1, :, ant], polmode, stationinfo.d_pol2_loc[ant], real(stationinfo.d_pol2_scale[ant]), Float32(0.0), numchan, rngcorrupt)
+
+            # get amplitude and phase of the mean and std for pol1
+            amplmean1 = Float32(abs(stationinfo.d_pol1_loc[ant]))
+            amplstd1 = Float32(abs(stationinfo.d_pol1_scale[ant]))
+            phasemean1 = Float32(angle(stationinfo.d_pol1_loc[ant]))
+            phasestd1 = Float32(angle(stationinfo.d_pol1_scale[ant]))
+
+            # generate 1-D series for amplitudes and phases independently
+            if numchan > 1
+                djonesr[:] = genseries1d!(djonesr, chanfreqvec, rngcorrupt, μ=amplmean1, σ=amplstd1, ρ=chanfreqvec[end]-chanfreqvec[begin])
+            else
+                djonesr[:] = genseries1d!(djonesr, polmode, amplmean1, amplstd1, Float32(0.0), numchan, rngcorrupt)
+            end
+            djonesθ[:] = genseries1d!(djonesθ, polmode, phasemean1, phasestd1, Float32(0.0), numchan, rngcorrupt)
+
+            # convert back to Cartesian form and write to gjonesmatrix
+            reals = djonesr .* cos.(djonesθ)
+            imags = djonesr .* sin.(djonesθ)
+            djonesmatrices[1, 2, :, ant] = [complex(r, i) for (r, i) in zip(reals, imags)]
+
+            # get amplitude and phase of the mean and std for pol2
+            amplmean2 = Float32(abs(stationinfo.g_pol2_loc[ant]))
+            amplstd2 = Float32(abs(stationinfo.g_pol2_scale[ant]))
+            phasemean2 = Float32(angle(stationinfo.g_pol2_loc[ant]))
+            phasestd2 = Float32(angle(stationinfo.g_pol2_scale[ant]))
+
+            # generate 1-D series for amplitudes and phases independently
+            if numchan > 1
+                djonesr[:] = genseries1d!(djonesr, chanfreqvec, rngcorrupt, μ=amplmean2, σ=amplstd2, ρ=chanfreqvec[end]-chanfreqvec[begin])
+            else
+                djonesr[:] = genseries1d!(djonesr, polmode, amplmean2, amplstd2, Float32(0.0), numchan, rngcorrupt)
+            end
+            djonesθ[:] = genseries1d!(djonesθ, polmode, phasemean2, phasestd2, Float32(0.0), numchan, rngcorrupt)
+
+            # convert back to Cartesian form and write to gjonesmatrix
+            reals = djonesr .* cos.(djonesθ)
+            imags = djonesr .* sin.(djonesθ)
+            djonesmatrices[2, 1, :, ant] = [complex(r, i) for (r, i) in zip(reals, imags)]
+
+	        for t in 1:ntimes
+    	        if uppercase(stationinfo.mount[ant]) == "ALT-AZ"
+		            pjonesmatrices[1, 1, chan, t, ant] = exp(-1*im)*(deg2rad(stationinfo.feedangle_deg[ant])+parallacticanglematrix[t, ant])
+		            pjonesmatrices[2, 2, chan, t, ant] = exp(1*im)*(deg2rad(stationinfo.feedangle_deg[ant])+parallacticanglematrix[t, ant])
+		        elseif uppercase(stationinfo.mount[ant]) == "ALT-AZ+NASMYTH-L"
+    		        pjonesmatrices[1, 1, chan, t, ant] = exp(-1*im)*(deg2rad(stationinfo.feedangle_deg[ant])+parallacticanglematrix[t, ant]-elevationmatrix[t, ant])
+		            pjonesmatrices[2, 2, chan, t, ant] = exp(1*im)*(deg2rad(stationinfo.feedangle_deg[ant])+parallacticanglematrix[t, ant]-elevationmatrix[t, ant])
+		        elseif uppercase(stationinfo.mount[ant]) == "ALT-AZ+NASMYTH-R"
+		            pjonesmatrices[1, 1, chan, t, ant] = exp(-1*im)*(deg2rad(stationinfo.feedangle_deg[ant])+parallacticanglematrix[t, ant]+elevationmatrix[t, ant])
+		            pjonesmatrices[2, 2, chan, t, ant] = exp(1*im)*(deg2rad(stationinfo.feedangle_deg[ant])+parallacticanglematrix[t, ant]+elevationmatrix[t, ant])
+		        end
+	        end
         end
+
+	    # apply Dterms to data
+        row = 1 # variable to index data array
+        for scan in uniqscans
+            # compute ideal ntimes per scan
+            actualtscanvec = unique(getindex(times, findall(scanno.==scan)))
+            actualtscanveclen = length(actualtscanvec)
+            idealtscanvec = collect(first(actualtscanvec):exposure:last(actualtscanvec))
+            idealtscanveclen = length(idealtscanvec)
+    
+            # loop over time/row and apply Dterms corresponding to each baseline
+            findnearest(A,x) = argmin(abs.(A .- x)) # define function to find nearest neighbour
+            for t in 1:actualtscanveclen
+                idealtimeindex = findnearest(idealtscanvec, actualtscanvec[t])
+                # read all baselines present in a given time
+                ant1vec = getindex(antenna1, findall(times.==actualtscanvec[t]))
+                ant2vec = getindex(antenna2, findall(times.==actualtscanvec[t]))
+                for (ant1,ant2) in zip(ant1vec, ant2vec)
+                    for chan in 1:numchan
+                        data[:,:,chan,row] = djonesmatrices[:,:,chan,ant1+1]*pjonesmatrices[:,:,idealtimeindex,ant1+1]*data[:,:,chan,row]*adjoint(pjonesmatrices[:,:,idealtimeindex,ant2+1])*adjoint(djonesmatrices[:,:,chan,ant2+1])
+                    end
+                    row += 1 # increment data last index i.e. row number
+                end
+            end
+        end
+    else
+
+        @info("Applying instrumental polarization and rotating back to sky frame ...")
 
 	    for ant in eachindex(stationinfo.station)
             #djonesmatrices[1, 2, :, ant] = genseries1d!(djonesmatrices[1, 2, :, ant], polmode, stationinfo.d_pol1_loc[ant], real(stationinfo.d_pol1_scale[ant]), Float32(0.0), numchan, rngcorrupt)
@@ -156,6 +235,7 @@ function instrumentalpolarization!(data::Array{Complex{Float32},4}, scanno::Vect
 
         g["djonesmatrices"] = djonesmatrices
         g["polrotmatrices"] = polrotmatrices
+        g["pjonesmatrices"] = pjonesmatrices
         attributes(g)["datatype"] = string(typeof(read(g[keys(g)[1]])))
         close(fid)
     end
