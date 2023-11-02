@@ -54,7 +54,7 @@ Instrument models are also used to generate realistic synthetic data for testing
 Synthetic data generation capabilities are built into `Anime`, with support for popular data storage formats in VLBI. The instrument models are stored in HDF5 format that can be read by any calibration or simulation software with HDF5 support. Metadata are obtained from UVFITS corresponding to real data and  the instrument models are applied to source coherency using the Radio Interferometer Measurement Equation (RIME) [@HBS1996]. The RIME expresses the relationship between true and measured *visibilities*, complex-valued quantities obtained by correlating the voltage patterns observed at two different locations, by casting them into a linear algebraic formalism that describes how the propagation path effects modify the signal. In the 2 x 2 *Jones matrix* formalism [@OMS2011] that `Anime` implements, the generic RIME can be written as
 
 $$
-\mathbf{V}\_{pq} = G\_p \left( \sum\_{s} E\_{sp}\, \mathbf{X}\_{spq}\, E\_{sq}^H \right) G\_q^H,
+\mathbf{V}\_{pq} = G\_p \left( \sum\_{s} E\_{sp}\\, \mathbf{X}\_{spq}\\, E\_{sq}^H \right) G\_q^H,
 $$
 
 where $\mathbf{X}\_{spq}$ is the source coherency that will be observed in the absence of corrupting effects, $E\_{sp}$ and $G\_p$ are complex-valued matrices describing various propagation path effects and $\mathbf{V}\_{pq}$ are the measured visibilities corresponding to the baseline formed by stations $p$ and $q$.
