@@ -61,12 +61,12 @@ Figure 1 shows the components of `Anime`. VLBI data and metadata are loaded from
 
 ![Control flow.](components.png)
 
-`Anime` can be run in one of two modes: modular and pipeline. In modular mode, it can be imported like any other Julia package and instrument models are computed by calling the relevant functions. The routines to read/write/convert between storage formats and diagnostic plotting tools can also be called individually. In pipeline mode, little to no user interaction is required to generate a series of instrument models based on observation settings read from existing metadata, create new data sets from scratch and apply the instrument models to data. These data can be stored in both the CASA Measurement Set (MS) format[^2] and the legacy UVFITS format commonly used within the EHT. All observation settings for running `Anime` in this mode can be provided in a `YAML` configuration file. The following example shows how to generate synthetic visibilities (Figure 2) from scratch using a sample `YAML` configuration file included with the source code.
+`Anime` can be run in one of two modes: modular and pipeline. In modular mode, it can be imported like any other Julia package and instrument models are computed by calling the relevant functions. The routines to read/write/convert between storage formats and diagnostic plotting tools can also be called individually. In pipeline mode, little to no user interaction is required to generate a series of instrument models based on observation settings read from existing metadata, create new data sets from scratch and apply the instrument models to data. These data can be stored in both the CASA Measurement Set (MS) format[^2] and the legacy UVFITS format commonly used within the EHT. All observation settings for running `Anime` in this mode can be provided in a YAML configuration file. The following example shows how to generate synthetic visibilities with instrument models applied to a sample General Relativistic black hole simulation from scratch. Figure 2 shows the visibility amplitudes against the projected baseline lengths between pairs of antennas in the EHT array.
 ```julia
 using YAML
 using Anime
 # load YAML file with observation parameters 
-y = YAML.load_file("config.YAML", dicttype=Dict{String,Any})
+y = YAML.load_file("config.yaml", dicttype=Dict{String,Any})
 h5file = "models.h5"
 # Generate MS from existing UVFITS
 msfromuvfits(y["uvfits"], y["msname"], y["mode"])
