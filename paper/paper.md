@@ -62,7 +62,7 @@ where $\mathbf{X}\_{spq}$ is the source coherency that will be observed in the a
 # Code structure
 Figure 1 shows the components of `Anime`. VLBI data and metadata are loaded from disk to a Structure of Arrays (SoA) data structure. The instrument modelling functions interface with this structure and output the gain tables in HDF5 format. The functionality within the dashed lines is optional if `Anime` is used only for computing gain tables for calibration.
 
-![caption](components.png)
+![Control flow.](components.png)
 
 `Anime` can be run in one of two modes: modular and pipeline. In modular mode, it can be imported like any other Julia package and instrument models are computed by calling the relevant functions. The routines to read/write/convert between storage formats and diagnostic plotting tools can also be called individually. In pipeline mode, little to no user interaction is required to generate a series of instrument models based on observation settings read from existing metadata, create new data sets from scratch and apply the instrument models to data. These data can be stored in both the CASA Measurement Set (MS) format[^2] and the legacy UVFITS format commonly used within the EHT. All observation settings for running `Anime` in this mode can be provided in a `YAML` configuration file. The following example shows how to generate synthetic visibilities (Figure 2) from scratch using a sample `YAML` configuration file included with the source code.
 ```julia
@@ -91,7 +91,7 @@ thermalnoise!(obs, h5file=h5file)
 postprocessms(obs, h5file=h5file)
 mstouvfits(y["msname"], "test.uvfits", "corrected")
 ```
-![caption](visplot.png)
+![Result of the above code showing visibility amplitudes plotted against uv-distance.](visplot.png)
 
 [^2]: https://casa.nrao.edu/Memos/229.html
 
