@@ -93,8 +93,6 @@ mstouvfits(y["msname"], "test.uvfits", "corrected")
 ```
 ![caption](visplot.png)
 
-**Change the above image to one with all effects included**
-
 [^2]: https://casa.nrao.edu/Memos/229.html
 
 # Similar Packages
