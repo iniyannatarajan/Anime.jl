@@ -33,14 +33,11 @@ bibliography: paper.bib
 ---
 
 # Summary
-
 `Anime` is an instrument modelling package for radio interferometry, specifically for modelling very-long-baseline-interferometry (VLBI) observations, written in the Julia[^1] programming language [@Bezanson2015]. It aims to model from first principles the effects of Earth's atmosphere and the electronic and mechanical properties of antennas that significantly affect VLBI observations at millimetre (mm) and sub-mm wavelengths, ensuring that the models are statistically consistent with empirical data. It provides realistic instrument models to calibrate, simulate, and produce images of mm-VLBI data sets. It also aims to provide efficient handling of and seamless conversion routines between popular formats used to represent VLBI observations and their metadata.
 
 [^1]: https://julialang.org
 
-
 # Statement of need
-
 The Event Horizon Telescope (EHT) is a global VLBI network that has produced the first ever high resolution images of supermassive black holes at the centres of galaxies [@M87PaperI; @SgrAPaperI]. The EHT Collaboration has developed new methods to model, calibrate, and analyse data from sparse, heterogeneous VLBI arrays to enable the reconstruction of black hole images at such high resolutions and observing frequencies. The success of these methods relies on accurately modelling the astrophysical source of interest and the propagation path effects that modify the signal on its way to the recorder.
 
 In radio interferometry parlance, calibration is the process of minimizing atmospheric and instrumental effects and imaging is the process of deriving the sky brightness distribution from calibrated data. The boundary between calibration and imaging is variable and one of convenience, since these two tasks can be performed alternately and iteratively, or simultaneously, depending on the scientific problem under investigation and software capability. Within the EHT, the raw data are calibrated using two calibration pipelines, `EHT-HOPS` [@Blackburn2019] and `rPICARD` [@Janssen2019]. The calibrated data are then used by software such as `eht-imaging` [@Chael2018] and `Comrade` [@Tiede2022], which attempt to reconstruct the sky brightness distribution while accounting for residual calibration errors by modelling source and instrumental properties.
@@ -49,7 +46,7 @@ Instrument models are also used to generate realistic synthetic data for testing
 
 `Anime` aims to provide the speed and flexibility of `ngehtsim` with the complex modelling capabilities of `MEQSv2` by taking advantage of the features offered by the Julia programming language. Julia combines the performance of compiled languages such as C with the ease of development found in languages such as Python. Julia's automatic differentiation support also makes the instrument models provided by `Anime` inherently differentiable and peform parameter space exploration faster. Finally, `Comrade` is written in Julia and can import the instrument models from `Anime` natively.
 
-`Anime` includes models for the troposphere, the lowest layer of Earth's atmosphere, which significantly affects signal propagation at 230 GHz. It models the instrumental contribution to signal polarization to capture the leakage of polarized signals between orthogonal feeds. It also includes models for telescope mispointing, complex-valued (amplitude and phase) bandpass effects that vary over the observing bandwidth, complex-valued time-variable receiver gains, and noise contributions from the atmosphere at the observing frequencies.
+`Anime` includes models for the troposphere, the lowest layer of Earth's atmosphere, which significantly affects signal propagation at 230 GHz. It models the instrumental contribution to signal polarization to capture the leakage of polarized signals between orthogonal feeds. It also includes models for telescope mispointing, complex-valued (amplitude and phase) bandpass effects that vary over the observing bandwidth, complex-valued time-variable receiver gains, and noise contributions from the atmosphere at the observing frequencies. Time-variability is modelled using Gaussian Processes (GPs) [@GPML2006], with the hyperparameters chosen determining the temporal correlation structure of the quantity being modelled.
 
 Synthetic data generation capabilities are built into `Anime`, with support for popular data storage formats in VLBI. The instrument models are stored in HDF5 format that can be read by any calibration or simulation software with HDF5 support. Metadata are obtained from UVFITS corresponding to real data and  the instrument models are applied to source coherency using the Radio Interferometer Measurement Equation (RIME) [@HBS1996]. The RIME expresses the relationship between true and measured *visibilities*, complex-valued quantities obtained by correlating the voltage patterns observed at two different locations, by casting them into a linear algebraic formalism that describes how the propagation path effects modify the signal. In the 2 x 2 *Jones matrix* formalism [@OMS2011] that `Anime` implements, the generic RIME can be written as
 
@@ -101,7 +98,6 @@ mstouvfits(y["msname"], "test.uvfits", "corrected")
 - `ngehtsim` [@Pesceinprep]: A fast and flexible (sub)mm VLBI synthetic data generator for the EHT and ngEHT based on `eht-imaging`, adding capabilities such as simulation of local weather effects and fringe-finding residuals.
 
 # Acknowledgements
-
 This work was supported by MSIP2...
 
 # References
