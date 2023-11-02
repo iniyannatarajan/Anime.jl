@@ -69,7 +69,7 @@ Figure 1 shows the components of `Anime`. VLBI data and metadata are loaded from
 using YAML
 using Anime
 # load YAML file with observation parameters 
-y = YAML.load_file(config, dicttype=Dict{String,Any})
+y = YAML.load_file("config.YAML", dicttype=Dict{String,Any})
 h5file = "models.h5"
 # Generate MS from existing UVFITS
 msfromuvfits(y["uvfits"], y["msname"], y["mode"])
