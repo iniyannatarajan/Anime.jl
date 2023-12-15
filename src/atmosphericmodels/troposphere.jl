@@ -56,7 +56,7 @@ function run_aatm(obs::CjlObservation; absorptionfile::String="", dispersivefile
         end
     end
 
-    #=# create input files for bypassing casacore functions for test cases
+    #= # create input files for bypassing casacore functions for test cases
     absdf = vcat(absdfvec...)
     CSV.write("absorption1.csv", absdf)
     dispdf = vcat(dispdfvec...)
@@ -270,39 +270,39 @@ function compute_turbulence!(obs::CjlObservation, atmdf::DataFrame, elevationmat
         idealtscanvec = collect(first(actualtscanvec):obs.exposure:last(actualtscanvec))
         idealtscanveclen = length(idealtscanvec)
 
-	(xg, yg) = ndgrid(1:idealtscanveclen, 1:idealtscanveclen)
-	offset_idealtscanvec = idealtscanvec .- first(idealtscanvec)
+        (xg, yg) = ndgrid(1:idealtscanveclen, 1:idealtscanveclen)
+        offset_idealtscanvec = idealtscanvec .- first(idealtscanvec)
 
         # create 4d array to hold G-Jones terms per time per station
         turbulence_phasedelays = zeros(Float64, obs.numchan, idealtscanveclen, size(obs.stationinfo)[1]) # nchan x ntimes x nant
-
+        
         for ant in 1:nant
-	    structD = (offset_idealtscanvec ./ obs.stationinfo.ctime_sec[ant]) .^ beta # compute structure function
-	    autocorrC = abs.(0.5 .* (last(structD) .- structD)) # compute autocorrelation function, clipped at largest mode
-
-	    # compute covariance matrix
-	    indices = abs.(xg'.-yg').+1
-	    covmatS = zeros(typeof(first(autocorrC)), idealtscanveclen, idealtscanveclen)
-	    for ii in 1:idealtscanveclen
-		for jj in 1:idealtscanveclen
-		    covmatS[ii, jj] = autocorrC[indices[ii,jj]]
-	        end
+            structD = (offset_idealtscanvec ./ obs.stationinfo.ctime_sec[ant]) .^ beta # compute structure function
+            autocorrC = abs.(0.5 .* (last(structD) .- structD)) # compute autocorrelation function, clipped at largest mode
+            
+            # compute covariance matrix
+            indices = abs.(xg'.-yg').+1
+            covmatS = zeros(typeof(first(autocorrC)), idealtscanveclen, idealtscanveclen)
+            for ii in 1:idealtscanveclen
+                for jj in 1:idealtscanveclen
+                    covmatS[ii, jj] = autocorrC[indices[ii,jj]]
+                end
             end
-	    L = Array(cholesky(covmatS).L) # Cholesky factorise the covariance matrix
-	    timeseries = [sum(L[ii,:] .* randn(obs.rngtrop, Float64, idealtscanveclen)) for ii in 1:idealtscanveclen]
-
-	    # populate turbulence_phasedelays
-	    for t in 1:idealtscanveclen
-		for chan in 1:obs.numchan
-		    if chan == 1
-			turbulence_phasedelays[chan, t, ant] = sqrt(1/sin(elevationmatrix[t, ant])) * timeseries[t]
-		    else
-			turbulence_phasedelays[chan, t, ant] = turbulence_phasedelays[1, t, ant] * obs.chanfreqvec[chan]/first(obs.chanfreqvec)
-		    end
-		end
-	    end
+            L = Array(cholesky(covmatS).L) # Cholesky factorise the covariance matrix
+            timeseries = L * randn(obs.rngtrop, Float64, idealtscanveclen)
+            
+            # populate turbulence_phasedelays
+            for t in 1:idealtscanveclen
+                for chan in 1:obs.numchan
+                    if chan == 1
+                        turbulence_phasedelays[chan, t, ant] = sqrt(1/sin(elevationmatrix[t, ant])) * timeseries[t]
+                    else
+                        turbulence_phasedelays[chan, t, ant] = turbulence_phasedelays[1, t, ant] * obs.chanfreqvec[chan]/first(obs.chanfreqvec)
+                    end
+                end
+            end
         end
-
+        
         # loop over time/row and apply gjones terms corresponding to each baseline
         findnearest(A,x) = argmin(abs.(A .- x)) # define function to find nearest neighbour
         for t in 1:actualtscanveclen
@@ -312,23 +312,22 @@ function compute_turbulence!(obs::CjlObservation, atmdf::DataFrame, elevationmat
             ant2vec = getindex(obs.antenna2, findall(obs.times.==actualtscanvec[t]))
             for (ant1,ant2) in zip(ant1vec, ant2vec)
                 for chan in 1:obs.numchan
-		    obs.data[:,:,chan,row] .*= exp((turbulence_phasedelays[chan,idealtimeindex,ant1+1]-turbulence_phasedelays[chan,idealtimeindex,ant2+1])*im)
+                    obs.data[:,:,chan,row] .*= exp((turbulence_phasedelays[chan,idealtimeindex,ant1+1]-turbulence_phasedelays[chan,idealtimeindex,ant2+1])*im)
                 end
                 row += 1 # increment obs.data last index i.e. row number
             end
-        end	
-
-    if !haskey(g, "turbulence_phasedelays_scan$(scan)")
-	    g["turbulence_phasedelays_scan$(scan)"] = turbulence_phasedelays
+        end
+        
+        if !haskey(g, "turbulence_phasedelays_scan$(scan)")
+            g["turbulence_phasedelays_scan$(scan)"] = turbulence_phasedelays
+        end
     end
-
-    end
-
+    
     # add datatype attribute
     if !haskey(attributes(g), "datatype")
         attributes(g)["datatype"] = string(typeof(read(g[keys(g)[1]])))
     end
-
+    
     @info("Introduce turbulence in the troposphere 🙆")
 end
 
