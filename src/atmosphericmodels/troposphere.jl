@@ -302,6 +302,7 @@ function compute_turbulence!(obs::CjlObservation, atmdf::DataFrame, elevationmat
                 end
             end
         end
+        turbulence_phasedelays = replace(turbulence_phasedelays, Inf => 0) # replace Inf with 0; 1/sin(0) = Inf
         
         # loop over time/row and apply gjones terms corresponding to each baseline
         findnearest(A,x) = argmin(abs.(A .- x)) # define function to find nearest neighbour
