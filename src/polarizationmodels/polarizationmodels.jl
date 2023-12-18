@@ -74,10 +74,10 @@ function instrumentalpolarization!(data::Array{Complex{Float32},4}, scanno::Vect
             djonesmatrices[1, 2, :, ant] = [complex(r, i) for (r, i) in zip(reals, imags)]
 
             # get amplitude and phase of the mean and std for pol2
-            amplmean2 = Float32(abs(stationinfo.g_pol2_loc[ant]))
-            amplstd2 = Float32(abs(stationinfo.g_pol2_scale[ant]))
-            phasemean2 = Float32(angle(stationinfo.g_pol2_loc[ant]))
-            phasestd2 = Float32(angle(stationinfo.g_pol2_scale[ant]))
+            amplmean2 = Float32(abs(stationinfo.d_pol2_loc[ant]))
+            amplstd2 = Float32(abs(stationinfo.d_pol2_scale[ant]))
+            phasemean2 = Float32(angle(stationinfo.d_pol2_loc[ant]))
+            phasestd2 = Float32(angle(stationinfo.d_pol2_scale[ant]))
 
             # generate 1-D series for amplitudes and phases independently
             if numchan > 1
@@ -158,10 +158,10 @@ function instrumentalpolarization!(data::Array{Complex{Float32},4}, scanno::Vect
             djonesmatrices[1, 2, :, ant] = [complex(r, i) for (r, i) in zip(reals, imags)]
 
             # get amplitude and phase of the mean and std for pol2
-            amplmean2 = Float32(abs(stationinfo.g_pol2_loc[ant]))
-            amplstd2 = Float32(abs(stationinfo.g_pol2_scale[ant]))
-            phasemean2 = Float32(angle(stationinfo.g_pol2_loc[ant]))
-            phasestd2 = Float32(angle(stationinfo.g_pol2_scale[ant]))
+            amplmean2 = Float32(abs(stationinfo.d_pol2_loc[ant]))
+            amplstd2 = Float32(abs(stationinfo.d_pol2_scale[ant]))
+            phasemean2 = Float32(angle(stationinfo.d_pol2_loc[ant]))
+            phasestd2 = Float32(angle(stationinfo.d_pol2_scale[ant]))
 
             # generate 1-D series for amplitudes and phases independently
             if numchan > 1
