@@ -56,7 +56,7 @@ $$
 
 where $\mathbf{X}\_{spq}$ is the source coherency observed in the absence of corrupting effects, $E\_{sp}$ and $G\_p$ are complex-valued matrices describing various propagation path effects and $\mathbf{V}\_{pq}$ are the measured visibilities corresponding to the baseline formed by stations $p$ and $q$.
 
-# Code structure
+# Software structure
 The software architecture is given in Figure 1. VLBI data and metadata are loaded from disk to a Structure of Arrays (SoA) data structure. The instrument modelling functions interface with this structure and output the gain tables in HDF5 format. The functionality within the dashed lines is optional if `Anime` is used only for computing gain tables for calibration.
 
 <img src="components.png" alt="Software architecture" width="500"/>
@@ -88,7 +88,7 @@ thermalnoise!(obs, h5file=h5file)
 postprocessms(obs, h5file=h5file)
 mstouvfits(y["msname"], "test.uvfits", "corrected")
 ```
-![Result of the above code showing visibility amplitudes plotted against uv-distance.](visplot.png)
+<img src="visplot.png" alt="Result of the above code showing visibility amplitudes plotted against uv-distance" width="500"/>
 
 [^2]: https://casa.nrao.edu/Memos/229.html
 
