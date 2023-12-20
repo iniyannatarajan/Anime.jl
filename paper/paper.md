@@ -49,7 +49,7 @@ Realistic instrument models are also used to generate synthetic data to test new
 # Software architecture
 The software architecture is given in Figure 1.
 
-<img src="components.png" alt="Software architecture" width="500"/>
+<img src="anime-components.png" alt="Software architecture" width="700"/>     <img src="visplot.png" alt="Result of the above code showing visibility amplitudes plotted against uv-distance" width="750"/>
 
 VLBI data and metadata are loaded from disk to a Structure of Arrays (SoA) data structure. The instrument modelling functions interface with this data structure and write the computed models to disk in HDF5 format. Applying instrument models to the uncorrupted source model and writing the synthetic data back to disk is optional, indicated by the surrounding dashed boxes, if only instrument response models for performing calibration are desired.
 
@@ -96,7 +96,6 @@ thermalnoise!(obs, h5file=h5file)
 postprocessms(obs, h5file=h5file)
 mstouvfits(y["msname"], "test.uvfits", "corrected")
 ```
-<img src="visplot.svg" alt="Result of the above code showing visibility amplitudes plotted against uv-distance" width="500"/>
 
 [^2]: https://casa.nrao.edu/Memos/229.html
 
