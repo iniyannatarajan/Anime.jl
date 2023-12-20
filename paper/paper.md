@@ -102,7 +102,7 @@ mstouvfits(y["msname"], "test.uvfits", "corrected")
 <div style="display: flex; justify-content: center; align-items: center;">
   <figure>
     <img src="visplot.png" width="650">
-    <figcaption><b>Figure 2:</b> Output of the code snippet showing visibility amplitudes of polarization products plotted against projected baseline separation.</figcaption>
+    <figcaption><b>Figure 2:</b> Output of code showing amplitudes of complex-valued visibilities plotted against projected baseline separation.</figcaption>
   </figure>
 </div>
 
