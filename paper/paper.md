@@ -57,7 +57,7 @@ The software architecture is shown in Figure 1. The data and metadata for genera
 </div>
 
 ### Data structures
-The `CjlObservation` composite type, which is predominantly a Structure of arrays (SoA) layout, stores the observation parameters, VLBI data and associated metadata. The generated instrument models are station-based and are represented internally as multidimensional arrays, the ordering and dimensionality of which depend on the specific model being built. A generic model may vary along station, time, frequency and polarization axes.
+The observation parameters, VLBI data and associated metadata are stored in a Structure of arrays (SoA) composite type. The generated instrument models are station-based and are represented internally as multidimensional arrays, the ordering and dimensionality of which depend on the specific model being built. A generic model may vary along station, time, frequency and polarization axes.
 
 ### Instrument models
 `Anime` includes models for the lowest layer of Earth's atmosphere, the troposphere, which significantly affects signal propagation at the observing frequencies relevant to mm-wave VLBI observations (86 GHz and above). It models the leakage of power between polarization measurements made by two feeds nominally measuring orthogonal polarization states. It also includes models for time-variable telescope mispointing, complex-valued (amplitude and phase) bandpass effects that vary over the observing bandwidth, complex-valued time-variable receiver gains, and noise contributions from the atmosphere and receiver electronics. All time-variable aforementioned effects are modelled using Gaussian Processes (GPs) [@GPML2006], with the hyperparameters chosen to statistically match the emipirically measured temporal correlation structure of the quantity being modelled.
@@ -111,8 +111,8 @@ mstouvfits(y["msname"], "test.uvfits", "corrected")
 # Similar Packages
 - `MEQSv2` [@Natarajan2022]: A synthetic data generation package for VLBI written in Python. It was the first VLBI simulator used in the EHT to include complex mm-wave observing effects and can compute most instrument models found in `Anime`.
 - `SYMBA` [@Roelofs2020]: An end-to-end synthetic data generation pipeline that uses `MEQSv2` to generate synthetic data and introduces residual calibration effects that closely match the properties of real EHT data.
-- `eht-imaging` [@Chael2018]: A general-purpose python package for imaging EHT data, with simulation modules for generating synthetic data.
-- `ngehtsim` [@Pesceinprep]: A fast and flexible (sub)mm VLBI synthetic data generator for the EHT and ngEHT based on `eht-imaging`, adding capabilities such as simulation of local weather effects and fringe-finding residuals.
+- `eht-imaging` [@Chael2018]: A general-purpose python package for analyzing EHT observations, with simulation modules for generating synthetic data.
+- `ngehtsim` [@Pesceinprep]: A fast and flexible (sub-)mm VLBI synthetic data generator based on `eht-imaging`, adding capabilities such as simulation of local weather effects and fringe-finding residuals.
 
 # Acknowledgements
 This work was supported by MSIP2...
