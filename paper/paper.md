@@ -42,34 +42,39 @@ The Event Horizon Telescope (EHT) is a global VLBI network that produced the fir
 
 In radio interferometry parlance, calibration is the process of minimizing atmospheric and instrumental effects and imaging is the process of deriving the sky brightness distribution from calibrated data. The boundary between calibration and imaging is variable and one of convenience, since these two tasks can be performed iteratively or simultaneously, depending on the capabilities of the software. The EHT Collaboration uses two calibration software pipelines, `EHT-HOPS` [@Blackburn2019] and `rPICARD` [@Janssen2019] that build instrument models informed by physics and empirical data and minimizes their effects on the data products sent to downstream analysis methods such as `Comrade` [@Tiede2022] or `eht-imaging` [@Chael2018]. The imaging methods reconstruct the sky brightness distribution based on astrophysical models of the sky while accounting for residual errors in calibration.
 
-Realistic instrument models are also used to generate synthetic data to test new algorithms for data reduction and analysis. `MEQSv2` [@Natarajan2022] is a synthetic data generation software written in Python that introduces physically motivated signal corruptions to radio observations and is used by the end-to-end simulation and calibration pipeline `SYMBA` [@Roelofs2020]. `ngehtsim` [@Pesceinprep], which is based on `eht-imaging`, models effects such as local weather, telescope properties, and emulates fringe-finding to generate synthetic data for the ngEHT. While `MEQSv2` has more complex modelling capabilities, it is a monolithic piece of software and is considerably slower. `ngehtsim` generates synthetic data faster but does not include some complex effects introduced by `MEQSv2`.
+Realistic instrument models are also used to generate synthetic data to test new algorithms for data reduction and analysis. `MEQSv2` [@Natarajan2022] is a synthetic data generation software written in Python that introduces physically motivated signal corruptions to radio observations and is used by the end-to-end simulation and calibration pipeline `SYMBA` [@Roelofs2020]. While `MEQSv2` has complex modelling capabilities, it is a monolithic piece of software with inflexible workflow and is considerably slow when simulating hours-long observing sessions. `Anime` aims to provide a fast and flexible package to compute complex instrument models by taking advantage of the features offered by the Julia programming language.
 
-`Anime` aims to provide the speed and flexibility of `ngehtsim` with the complex modelling capabilities of `MEQSv2` by taking advantage of the features offered by the Julia programming language. Julia combines the performance of compiled languages such as C with the ease of development found in languages such as Python. Julia's automatic differentiation support also makes the instrument models provided by `Anime` inherently differentiable and perform fast parameter space exploration. Finally, `Comrade`, the Bayesian modelling framework which is used increasingly within the EHT, is written in Julia, and can potentially import the instrument models from `Anime` natively.
+Julia combines the performance of compiled languages such as C with the ease of development found in languages such as Python. Julia's automatic differentiation support also makes the instrument models provided by `Anime` inherently differentiable and perform fast parameter space exploration. Finally, `Comrade`, the Bayesian modelling framework which is used increasingly within the EHT, is written in Julia, and can potentially import the instrument models from `Anime` natively.
+
+`ngehtsim` [@Pesceinprep], which is based on `eht-imaging`, models effects such as local weather, telescope properties, and emulates fringe-finding to generate synthetic data for the ngEHT. `ngehtsim` generates synthetic data faster but does not include some complex effects introduced by `MEQSv2`.
 
 # Software architecture
-The software architecture is given in Figure 1.
+The software architecture is shown in Figure 1. The data and metadata for generating instrument models are loaded in-memory from various input data formats. The instrument models are stored in HDF5 format on disk. Optional steps (denoted by dashed boxes) involve computing uncorrupted VLBI measurements (or _source coherency_) from a given sky model using external software, applying instrument models to the source coherency to generate synthetic data corrupted by propagation path effects, and converting between VLBI data storage formats.
 
-<img src="anime-components.png" alt="Software architecture" width="700"/>     <img src="visplot.png" alt="Result of the above code showing visibility amplitudes plotted against uv-distance" width="750"/>
-
-VLBI data and metadata are loaded from disk to a Structure of Arrays (SoA) data structure. The instrument modelling functions interface with this data structure and write the computed models to disk in HDF5 format. Applying instrument models to the uncorrupted source model and writing the synthetic data back to disk is optional, indicated by the surrounding dashed boxes, if only instrument response models for performing calibration are desired.
+<div style="display: flex; justify-content: center; align-items: center;">
+  <figure>
+    <img src="anime-components.png" width="800">
+    <figcaption><b>Figure 1:</b> Components and control flow of a typical modelling run.</figcaption>
+  </figure>
+</div>
 
 ### Data structures
 The `CjlObservation` composite type, which is predominantly a Structure of arrays (SoA) layout, stores the observation parameters, VLBI data and associated metadata. The generated instrument models are station-based and are represented internally as multidimensional arrays, the ordering and dimensionality of which depend on the specific model being built. A generic model may vary along station, time, frequency and polarization axes.
 
-### Instrument Models
-`Anime` includes models for the troposphere, the lowest layer of Earth's atmosphere, which significantly affects signal propagation at an observing frequency of 86 GHz and above. It models the instrumental contribution to signal polarization to capture the leakage of polarized signals between orthogonal feeds. It also includes models for telescope mispointing, complex-valued (amplitude and phase) bandpass effects that vary over the observing bandwidth, complex-valued time-variable receiver gains, and noise contributions from the atmosphere and receiver electronics. Many of the aforementioned effects are time-variable and are modelled using Gaussian Processes (GPs) [@GPML2006], with the hyperparameters chosen to statistically match the temporal correlation structure of the quantity being modelled.
+### Instrument models
+`Anime` includes models for the lowest layer of Earth's atmosphere, the troposphere, which significantly affects signal propagation at the observing frequencies relevant to mm-wave VLBI observations (86 GHz and above). It models the leakage of power between polarization measurements made by two feeds nominally measuring orthogonal polarization states. It also includes models for time-variable telescope mispointing, complex-valued (amplitude and phase) bandpass effects that vary over the observing bandwidth, complex-valued time-variable receiver gains, and noise contributions from the atmosphere and receiver electronics. All time-variable aforementioned effects are modelled using Gaussian Processes (GPs) [@GPML2006], with the hyperparameters chosen to statistically match the emipirically measured temporal correlation structure of the quantity being modelled.
 
-### Synthetic data generation
-Synthetic data generation capabilities are built into `Anime`, with support for popular data storage formats such as UVFITS and Measurement Sets (MS)[^2] used in VLBI. The instrument models are stored in HDF5 format. Metadata that determine observation parameters are obtained from UVFITS and ASCII files. The generated instrument models are applied to the uncorrupted data using the Radio Interferometer Measurement Equation (RIME) formalism [@HBS1996]. The RIME expresses the relationship between true and measured *visibilities*, complex-valued quantities obtained as a result of correlating voltage patterns observed at two different locations, by casting them into a linear algebraic formalism describing the relationship between the astronomical signal and the propagation path effects. In the 2 x 2 *Jones matrix* formalism [@OMS2011] that `Anime` implements, the generic RIME can be written as
+### Generating synthetic data
+Synthetic data generation capabilities are built into `Anime`, with support for popular VLBI data storage formats such as UVFITS and Measurement Sets (MS)[^2]. Metadata that determine observation parameters are obtained from UVFITS and ASCII files. The computed instrument models are applied to the uncorrupted data using the Radio Interferometer Measurement Equation (RIME) formalism [@HBS1996]. The RIME is a linear algebraic framework that models the relationship between propagation path effects and the astronomical signal measured by the interferometer at two different locations. In the 2 x 2 *Jones matrix* formalism [@OMS2011] that `Anime` implements, the generic RIME can be written as
 
 $$
 \mathrm{V}\_{pq} = \mathbf{\textit{G}}\_p \left( \sum\_{s} \mathbf{\textit{E}}\_{sp}\\, \mathrm{X}\_{spq}\\, \mathbf{\textit{E}}\_{sq}^H \right) \mathbf{\textit{G}}\_q^H,
 $$
 
-where $\mathbf{X}\_{spq}$ is the source coherency observed in the absence of corrupting effects, $E\_{sp}$ and $G\_p$ are complex-valued matrices describing various propagation path effects and $\mathbf{V}\_{pq}$ are the measured visibilities corresponding to the baseline formed by stations $p$ and $q$. 
+where $\mathbf{X}\_{spq}$ is the source coherency observed in the absence of corrupting effects, $E\_{sp}$ and $G\_p$ are complex-valued matrices describing various propagation path effects and $\mathbf{V}\_{pq}$ are the VLBI measurements (also known as _visibilities_) corresponding to the baseline formed by stations $p$ and $q$.
 
 ### Runtime modes
-`Anime` can be run in modular or pipeline modes. In modular mode, the user imports `Anime` like any other Julia package and computes the instrument models by calling the relevant functions. The routines to read/write/convert between storage formats and diagnostic plotting tools can also be called independently. In pipeline mode, little to no user interaction is required to generate a series of instrument models based on observation settings read from existing metadata, create new data sets from scratch and apply the instrument models to data. All observation parameters for running `Anime` in pipeline mode can be provided in a YAML configuration file. The following example shows how to generate synthetic visibilities with instrument models applied to a sample ring-like astrophysical black hole model. Figure 2 shows the visibility amplitudes against the projected baseline lengths between pairs of antennas in the EHT array.
+`Anime` can be run in modular or pipeline modes. In modular mode, the user imports `Anime` like any other Julia package and computes the instrument models by calling the relevant functions. The routines to read/write/convert between storage formats and diagnostic plotting tools can also be called independently. In pipeline mode, little to no user interaction is required to generate a series of instrument models based on observation settings read from existing metadata, create new data sets from scratch and apply the instrument models to them. All observation parameters for running `Anime` in pipeline mode can be provided in a YAML configuration file. The following example shows how to generate synthetic visibilities with instrument models applied to a sample ring-like astrophysical black hole model. Figure 2 shows the visibility amplitudes against the projected baseline lengths between pairs of antennas in the EHT array.
 ```julia
 using YAML
 using Anime
@@ -96,12 +101,18 @@ thermalnoise!(obs, h5file=h5file)
 postprocessms(obs, h5file=h5file)
 mstouvfits(y["msname"], "test.uvfits", "corrected")
 ```
+<div style="display: flex; justify-content: center; align-items: center;">
+  <figure>
+    <img src="visplot.png" width="650">
+    <figcaption><b>Figure 2:</b> Output of the code snippet showing visibility amplitudes of polarization products plotted against projected baseline separation.</figcaption>
+  </figure>
+</div>
 
 [^2]: https://casa.nrao.edu/Memos/229.html
 
 # Similar Packages
 - `MEQSv2` [@Natarajan2022]: A synthetic data generation package for VLBI written in Python. It was the first VLBI simulator to include complex mm-wave observation effects used in the EHT and can compute most instrument models found in `Anime`.
-- `SYMBA` [@Roelofs2020]: An e-nd-to-end synthetic data generation pipeline that uses `MEQSv2` to generate synthetic data and calibrates them with `rPICARD`, introducing residual calibration effects, that closely match the properties of real EHT data.
+- `SYMBA` [@Roelofs2020]: An end-to-end synthetic data generation pipeline that uses `MEQSv2` to generate synthetic data and calibrates them with `rPICARD`, introducing residual calibration effects that closely match the properties of real EHT data.
 - `ngehtsim` [@Pesceinprep]: A fast and flexible (sub)mm VLBI synthetic data generator for the EHT and ngEHT based on `eht-imaging`, adding capabilities such as simulation of local weather effects and fringe-finding residuals.
 
 # Acknowledgements
