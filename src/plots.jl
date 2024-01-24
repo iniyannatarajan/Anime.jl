@@ -1,6 +1,8 @@
 export plotuvcov, plotvis, plotstationgains, plotbandpass, plotpointingerrors, plotelevationangle, plotparallacticangle, plotdterms, plottransmission,
 plotmeandelays
 
+using Plots.PlotMeasures
+
 """
     plotuvcov(uvw::Matrix{Float64}, flagrow::Vector{Bool}, chanfreqvec::Vector{Float64}; saveprefix="test_")
 
@@ -41,6 +43,7 @@ function plotvis(uvw::Matrix{Float64}, chanfreqvec::Array{Float64,1}, flag::Arra
 
     # plot visibility amplitudes against projected baseline separation
     p = plot()
+    plot!(p, size=(1050, 700), guidefontsize=18, legendfontsize=18, left_margin=5mm, bottom_margin=10mm)
     # plot first frequency channel
     plot!(p, uvwave, abs.(maskeddata[1,1,1,:]), seriestype=:scatter, ls=:dot, ms=1, mc=:red, msc=:red, label="RR")
     plot!(p, uvwave, abs.(maskeddata[1,2,1,:]), seriestype=:scatter, ls=:dot, ms=1, mc=:cyan, msc=:cyan, label="RL")
