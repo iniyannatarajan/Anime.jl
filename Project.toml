@@ -35,7 +35,7 @@ YAML = "ddb6d928-2868-570f-bddf-ab3f9cf99eb6"
 
 [compat]
 ArgParse = "1.1"
-CFITSIO_jll = "4.0.0"
+CFITSIO_jll == "4.0.0"
 CSV = "0.10"
 Casacore = "0.2"
 ColorSchemes = "3.21"
