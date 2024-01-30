@@ -45,7 +45,7 @@ Because data calibration depends on knowledge of the sky brightness and imaging 
 
 `MEQSv2` [@Natarajan2022], a Python synthetic data generation package, introduces physically motivated signal corruptions to radio observations and is used by the end-to-end VLBI simulation and calibration pipeline `SYMBA` [@Roelofs2020] which calibrates the synthetic data using `rPICARD` [@Janssen2019]. While this introduces complex effects, it has an inflexible workflow that suffers from long runtimes when simulating long observing sessions.
 `Anime` aims to provide a fast and flexible instrument modelling framework by taking advantage of the features offered by the Julia programming language, which combines the performance of languages such as C with the ease of development found in languages such as Python. Julia's automatic differentiation support also makes these instrument models inherently differentiable. 
-Finally, `Comrade`, a Bayesian imaging software that is being used increasingly in the EHT can potentially import models from `Anime` natively, enabling the development of an end-to-end framework for synthetic data generation and image reconstruction within the Julia ecosystem.
+Finally, `Comrade`, a Bayesian imaging software [@Tiede2022] that is being used increasingly in the EHT can potentially import models from `Anime` natively, enabling the development of an end-to-end framework for synthetic data generation and image reconstruction within the Julia ecosystem.
 
 # Software components
 The metadata for generating instrument models are loaded in-memory from various input data formats (Figure 1) and the output is stored as HDF5 files. Optional steps (denoted by dashed boxes) involve computing uncorrupted VLBI measurements (or "source coherency") from a given sky model using external software, applying instrument models to them, and converting between VLBI data storage formats.
@@ -85,13 +85,14 @@ postprocessms(obs, h5file=h5file) # write changes to disk
 
 [^2]: https://casa.nrao.edu/Memos/229.html
 
-# Similar Packages
+# Related Packages
 - `MEQSv2` [@Natarajan2022]: A synthetic data generation package for VLBI written in Python. It was the first VLBI simulator used in the EHT to include atmospheric effects and can compute most instrument models found in `Anime`.
 - `SYMBA` [@Roelofs2020]: An end-to-end synthetic data generation pipeline that uses `MEQSv2` to generate synthetic data and introduces residual calibration effects to closely match the properties of real data.
 - `eht-imaging` [@Chael2018]: A general-purpose python package for analyzing EHT observations, with simulation modules for generating synthetic data.
 - `ngehtsim`: A fast and flexible (sub-)mm VLBI synthetic data generator based on `eht-imaging`, adding capabilities such as simulation of local weather effects and fringe-finding residuals.
+- `Comrade` [@Tiede2022]: A Bayesian imaging framework for reconstructing images from VLBI observations while accounting for calibration residuals.
 
 # Acknowledgements
-This work is supported by the National Science Foundation (AST-2034306 and AST-1935980) and by the Black Hole Initiative at Harvard University, which is funded by grants from the John Templeton Foundation and the Gordon and Betty Moore Foundation to Harvard University.
+The authors thank Dominic Chang, Alexander Plavin, and Torrance Hodgson for helpful discussions. This work is supported by the National Science Foundation (AST-2034306 and AST-1935980) and by the Black Hole Initiative at Harvard University, which is funded by grants from the John Templeton Foundation and the Gordon and Betty Moore Foundation to Harvard University.
 
 # References
