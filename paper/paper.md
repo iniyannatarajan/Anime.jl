@@ -81,7 +81,7 @@ bandpass!(obs, h5file=h5file)
 thermalnoise!(obs, h5file=h5file)
 postprocessms(obs, h5file=h5file) # write changes to disk
 ```
-![Visibility amplitudes of synthetic data plotted against projected baseline separation.](datavis_visampvspbs.png)
+![Visibility amplitudes with instrument models applied plotted against projected baseline length.](datavis_visampvspbs.png)
 
 [^2]: https://casa.nrao.edu/Memos/229.html
 
