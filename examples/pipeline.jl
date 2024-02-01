@@ -2,7 +2,11 @@
 
 # `Anime` can be run in pipeline mode with little to no user interaction once the pipeline has started execution. This mode can include everything from
 # creating a new data set from scratch to computing coherency matrices, computing and applying instrumental models to complex visibilities, and writing
-# gain tables and making diagnostic plots. Note that some steps may involve the use of external software such as `WSClean`.
+# gain tables and making diagnostic plots.
+
+# !!! note 
+#     Some steps listed here involve the use of external software such as `WSClean` and hence this script is provided as a "passive" example that is not 
+#     executed in the deployed documentation but can be run by the user as a pipeline on their local machines.
 
 # Import the necessary modules
 # ```julia
@@ -105,7 +109,8 @@
 # y["thermalnoise"]["enable"] && thermalnoise!(obs, h5file=h5file)
 # ```
 
-# Compute weights, write everything back to disk, and convert to uvfits
+# Compute weights, write everything back to disk, and convert to uvfits. Note that the conversion to uvfits must be done after exiting the
+# main pipeline script, since `Casacore` does not allow other modules (such as python `casatasks`) to access the MS in the same session.
 # ```julia
 # postprocessms(obs, h5file=h5file)
 # mstouvfits(y["msname"], "test.uvfits", "corrected")

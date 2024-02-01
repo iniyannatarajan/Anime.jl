@@ -1,5 +1,10 @@
 # # Compute coherency matrix
 
+# !!! note
+#     While `Anime` focuses on generating instrument models, this example is provided as a "passive" example for the user to run on their local
+#     machines. This function cannot be used if [`WSClean`](https://wsclean.readthedocs.io/en/latest/index.html)
+#     is not installed. Usage of external sofware will soon be replaced by native computation of source coherency matrices written in Julia.
+
 # The Radio Interferometer Measurement Equation (RIME)[^HBS][^OMS] lies at the heart of modelling interferometric observations.
 # A generic discrete RIME can be written as
 
@@ -28,9 +33,6 @@
 #
 # run_wsclean(msname, skymodel, polarized, channelgroups, oversamplingfactor)
 # ```
-
-# !!! note
-#     This function cannot be used if `WSClean` is not installed. This will soon be replaced by native computation of source coherency matrices.
 
 # ### References
 # [^HBS]: Hamaker J.P, Bregman J.D., Sault R.J. Understanding radio polarimetry (1996) [AAPS](https://articles.adsabs.harvard.edu/pdf/1996A%26AS..117..137H)
