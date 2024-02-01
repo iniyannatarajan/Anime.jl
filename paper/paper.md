@@ -81,7 +81,7 @@ bandpass!(obs, h5file=h5file)
 thermalnoise!(obs, h5file=h5file)
 postprocessms(obs, h5file=h5file) # write changes to disk
 ```
-![Visibility amplitudes with instrument models applied plotted against projected baseline length.](datavis_visampvspbs.png)
+![Amplitudes of the four correlation products with instrument models applied versus the baseline length between pairs of stations.](datavis_visampvspbs.png)
 
 [^2]: https://casa.nrao.edu/Memos/229.html
 

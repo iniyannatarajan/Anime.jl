@@ -41,8 +41,8 @@ polmode, ptginterval, ptgscale, ptgmode, gainsmode, bpfile, delim=",", ignorerep
 
 # ## Atmospheric models
 # At mm-wavelengths (230 GHz), the troposphere has significant effects on signal propagation. `Anime` re-implements in `Julia` all the tropospheric effects
-# simulated by `MEQSv2`[^1]. The advantage here is that apart from being faster and not requiring a regular grid of complex visibilities, they can be
-# called from other imaging and calibration packages when necessary.
+# simulated by `MEQSv2`[^1]. The advantage here is that apart from being faster and not requiring a regular grid of complex visibilities in 
+# baseline-time space, they can be called from other imaging and calibration packages when necessary.
 
 # The function [`troposphere!`](@ref Anime.troposphere!) computes various tropospheric effects based on the flags set when `loadms` is called.
 
