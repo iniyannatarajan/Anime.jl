@@ -63,7 +63,7 @@ $$
 where $\mathrm{X}_{spq}$ is the source coherency observed towards source $s$ by the baseline formed by stations $p$ and $q$ in the absence of corrupting effects, $\mathbf{\textit{E}}_{sp}$ and $\mathbf{\textit{G}}_p$ are complex-valued matrices describing various propagation path effects and $\mathrm{V}_{pq}$ are the VLBI measurements known as "visibilities".
 
 `Anime` can be run in modular or pipeline modes. In modular mode, the user imports `Anime` to compute instrument models by calling the relevant functions.
-In pipeline mode, no user interaction is required to generate instrument models and apply them to an observation schedule. The following example computes and applies instrument models to a ring-like astrophysical source observed by the interferometer.
+In pipeline mode, no user interaction is required to generate instrument models and apply them to an observation schedule. The following example computes and applies instrument models to a polarized ring-like astrophysical source observed by a sample EHT array with two polarization feeds labelled R and L.
 ```julia
 using Anime
 msfromuvfits("eht.uvfits", "eht.ms", "uvfits") # generate MS from UVFITS
@@ -81,7 +81,7 @@ bandpass!(obs, h5file=h5file)
 thermalnoise!(obs, h5file=h5file)
 postprocessms(obs, h5file=h5file) # write changes to disk
 ```
-![Amplitudes of the four correlation products with instrument models applied versus the baseline length between pairs of stations.](datavis_visampvspbs.png)
+![Amplitudes of the four polarization products with instrument models applied versus the baseline length between pairs of stations.](datavis_visampvspbs.png)
 
 [^2]: https://casa.nrao.edu/Memos/229.html
 

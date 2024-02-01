@@ -19,6 +19,7 @@ function plotuvcov(uvw::Matrix{Float64}, flagrow::Vector{Bool}, chanfreqvec::Vec
     mvwave[maskindices] .= NaN
 
     p = plot()
+    plot!(p, size=(1050, 700), guidefontsize=18, legendfontsize=18, left_margin=5mm, bottom_margin=10mm)
     plot!(p, muwave, mvwave, seriestype=:scatter, ls=:dot, ms=1, mc=:blue, msc=:blue, label="", xflip=true)
     plot!(p, xlabel="u (Gλ)", ylabel="v (Gλ)", title="uv-coverage")
 
@@ -64,6 +65,7 @@ function plotvis(uvw::Matrix{Float64}, chanfreqvec::Array{Float64,1}, flag::Arra
     # plot visibility phases against projected baseline separation
     if plotphases
         p = plot()
+        plot!(p, size=(1050, 700), guidefontsize=18, legendfontsize=18, left_margin=5mm, bottom_margin=10mm)
         # plot first frequency channel
         plot!(p, uvwave, angle.(maskeddata[1,1,1,:]), seriestype=:scatter, ls=:dot, ms=1, mc=:red, msc=:red, label="RR")
         plot!(p, uvwave, angle.(maskeddata[1,2,1,:]), seriestype=:scatter, ls=:dot, ms=1, mc=:cyan, msc=:cyan, label="RL")
@@ -84,6 +86,7 @@ function plotvis(uvw::Matrix{Float64}, chanfreqvec::Array{Float64,1}, flag::Arra
 
     # plot visibility amplitudes against time
     p = plot()
+    plot!(p, size=(1050, 700), guidefontsize=18, legendfontsize=18, left_margin=5mm, bottom_margin=10mm)
     x = times .- times[1]
     # plot first frequency channel
     plot!(p, x, abs.(maskeddata[1,1,1,:]), seriestype=:scatter, ls=:dot, ms=1, mc=:red, msc=:red, label="RR")
@@ -105,6 +108,7 @@ function plotvis(uvw::Matrix{Float64}, chanfreqvec::Array{Float64,1}, flag::Arra
     # plot visibility phases against time
     if plotphases
         p = plot()
+        plot!(p, size=(1050, 700), guidefontsize=18, legendfontsize=18, left_margin=5mm, bottom_margin=10mm)
         x = times .- times[1]
         # plot first frequency channel
         plot!(p, x, angle.(maskeddata[1,1,1,:]), seriestype=:scatter, ls=:dot, ms=1, mc=:red, msc=:red, label="RR")
@@ -143,9 +147,13 @@ function plotstationgains(h5file::String, scanno::Vector{Int32}, times::Vector{F
     uniqtimes = unique(times)
 
     p1amp = plot()
+    plot!(p1amp, size=(1050, 700), guidefontsize=18, legendfontsize=18, left_margin=5mm, bottom_margin=10mm)
     p1phase = plot()
+    plot!(p1phase, size=(1050, 700), guidefontsize=18, legendfontsize=18, left_margin=5mm, bottom_margin=10mm)
     p2amp = plot()
+    plot!(p2amp, size=(1050, 700), guidefontsize=18, legendfontsize=18, left_margin=5mm, bottom_margin=10mm)
     p2phase = plot()
+    plot!(p2phase, size=(1050, 700), guidefontsize=18, legendfontsize=18, left_margin=5mm, bottom_margin=10mm)
     for scan in uniqscans
 
         # determine indices of missing values
@@ -229,12 +237,14 @@ function plotbandpass(h5file::String, stationnames::Vector{String3}, chanfreqvec
     b = read(fid["bandpass"]["bjonesmatrices"])
 
     p1 = plot()
+    plot!(p1, size=(1050, 700), guidefontsize=18, legendfontsize=18, left_margin=5mm, bottom_margin=10mm)
     for ant in eachindex(stationnames)
         plot!(p1, chanfreqvec_ghz, abs.(b[1, 1, :, ant]), lw=1, lc=ColorSchemes.mk_15[ant], label="")
     end
     plot!(p1, title="Station bandpass gain amplitudes", ylabel="Pol1 gain amp") #, legend=:outertop, legendcolumns=6)
 
     p2 = plot()
+    plot!(p2, size=(1050, 700), guidefontsize=18, legendfontsize=18, left_margin=5mm, bottom_margin=10mm)
     for ant in eachindex(stationnames)
         plot!(p2, chanfreqvec_ghz, abs.(b[2, 2, :, ant]), lw=1, lc=ColorSchemes.mk_15[ant], label=stationnames[ant])
     end
@@ -265,7 +275,9 @@ function plotpointingerrors(h5file::String, scanno::Vector{Int32}, stationnames:
     uniqscans = unique(scanno)
 
     p_off = plot()
+    plot!(p_off, size=(1050, 700), guidefontsize=18, legendfontsize=18, left_margin=5mm, bottom_margin=10mm)
     p_amperr = plot()
+    plot!(p_amperr, size=(1050, 700), guidefontsize=18, legendfontsize=18, left_margin=5mm, bottom_margin=10mm)
     indexstart = 1
     indexend = 0
     for scan in uniqscans
@@ -336,6 +348,7 @@ function plotelevationangle(h5file::String, scanno::Vector{Int32}, times::Vector
     end
 
     p = plot()
+    plot!(p, size=(1050, 700), guidefontsize=18, legendfontsize=18, left_margin=5mm, bottom_margin=10mm)
     for ant in eachindex(stationnames)
         plot!(p, x, rad2deg.(elevmat[:,ant]), seriestype=:scatter, ls=:dot, ms=1, mc=ColorSchemes.mk_15[ant], msc=ColorSchemes.mk_15[ant], label=stationnames[ant])
     end
@@ -387,6 +400,7 @@ function plotparallacticangle(h5file::String, scanno::Vector{Int32}, times::Vect
     end
 
     p = plot()
+    plot!(p, size=(1050, 700), guidefontsize=18, legendfontsize=18, left_margin=5mm, bottom_margin=10mm)
     for ant in eachindex(stationnames)
         plot!(p, x, rad2deg.(parangmat[:,ant]), seriestype=:scatter, ls=:dot, ms=1, mc=ColorSchemes.mk_15[ant], msc=ColorSchemes.mk_15[ant], label=stationnames[ant])
     end
@@ -426,6 +440,7 @@ function plotdterms(h5file::String, stationnames::Vector{String3}, chanfreqvec::
     plot!(p, xlabel="Real", ylabel="Imag", title="D-terms", legend=:outertop, legendcolumns=6)=#
 
     p = plot()
+    plot!(p, size=(1050, 700), guidefontsize=18, legendfontsize=18, left_margin=5mm, bottom_margin=10mm)
     for ant in eachindex(stationnames)
         plot!(p, chanfreqvec_ghz, abs.(d[1,2,:,ant]), seriestype=:scatter, markershape=:circle, ms=3, mc=ColorSchemes.mk_15[ant], msc=ColorSchemes.mk_15[ant], label=stationnames[ant]*"-RL")
         plot!(p, chanfreqvec_ghz, abs.(d[2,1,:,ant]), seriestype=:scatter, markershape=:diamond, ms=3, mc=ColorSchemes.mk_15[ant], msc=ColorSchemes.mk_15[ant], label=stationnames[ant]*"-LR")
@@ -461,6 +476,7 @@ function plottransmission(h5file::String, stationnames::Vector{String3}, times::
 
     if length(chanfreqvec_ghz) == 1
         p = plot()
+        plot!(p, size=(1050, 700), guidefontsize=18, legendfontsize=18, left_margin=5mm, bottom_margin=10mm)
         for ant in eachindex(stationnames)
             plot!(p, reltimes, tr[1,:,ant], seriestype=:scatter, ls=:dot, ms=1, mc=ColorSchemes.mk_15[ant], msc=ColorSchemes.mk_15[ant], label=stationnames[ant])
         end
@@ -512,6 +528,7 @@ function plotmeandelays(h5file::String, stationnames::Vector{String3}, times::Ve
     close(fid)
 
     p = plot()
+    plot!(p, size=(1050, 700), guidefontsize=18, legendfontsize=18, left_margin=5mm, bottom_margin=10mm)
     for ant in eachindex(stationnames)
         plot!(p, reltimes, dropdims(mean(md[:,:,ant], dims=1), dims=1), seriestype=:scatter, ls=:dot, ms=1, mc=ColorSchemes.mk_15[ant], msc=ColorSchemes.mk_15[ant], label=stationnames[ant])
     end
