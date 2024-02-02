@@ -1,7 +1,7 @@
 # # Compute instrument models
 
-# The primary goal of `Anime` is to generate instrument models tailored to observation specifications. The models are optionally stored in HDF5 format
-# and plotted. Plotting functions using `Plots.jl` are provided.
+# The primary goal of `Anime` is to generate instrument models tailored to specific observations. The models are optionally stored in HDF5 format.
+# Basic plotting functions are also provided to visualize the models. The following example demonstrates how to compute and visualize the models.
 
 # All functions that follow require loading the following modules:
 relativepath = "../../../"
@@ -11,7 +11,8 @@ using .Anime
 using HDF5
 using Plots
 
-# We also load an *observation* from an existing MS to operate on.
+# We also load two instances of *observation* from existing data sets to illustrate the various models that are generated -- a single-channel data set
+# and a multi-frequency data set.
 msname = joinpath(relativepath, "test", "data", "ehtuvf.ms")
 stations = joinpath(relativepath, "inputs", "eht_2017.stations")
 corruptseed = 456
@@ -32,11 +33,12 @@ bpfile = joinpath(relativepath, "test", "data", "eht_2017.bandpass")
 delim = ","
 ignorerepeated = false
 
-obs = loadms(msname, stations, corruptseed, tropseed, tropwetonly, correff, tropattenuate, tropskynoise, tropmeandelays, tropturbulence, polvisframe,
+obs1 = loadms(msname, stations, corruptseed, tropseed, tropwetonly, correff, tropattenuate, tropskynoise, tropmeandelays, tropturbulence, polvisframe,
 polmode, ptginterval, ptgscale, ptgmode, gainsmode, bpfile, delim=",", ignorerepeated=false)
 
-# A multi-frequency data set
-obs1 = loadms(joinpath(relativepath, "test", "data", "eht1.ms"), stations, corruptseed, tropseed, tropwetonly, correff, tropattenuate, tropskynoise, tropmeandelays, tropturbulence, polvisframe,
+# Now load the multi-frequency data set
+
+obs2 = loadms(joinpath(relativepath, "test", "data", "eht1.ms"), stations, corruptseed, tropseed, tropwetonly, correff, tropattenuate, tropskynoise, tropmeandelays, tropturbulence, polvisframe,
 polmode, ptginterval, ptgscale, ptgmode, gainsmode, bpfile, delim=",", ignorerepeated=false)
 
 # ## Atmospheric models
@@ -56,7 +58,7 @@ absorptionfile = joinpath(relativepath, "test", "data", "absorption1.csv")
 dispersivefile = joinpath(relativepath, "test", "data", "dispersive1.csv")
 elevfile = joinpath(relativepath, "test", "data", "insmodeluvf.h5")
 
-troposphere!(obs, h5file, absorptionfile=absorptionfile, dispersivefile=dispersivefile, elevfile=elevfile)
+troposphere!(obs1, h5file, absorptionfile=absorptionfile, dispersivefile=dispersivefile, elevfile=elevfile)
 
 # This computes the delays introduced by the mean and turbulent components of the troposphere, along with attenuation due to opacity and increase in
 # system noise.
@@ -65,14 +67,14 @@ troposphere!(obs, h5file, absorptionfile=absorptionfile, dispersivefile=dispersi
 # observing scans.
 
 # For example, to plot the elevation angles by station we can just do
-plotelevationangle(elevfile, obs.scanno, obs.times, obs.stationinfo.station, save=false)
+plotelevationangle(elevfile, obs1.scanno, obs1.times, obs1.stationinfo.station, save=false)
 
 # The transmission values computed can be plotted using
-plottransmission(h5file, obs.stationinfo.station, obs.times, obs.chanfreqvec, save=false)
+plottransmission(h5file, obs1.stationinfo.station, obs1.times, obs1.chanfreqvec, save=false)
 # Since this is a channel-averaged data set, the frequency-dependent transmission reduces to a single curve per station.
 
 # The delays due to the mean component of the troposphere can be plotted as follows:
-plotmeandelays(h5file, obs.stationinfo.station, obs.times, obs.chanfreqvec, save=false)
+plotmeandelays(h5file, obs1.stationinfo.station, obs1.times, obs1.chanfreqvec, save=false)
 #-
 rm(h5file) # hide
 rm("atm.csv") # hide
@@ -83,11 +85,11 @@ rm("atm.csv") # hide
 # variations in pointing over time.
 
 # The function [`pointing!`](@ref Anime.pointing!) is used to compute and apply pointing models to data.
-pointing!(obs, h5file=h5file)
+pointing!(obs1, h5file=h5file)
 # Note that this method is a shorthand for another method with multiple arguments that provides more fine-grained control over the input parameters.
 
 # We now plot the pointing model generated:
-plotpointingerrors(h5file, obs.scanno, obs.stationinfo.station, save=false)
+plotpointingerrors(h5file, obs1.scanno, obs1.stationinfo.station, save=false)
 # Mispointings of station LM (Large Millimeter Telescope, Mexico), the largest dish in the array, result in the largest attenuation of amplitude.
 rm(h5file) # hide
 
@@ -100,11 +102,11 @@ rm(h5file) # hide
 # amount of leakage at each station. If the user requests to apply instrumental polarization to visibilities, they can be written out either in sky frame or
 # antenna frame i.e., with or without parallactic angle de-rotation respectively.
 inh5file = joinpath(relativepath, "test", "data", "insmodeluvf.h5")
-instrumentalpolarization!(obs, h5file=h5file, elevfile=inh5file, parangfile=inh5file)
+instrumentalpolarization!(obs1, h5file=h5file, elevfile=inh5file, parangfile=inh5file)
 #-
-plotparallacticangle(h5file, obs.scanno, obs.times, obs.stationinfo.station, save=false)
+plotparallacticangle(h5file, obs1.scanno, obs1.times, obs1.stationinfo.station, save=false)
 #-
-plotdterms(h5file, obs.stationinfo.station, obs.chanfreqvec)
+plotdterms(h5file, obs1.stationinfo.station, obs1.chanfreqvec)
 # There is only one frequency channel since this is a channel-averaged data set.
 
 rm(h5file) # hide
@@ -114,17 +116,17 @@ rm(h5file) # hide
 # (such as SE) while the phases are modelled using a Wiener process with a given location and scale parameters.
 
 # We use an observation with only 2 scans to illustrate this better.
-stationgains!(obs1, h5file=h5file)
+stationgains!(obs2, h5file=h5file)
 #-
-plotstationgains(h5file, obs1.scanno, obs1.times, obs1.exposure, obs1.stationinfo.station)
+plotstationgains(h5file, obs2.scanno, obs2.times, obs2.exposure, obs2.stationinfo.station)
 #-
 rm(h5file) # hide
 
 # Also there is a complex bandpass gain variation that is modelled by using representative bandpass amplitude values at certain frequencies across the bandwidth
 # and interpolated for the missing frequency channels.
-bandpass!(obs1, h5file=h5file)
+bandpass!(obs2, h5file=h5file)
 #-
-plotbandpass(h5file, obs1.stationinfo.station, obs1.chanfreqvec)
+plotbandpass(h5file, obs2.stationinfo.station, obs2.chanfreqvec)
 #-
 rm(h5file) # hide
 

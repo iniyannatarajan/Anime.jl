@@ -34,12 +34,12 @@ ignorerepeated = false
 obs = loadms(msname, stations, corruptseed, tropseed, tropwetonly, correff, tropattenuate, tropskynoise, tropmeandelays, tropturbulence, polvisframe,
 polmode, ptginterval, ptgscale, ptgmode, gainsmode, bpfile, delim=",", ignorerepeated=false)
 
-# All subsequent computations are performed on this structure until the user calls [`postprocessms`](@ref Anime.postprocessms) to write the results back to
-# the MS. This function optionally requires an HDF5 file containing the noise generated for populating the WEIGHT and SIGMA arrays in the MS. If no HDF5 file
-# is provided, these arrays are initialized to 1.0 and 0.0 respectively.
+# All subsequent computations are performed on this structure until the user calls [`postprocessms`](@ref Anime.postprocessms) 
+# to write the results back to the MS. This function optionally accepts an HDF5 file containing the noise to be used for populating
+# the WEIGHT and SIGMA arrays in the MS. If no HDF5 file is provided, these arrays are initialized to 1.0 and 0.0 respectively.
 
-# We first load a pre-existing HDF5 file containing instrument models generated according to the dimensions required by `eht1.ms` that we loaded in the previous
-# step.
+# We first load a pre-existing HDF5 file containing instrument models generated according to the dimensions required by `eht1.ms` that was loaded 
+# in the previous step.
 
 h5file = joinpath(relativepath, "test", "data", "insmodel1.h5")
 
