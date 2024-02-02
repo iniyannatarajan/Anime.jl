@@ -82,7 +82,7 @@ where $A_{\mathrm e}$ denotes the effective area of the telescope and $\eta$ com
 ```math
 \mathrm{SEFD} = \frac{2 k_{\mathrm B} T_{\mathrm{sys}}}{\eta_{\mathrm{ant}} A_{\mathrm e}}
 ```
-where $\eta_{mathrm{ant}}$ is the antenna efficiency and $A_{\mathrm e}$ is the effective area of the antenna.
+where $\eta_{\mathrm{ant}}$ is the antenna efficiency and $A_{\mathrm{e}}$ is the effective area of the antenna.
 
 
 ### References
