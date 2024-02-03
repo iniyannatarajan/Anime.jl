@@ -1,7 +1,7 @@
 name = "Anime"
 uuid = "628eb91b-9d1c-424a-81d5-cd7fa5d7294a"
 authors = ["Iniyan Natarajan <iniyannatarajan@gmail.com>"]
-version = "0.2.0"
+version = "0.3.0"
 
 [deps]
 ArgParse = "c7e460c6-2fb9-53a9-8c5b-16f535851c63"
@@ -51,7 +51,7 @@ Interpolations = "0.14, 0.15"
 LaTeXStrings = "1.3.0"
 LazyGrids = "0.5"
 Literate = "2.14"
-OpenSSL_jll = "1.1.21"
+OpenSSL_jll = "=1.1.21"
 Plots = "1.38"
 PythonCall = "0.9"
 SpecialFunctions = "2.3"
@@ -59,7 +59,7 @@ Statistics = "1"
 StatsBase = "0.33, 0.34"
 Tables = "1.10"
 YAML = "0.4"
-julia = "1.9"
+julia = "=1.8, =1.9"
 
 [extras]
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
