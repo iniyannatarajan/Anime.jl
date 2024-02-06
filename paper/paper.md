@@ -54,7 +54,7 @@ The metadata for generating instrument models are loaded in-memory from various 
 
 A generic instrument model may vary along station, time, frequency and polarization axes. `Anime` includes models for the troposphere which significantly affects signal propagation at mm-wavelengths (86 GHz and above). It also models the instrumental contribution to signal polarization, telescope tracking offsets, bandpass effects and receiver electronic gains, alongside the noise contributions from the atmosphere and receiver electronics. All time-variable effects are modelled using Gaussian Processes (GPs) [@GPML2006], with the hyperparameters chosen to statistically match the empirically measured temporal correlation structure of the quantity being modelled.
 
-Synthetic data generation capabilities are built into `Anime`, with support for popular VLBI data storage formats such as UVFITS and Measurement Sets (MS)[^2]. The generated instrument models are applied to the uncorrupted data using the Radio Interferometer Measurement Equation (RIME) [@OMS2011]:
+Synthetic data generation capabilities are built into `Anime`, with support for popular VLBI data storage formats such as UVFITS and Measurement Sets (MS)[^2]. The generated instrument models are applied to the uncorrupted data using the Radio Interferometer Measurement Equation (RIME) that describes the full polarization state of the signal using the 2x2 _Jones matrix_ formalism [@OMS2011]:
 
 $$
 \mathrm{V}_{pq} = \mathbf{\textit{G}}_p \left( \sum_{s} \mathbf{\textit{E}}_{sp}\, \mathrm{X}_{spq}\, \mathbf{\textit{E}}_{sq}^H \right) \mathbf{\textit{G}}_q^H,
