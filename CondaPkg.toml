@@ -1,5 +1,6 @@
 [deps]
 python = "=3.8"
+openssl = "=3.0.2"
 
 [pip.deps]
 casadata = ""
