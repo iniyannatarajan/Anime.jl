@@ -93,6 +93,6 @@ postprocessms(obs, h5file=h5file) # write changes to disk
 - `Comrade` [@Tiede2022]: A Bayesian imaging framework for reconstructing images from VLBI observations while accounting for calibration residuals.
 
 # Acknowledgements
-The authors thank Dominic Chang, Alexander Plavin, and Torrance Hodgson for helpful discussions. This work is supported by the National Science Foundation (AST-2034306 and AST-1935980) and by the Black Hole Initiative at Harvard University, which is funded by grants from the John Templeton Foundation and the Gordon and Betty Moore Foundation to Harvard University.
+This work was supported by the Black Hole Initiative, which is funded by grants from the John Templeton Foundation (Grant #62286) and the Gordon and Betty Moore Foundation (Grant GBMF-8273) - although the opinions expressed in this work are those of the author(s) and do not necessarily reflect the views of these Foundations.
 
 # References
