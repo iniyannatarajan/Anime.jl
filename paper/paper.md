@@ -46,7 +46,7 @@ In addition to calibration, instrument models are used in the generation of synt
 Finally, `Comrade`, a Bayesian imaging software [@Tiede2022] that is being used increasingly in the EHT can potentially import models from `Anime` natively, enabling the development of an end-to-end framework for synthetic data generation and image reconstruction within the Julia ecosystem.
 
 # Software components
-The metadata for generating instrument models are loaded in-memory from various input data formats (Figure 1) and the output is stored as HDF5 files. Optional steps (denoted by dashed boxes) involve computing uncorrupted VLBI measurements (or "source coherency") from a given sky model using external software, applying instrument models to them, and converting between VLBI data storage formats.
+The metadata for generating instrument models are loaded in-memory from various input data formats (Figure 1) and the output is stored as HDF5 files. Optional steps (enclosed within dashed boxes) involve computing uncorrupted VLBI measurements (or "source coherency") from a given sky model using external software, applying instrument models to them, and converting between VLBI data storage formats.
 
 ![Components and control flow of a typical modelling run.](anime-components.png)
 
@@ -63,6 +63,7 @@ where $\mathrm{X}_{spq}$ is the source coherency observed towards source $s$ by 
 `Anime` can be run in modular or pipeline modes. In modular mode, the user imports `Anime` to compute instrument models by calling the relevant functions.
 In pipeline mode, no user interaction is required to generate instrument models and apply them to an observation schedule. The following example computes and applies instrument models to a polarized ring-like astrophysical source observed by a sample EHT array with two polarization feeds (R and L).
 ```julia
+# Example synthetic data generation with Anime
 using Anime
 msfromuvfits("eht.uvfits", "eht.ms", "uvfits") # generate MS from UVFITS
 run_wsclean("eht.ms", "polring", true, 1, 8191) # compute source coherency
@@ -91,6 +92,6 @@ postprocessms(obs, h5file=h5file) # write changes to disk
 - `Comrade` [@Tiede2022]: A Bayesian imaging framework for reconstructing images from VLBI observations while accounting for calibration residuals.
 
 # Acknowledgements
-The authors thank Dominic Chang, Alexander Plavin, and Torrance Hodgson for helpful discussions. Support for this work was provided by the NSF (AST-1935980, AST-2034306) and by the Gordon and Betty Moore Foundation through grant GBMF-10423. This work was supported by the Black Hole Initiative, which is funded by grants from the John Templeton Foundation (Grant #62286) and the Gordon and Betty Moore Foundation (Grant GBMF-8273) - although the opinions expressed in this work are those of the author(s) and do not necessarily reflect the views of these Foundations.
+The authors thank Dominic Chang, Alexander Plavin, and Torrance Hodgson for helpful discussions. Support for this work was provided by the NSF (AST-1935980, AST-2034306) and by the Gordon and Betty Moore Foundation through grant GBMF-10423. This work was supported by the Black Hole Initiative, which is funded by grants from the John Templeton Foundation (Grant #62286) and the Gordon and Betty Moore Foundation (Grant GBMF-8273), although the opinions expressed in this work are those of the author(s) and do not necessarily reflect the views of these Foundations.
 
 # References
