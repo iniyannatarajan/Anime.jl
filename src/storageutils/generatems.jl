@@ -153,7 +153,7 @@ end
 Convert MS to UVFITS. Requires `casatasks` to be installed.
 """
 function mstouvfits(msname::String, uvfits::String, datacolumn::String; field::String="", spw::String="", antenna::String="",
-    timerange::String="", overwrite::Bool=false)
+    timerange::String="", overwrite::Bool=true)
     @info("Creating $uvfits from $msname...")
 
     if !overwrite && isfile(uvfits)
