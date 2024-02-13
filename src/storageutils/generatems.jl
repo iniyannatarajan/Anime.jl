@@ -110,11 +110,23 @@ function msfromvex()
 end=#
 
 """
-    msfromuvfits(uvfits::String, msname::String, mscreationmode::String)
+    msfromuvfits(uvfits::String, msname::String, mscreationmode::String, overwrite::Bool=true)
 
 Convert `uvfits` file to MS named `msname`. Requires `casatools` and `casatasks` to be installed.
 """
-function msfromuvfits(uvfits::String, msname::String, mscreationmode::String)
+function msfromuvfits(uvfits::String, msname::String, mscreationmode::String, overwrite::Bool=true)
+
+    # overwrite existing MS
+    if isdir(msname)
+        if !overwrite
+            @error("$msname exists but overwrite=$overwrite; not converting uvfits to ms 🤷")
+            exit()
+        else
+            @info("Removing existing $msname...")
+            rm(msname; recursive=true)
+       end
+    end
+
     # convert uvfits to ms
     importuvfits(fitsfile=uvfits, vis=msname)
 
@@ -148,7 +160,7 @@ end
 
 """
     mstouvfits(msname::String, uvfits::String, datacolumn::String; field::String="", spw::String="", antenna::String="",
-    timerange::String="", overwrite::Bool=false)
+    timerange::String="", overwrite::Bool=true)
 
 Convert MS to UVFITS. Requires `casatasks` to be installed.
 """
