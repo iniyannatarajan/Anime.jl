@@ -325,8 +325,8 @@ function compute_turbulence!(obs::CjlObservation, atmdf::DataFrame, elevationmat
     end
     
     # add datatype attribute
-    if !haskey(attributes(g), "datatype")
-        attributes(g)["datatype"] = string(typeof(read(g[keys(g)[1]])))
+    if !haskey(HDF5.attributes(g), "datatype")
+        HDF5.attributes(g)["datatype"] = string(typeof(read(g[keys(g)[1]])))
     end
     
     @info("Introduce turbulence in the troposphere 🙆")
@@ -345,8 +345,8 @@ function troposphere!(obs::CjlObservation, h5file::String; absorptionfile::Strin
         fid = h5open(h5file, "cw")
         if !haskey(fid, "troposphere")
             g = create_group(fid, "troposphere")
-            attributes(g)["desc"] = "all tropospheric signal corruptions"
-            attributes(g)["dims"] = "various"
+            HDF5.attributes(g)["desc"] = "all tropospheric signal corruptions"
+            HDF5.attributes(g)["dims"] = "various"
         else
             g = fid["troposphere"]
         end

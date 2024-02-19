@@ -56,8 +56,8 @@ function pointing!(data::Array{Complex{Float32},4}, stationinfo::DataFrame, scan
     if !isempty(h5file)
         fid = h5open(h5file, "cw")
         g = create_group(fid, "pointingerrors")
-        attributes(g)["desc"] = "Numerical values of time-variable short and long term pointing errors"
-        attributes(g)["dims"] = "short and long term pointing errors have different dims"
+        HDF5.attributes(g)["desc"] = "Numerical values of time-variable short and long term pointing errors"
+        HDF5.attributes(g)["dims"] = "short and long term pointing errors have different dims"
     end
  
     # get unique scan numbers
@@ -124,7 +124,7 @@ function pointing!(data::Array{Complex{Float32},4}, stationinfo::DataFrame, scan
     end
 
     if !isempty(h5file)
-        attributes(g)["datatype"] = string(typeof(read(g[keys(g)[1]])))
+        HDF5.attributes(g)["datatype"] = string(typeof(read(g[keys(g)[1]])))
         close(fid)
     end
 

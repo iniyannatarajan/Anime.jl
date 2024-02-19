@@ -222,8 +222,8 @@ function instrumentalpolarization!(data::Array{Complex{Float32},4}, scanno::Vect
     if !isempty(h5file)
         fid = h5open(h5file, "cw")
         g = create_group(fid, "polarization")
-        attributes(g)["desc"] = "Numerical values of instrumental polarization matrices applied to data (Dterms and fullpolproduct)"
-        attributes(g)["dims"] = "2 x 2 x nchannels x nant" #for each scan, a 4d array of 2 x 2 x nchan x nant is stored
+        HDF5.attributes(g)["desc"] = "Numerical values of instrumental polarization matrices applied to data (Dterms and fullpolproduct)"
+        HDF5.attributes(g)["dims"] = "2 x 2 x nchannels x nant" #for each scan, a 4d array of 2 x 2 x nchan x nant is stored
 
         if !(haskey(g, "elevation"))
             g["elevation"] = elevationmatrix
@@ -236,7 +236,7 @@ function instrumentalpolarization!(data::Array{Complex{Float32},4}, scanno::Vect
         g["djonesmatrices"] = djonesmatrices
         g["polrotmatrices"] = polrotmatrices
         g["pjonesmatrices"] = pjonesmatrices
-        attributes(g)["datatype"] = string(typeof(read(g[keys(g)[1]])))
+        HDF5.attributes(g)["datatype"] = string(typeof(read(g[keys(g)[1]])))
         close(fid)
     end
 
