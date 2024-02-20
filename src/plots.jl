@@ -333,7 +333,7 @@ function plotelevationangle(h5file::String, scanno::Vector{Int32}, times::Vector
     close(fid) # close HDF5 file
 
     f[1, 2] = Legend(f, ax, merge=true, unique=true, tellheight=true, tellwidth=true)
-    save("Elevation_angle_vs_time.png", f)
+    save("ElevationAngle_vs_time.png", f)
 
     @info("Plotted elevation angles 🙆")
 end
@@ -382,7 +382,7 @@ function plotparallacticangle(h5file::String, scanno::Vector{Int32}, times::Vect
     close(fid) # close HDF5 file
 
     f[1, 2] = Legend(f, ax, merge=true, unique=true, tellheight=true, tellwidth=true)
-    save("Parallactic_angle_vs_time.png", f)
+    save("ParallacticAngle_vs_time.png", f)
 
     @info("Plotted parallactic angles 🙆")
 end

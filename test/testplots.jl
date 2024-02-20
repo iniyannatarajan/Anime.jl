@@ -25,10 +25,10 @@
     rm("test_visibilityamplitude_vs_time.png")
 
     @inferred plotstationgains(h5file, obs.scanno, obs.times, obs.exposure, obs.stationinfo.station)
-    rm("Stationgains_vs_time.png")
+    rm("StationGains_vs_time.png")
 
     @inferred plotstationgains(h5file2, obs2.scanno, obs2.times, obs2.exposure, obs2.stationinfo.station)
-    rm("Stationgains_vs_time.png")
+    rm("StationGains_vs_time.png")
 
     @inferred plotbandpass(h5file, obs.stationinfo.station, obs.chanfreqvec)
     rm("BandpassGains_vs_frequency.png")
@@ -38,7 +38,7 @@
 
     # test elevation angle plotting
     @inferred plotelevationangle(h5file, obs.scanno, obs.times, obs.stationinfo.station)
-    rm("Elevation_angle_vs_time.png")
+    rm("ElevationAngle_vs_time.png")
 
     fid = h5open("testing.h5", "w")
     close(fid)
@@ -54,7 +54,7 @@
 
     # test parallactic angle plotting
     @inferred plotparallacticangle(h5file, obs.scanno, obs.times, obs.stationinfo.station)
-    rm("Parallactic_angle_vs_time.png")
+    rm("ParallacticAngle_vs_time.png")
 
     fid = h5open("testing.h5", "w")
     close(fid)
