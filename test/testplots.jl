@@ -18,20 +18,20 @@
     @inferred plotuvcov(obs.uvw, obs.flagrow, obs.chanfreqvec)
     rm("test_uvcoverage.png")
 
-    @inferred plotvis(obs.uvw, obs.chanfreqvec, obs.flag, obs.data, obs.numchan, obs.times, plotphases=true, saveprefix="test_")
-    rm("test_visampvspbs.png")
-    rm("test_visphasevspbs.png")
-    rm("test_visampvstime.png")
-    rm("test_visphasevstime.png")
+    @inferred plotvis(obs.uvw, obs.chanfreqvec, obs.flag, obs.data, obs.numchan, obs.times, plotphases=true, saveprefix="test")
+    rm("test_visibilityphase_vs_baseline.png")
+    rm("test_visibilityamplitude_vs_baseline.png")
+    rm("test_visibilityphase_vs_time.png")
+    rm("test_visibilityamplitude_vs_time.png")
 
     @inferred plotstationgains(h5file, obs.scanno, obs.times, obs.exposure, obs.stationinfo.station)
-    rm("gains_vs_time.png")
+    rm("Stationgains_vs_time.png")
 
     @inferred plotstationgains(h5file2, obs2.scanno, obs2.times, obs2.exposure, obs2.stationinfo.station)
-    rm("gains_vs_time.png")
+    rm("Stationgains_vs_time.png")
 
     @inferred plotbandpass(h5file, obs.stationinfo.station, obs.chanfreqvec)
-    rm("bpamplitudes_vs_frequency.png")
+    rm("BandpassGains_vs_frequency.png")
 
     @inferred plotpointingerrors(h5file, obs.scanno, obs.stationinfo.station)
     rm("pointingoffsets.png")
