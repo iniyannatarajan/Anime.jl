@@ -74,7 +74,7 @@ plottransmission(h5file, obs1.stationinfo.station, obs1.times, obs1.chanfreqvec)
 # Since this is a channel-averaged data set, the frequency-dependent transmission reduces to a single curve per station.
 
 # The delays due to the mean component of the troposphere can be plotted as follows:
-plotmeandelays(h5file, obs1.stationinfo.station, obs1.times, obs1.chanfreqvec, save=false)
+plotmeandelays(h5file, obs1.stationinfo.station, obs1.times, obs1.chanfreqvec)
 #-
 rm(h5file) # hide
 rm("atm.csv") # hide

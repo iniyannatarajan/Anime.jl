@@ -84,5 +84,5 @@
     end
 
     @inferred plotmeandelays(h5file, obs.stationinfo.station, obs.times, obs.chanfreqvec)
-    rm("meandelays.png")
+    rm("MeanDelays_vs_time.png")
 end

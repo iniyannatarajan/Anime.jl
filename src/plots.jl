@@ -1,5 +1,5 @@
 export plotvis, plotstationgains, plotbandpass, plotpointingerrors, plotelevationangle, plotparallacticangle, plotdterms,
-plottransmission
+plottransmission, plotmeandelays
 
 """
     plotvis(uvw::Matrix{Float64}, chanfreqvec::Array{Float64,1}, flag::Array{Bool,4}, data::Array{Complex{Float32},4},
@@ -451,10 +451,41 @@ function plottransmission(h5file::String, stationnames::Vector{String3}, times::
             xtr = tr[:,:,ant]'
             f = Figure(size=(500, 300))
             ax = Axis(f[1, 1], xlabel="Relative time (hr)", ylabel="Frequency (GHz)", title="Transmission ($(stationnames[ant]))")
-            contour!(ax, reltimes, chanfreqvec_ghz, xtr, title=stationnames[ant], levels=5, color=ColorSchemes.mk_15[ant])
+            contour!(ax, reltimes, chanfreqvec_ghz, xtr, title=stationnames[ant], levels=10, color=ColorSchemes.mk_15[ant])
             save("Transmission_$(stationnames[ant]).png", f)
         end
     end
 
     @info("Plotted tropospheric transmission 🙆")
+end
+
+"""
+    plotmeandelays(h5file::String, stationnames::Vector{String3}, times::Vector{Float64}, chanfreqvec::Vector{Float64})
+
+Plot mean delays against time.
+"""
+function plotmeandelays(h5file::String, stationnames::Vector{String3}, times::Vector{Float64}, chanfreqvec::Vector{Float64})
+    @info("Plotting station-based transmission values")
+
+    # get unique times
+    uniqtimes = unique(times)
+    reltimes = (uniqtimes .- first(uniqtimes))/3600.0 # in units of hours
+
+    chanfreqvec_ghz = chanfreqvec/1e9 # in GHz
+
+    # read in the computed mean delay values
+    fid = h5open(h5file, "r")
+    md = read(fid["troposphere"]["meandelays"]) * 1e9 # delays / ns
+    close(fid)
+
+    f = Figure(size=(500, 300))
+    ax = Axis(f[1, 1], xlabel="Relative time (hr)", ylabel="Mean delays (ns)")
+
+    for ant in eachindex(stationnames)
+        scatter!(ax, reltimes, dropdims(mean(md[:,:,ant], dims=1), dims=1), color=ColorSchemes.mk_15[ant], label=stationnames[ant], markersize=2)
+    end
+    f[1, 2] = Legend(f, ax, merge=true, unique=true, tellheight=true, tellwidth=true)
+    save("MeanDelays_vs_time.png", f)
+    
+    @info("Plotted mean delays 🙆")
 end
