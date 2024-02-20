@@ -1,5 +1,28 @@
-export plotvis, plotstationgains, plotbandpass, plotpointingerrors, plotelevationangle, plotparallacticangle, plotdterms,
+export plotuvcov, plotvis, plotstationgains, plotbandpass, plotpointingerrors, plotelevationangle, plotparallacticangle, plotdterms,
 plottransmission, plotmeandelays
+
+"""
+    plotuvcov(uvw::Matrix{Float64}, flagrow::Vector{Bool}, chanfreqvec::Vector{Float64}; saveprefix="test_")
+
+Plot uv-coverage of observation.
+"""
+function plotuvcov(uvw::Matrix{Float64}, flagrow::Vector{Bool}, chanfreqvec::Vector{Float64}; saveprefix="test")
+    @info("Generating uv-coverage plots...")
+
+    maskindices = findall(isequal(true), flagrow)
+    muwave = deepcopy(uvw[1,:]) / (299792458.0/mean(chanfreqvec)) / 1e9 # convert to Gλ
+    mvwave = deepcopy(uvw[2,:]) / (299792458.0/mean(chanfreqvec)) / 1e9
+
+    muwave[maskindices] .= NaN
+    mvwave[maskindices] .= NaN
+
+    f = Figure(size=(600, 600))
+    ax = Axis(f[1, 1], xlabel="u (Gλ)", ylabel="v (Gλ)", title="uv-coverage", xflip=true)
+    lines!(ax, muwave, mvwave, color=:blue, label="", markersize=2)
+
+    save(saveprefix*"_uvcoverage.png", f)
+    @info("Plotted uv-coverage 🙆")
+end
 
 """
     plotvis(uvw::Matrix{Float64}, chanfreqvec::Array{Float64,1}, flag::Array{Bool,4}, data::Array{Complex{Float32},4},
