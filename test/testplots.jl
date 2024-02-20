@@ -34,8 +34,7 @@
     rm("BandpassGains_vs_frequency.png")
 
     @inferred plotpointingerrors(h5file, obs.scanno, obs.stationinfo.station)
-    rm("pointingoffsets.png")
-    rm("pointingamplitudeerrors.png")
+    rm("Pointing_offsets_amplitude_errors_vs_time.png")
 
     # test elevation angle plotting
     @inferred plotelevationangle(h5file, obs.scanno, obs.times, obs.stationinfo.station)

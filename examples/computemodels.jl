@@ -89,7 +89,7 @@ pointing!(obs1, h5file=h5file)
 # Note that this method is a shorthand for another method with multiple arguments that provides more fine-grained control over the input parameters.
 
 # We now plot the pointing model generated:
-plotpointingerrors(h5file, obs1.scanno, obs1.stationinfo.station, save=false)
+plotpointingerrors(h5file, obs1.scanno, obs1.stationinfo.station)
 # Mispointings of station LM (Large Millimeter Telescope, Mexico), the largest dish in the array, result in the largest attenuation of amplitude.
 rm(h5file) # hide
 

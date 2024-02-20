@@ -1,4 +1,4 @@
-export plotvis, plotstationgains, plotbandpass
+export plotvis, plotstationgains, plotbandpass, plotpointingerrors
 
 """
     plotvis(uvw::Matrix{Float64}, chanfreqvec::Array{Float64,1}, flag::Array{Bool,4}, data::Array{Complex{Float32},4},
@@ -22,7 +22,7 @@ function plotvis(uvw::Matrix{Float64}, chanfreqvec::Array{Float64,1}, flag::Arra
     labels = [["RR", "RL"], ["LR", "LL"]]
 
     # plot visibility amplitudes against projected baseline separation
-    f = Figure(size=(900, 600))
+    f = Figure(size=(800, 400))
     ax = Axis(f[1, 1], xlabel="Projected baseline separation (Gλ)", ylabel="Complex visibility amplitude (Jy)")
     for ii in 1:2
         for jj in 1:2
@@ -40,7 +40,7 @@ function plotvis(uvw::Matrix{Float64}, chanfreqvec::Array{Float64,1}, flag::Arra
 
     # plot visibility phases against projected baseline separation
     if plotphases
-        f = Figure(size=(900, 600))
+        f = Figure(size=(800, 400))
         ax = Axis(f[1, 1], xlabel="Projected baseline separation (Gλ)", ylabel="Complex visibility phase (deg.)")
         for ii in 1:2
             for jj in 1:2
@@ -58,7 +58,7 @@ function plotvis(uvw::Matrix{Float64}, chanfreqvec::Array{Float64,1}, flag::Arra
     end
 
     # plot visibility amplitudes against time
-    f = Figure(size=(900, 600))
+    f = Figure(size=(800, 400))
     ax = Axis(f[1, 1], xlabel="Projected baseline separation (Gλ)", ylabel="Complex visibility amplitude (Jy)")
     for ii in 1:2
         for jj in 1:2
@@ -76,7 +76,7 @@ function plotvis(uvw::Matrix{Float64}, chanfreqvec::Array{Float64,1}, flag::Arra
 
     # plot visibility phases against time
     if plotphases
-        f = Figure(size=(900, 600))
+        f = Figure(size=(800, 400))
         ax = Axis(f[1, 1], xlabel="Projected baseline separation (Gλ)", ylabel="Complex visibility phase (deg.)")
         for ii in 1:2
             for jj in 1:2
@@ -111,7 +111,7 @@ function plotstationgains(h5file::String, scanno::Vector{Int32}, times::Vector{F
     # get unique times
     uniqtimes = unique(times)
 
-    f = Figure(size=(900, 400))
+    f = Figure(size=(500, 300))
     axphase1 = Axis(f[1, 1], ylabel="Phases (°)", title="Station gains (Pol1)")
     axamp1 = Axis(f[2, 1], xlabel="Relative time (hr)", ylabel="Amplitudes")
     axphase2 = Axis(f[1, 2], title="Station gains (Pol2)")
@@ -166,7 +166,6 @@ function plotstationgains(h5file::String, scanno::Vector{Int32}, times::Vector{F
     linkyaxes!(axphase1, axphase2)
 
     f[1:2, 3] = Legend(f, axamp1, merge=true, unique=true, tellheight=true, tellwidth=true)
-
     save("StationGains_vs_time.png", f)
 
     @info("Plotted station gains 🙆")
@@ -185,10 +184,10 @@ function plotbandpass(h5file::String, stationnames::Vector{String3}, chanfreqvec
 
     b = read(fid["bandpass"]["bjonesmatrices"])
 
-    f = Figure(size=(900, 400))
-    axphase1 = Axis(f[1, 1], ylabel="Phases (°)", title="Station gains (Pol1)")
+    f = Figure(size=(500, 300))
+    axphase1 = Axis(f[1, 1], ylabel="Phases (°)", title="Bandpass gains (Pol1)")
     axamp1 = Axis(f[2, 1], xlabel="Frequency (GHz)", ylabel="Amplitudes")
-    axphase2 = Axis(f[1, 2], title="Station gains (Pol2)")
+    axphase2 = Axis(f[1, 2], title="Bandpass gains (Pol2)")
     axamp2 = Axis(f[2, 2], xlabel="Frequency (GHz)")
 
     # modify axis attributes
@@ -212,8 +211,54 @@ function plotbandpass(h5file::String, stationnames::Vector{String3}, chanfreqvec
     linkyaxes!(axphase1, axphase2)
 
     f[1:2, 3] = Legend(f, axamp1, merge=true, unique=true, tellheight=true, tellwidth=true)
-
     save("BandpassGains_vs_frequency.png", f)
 
     @info("Plotted bandpass 🙆")
+end
+
+"""
+    plotpointingerrors(h5file::String, scanno::Vector{Int32}, stationnames::Vector{String3})
+
+Plot pointing errors.
+"""
+function plotpointingerrors(h5file::String, scanno::Vector{Int32}, stationnames::Vector{String3})
+    @info("Plotting pointing errors...")
+    fid = h5open(h5file, "r")
+
+    # get unique scan numbers
+    uniqscans = unique(scanno)
+
+    f = Figure(size=(500, 300))
+    axoff = Axis(f[1, 1], title="Pointing offsets", ylabel="Pointing offsets (arcsec)")
+    axamperr = Axis(f[2, 1], title="Pointing amplitude errors", ylabel="Primary beam response", xlabel="Time (mispointing number)")
+
+    # modify axis attributes
+    hidexdecorations!(axoff, grid=false, ticks=false)
+
+    indexstart = 1
+    indexend = 0
+    for scan in uniqscans
+        offsetarr = read(fid["pointingerrors"]["perscanoffsets_scan$(scan)"])
+        amperrarr = read(fid["pointingerrors"]["perscanamperrors_scan$(scan)"])
+        indexend = indexend + size(offsetarr)[1] # both arrays have same dimensions
+
+        for ant in eachindex(stationnames)
+            if scan == 1
+                lines!(axoff, 1:indexend, offsetarr[:,ant], lw=1, color=ColorSchemes.mk_15[ant], label=stationnames[ant])
+                lines!(axamperr, 1:indexend, amperrarr[:,ant], lw=1, color=ColorSchemes.mk_15[ant], label=stationnames[ant])
+            else
+                lines!(axoff, indexstart:indexend, offsetarr[:,ant], lw=1, color=ColorSchemes.mk_15[ant], label=stationnames[ant])
+                lines!(axamperr, indexstart:indexend, amperrarr[:,ant], lw=1, color=ColorSchemes.mk_15[ant], label=stationnames[ant])
+            end
+        end
+        indexstart = indexend + 1
+    end
+    close(fid) # close HDF5 file
+
+    linkxaxes!(axoff, axamperr)
+
+    f[1:2, 2] = Legend(f, axoff, merge=true, unique=true, tellheight=true, tellwidth=true)
+    save("Pointing_offsets_amplitude_errors_vs_time.png", f)
+
+    @info("Plotted pointing offsets and amplitude errors 🙆")
 end
