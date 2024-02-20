@@ -67,7 +67,7 @@ troposphere!(obs1, h5file, absorptionfile=absorptionfile, dispersivefile=dispers
 # observing scans.
 
 # For example, to plot the elevation angles by station we can just do
-plotelevationangle(elevfile, obs1.scanno, obs1.times, obs1.stationinfo.station, save=false)
+plotelevationangle(elevfile, obs1.scanno, obs1.times, obs1.stationinfo.station)
 
 # The transmission values computed can be plotted using
 plottransmission(h5file, obs1.stationinfo.station, obs1.times, obs1.chanfreqvec, save=false)

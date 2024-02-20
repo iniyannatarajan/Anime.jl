@@ -1,4 +1,4 @@
-export plotvis, plotstationgains, plotbandpass, plotpointingerrors
+export plotvis, plotstationgains, plotbandpass, plotpointingerrors, plotelevationangle
 
 """
     plotvis(uvw::Matrix{Float64}, chanfreqvec::Array{Float64,1}, flag::Array{Bool,4}, data::Array{Complex{Float32},4},
@@ -261,4 +261,55 @@ function plotpointingerrors(h5file::String, scanno::Vector{Int32}, stationnames:
     save("Pointing_offsets_amplitude_errors_vs_time.png", f)
 
     @info("Plotted pointing offsets and amplitude errors 🙆")
+end
+
+"""
+    plotelevationangle(h5file::String, scanno::Vector{Int32}, times::Vector{Float64}, stationnames::Vector{String3})
+
+Plot evolution of station elevation angles during the course of the observation.
+"""
+function plotelevationangle(h5file::String, scanno::Vector{Int32}, times::Vector{Float64}, stationnames::Vector{String3})
+    @info("Plotting elevation angles by station...")
+    
+    # get unique scan numbers
+    uniqscans = unique(scanno)
+
+    # get unique times
+    uniqtimes = unique(times)
+    x = (uniqtimes .- first(uniqtimes)) / 3600.0
+
+    fid = h5open(h5file, "r")
+
+    if "troposphere" in keys(fid)
+        elevmat = read(fid["troposphere"]["elevation"])
+    elseif "polarization" in keys(fid)
+        elevmat = read(fid["polarization"]["elevation"])
+    else
+        close(fid)
+        @error("$h5file does not contain elevation angle information. Not plotting elevation angles 🤷")
+        throw(KeyError("elevation"))
+    end
+
+    if length(stationnames) != size(elevmat)[2]
+        close(fid)
+        throw(BoundsError("$h5file does not match the stations in station information. Not plotting elevation angles 🤷"))
+    end
+
+    if length(x) != size(elevmat)[1]
+        close(fid)
+        throw(DimensionMismatch("The number of timestamps in $h5file does not match that in the observation. Not plotting elevation angles 🤷"))
+    end
+
+    f = Figure(size=(500, 300))
+    ax = Axis(f[1, 1], xlabel="Relative time (hr)", ylabel="Elevation angle (°)", title="Elevation angles by station")
+
+    for ant in eachindex(stationnames)
+        scatter!(ax, x, rad2deg.(elevmat[:,ant]), color=ColorSchemes.mk_15[ant], label=stationnames[ant], markersize=2)
+    end
+    close(fid) # close HDF5 file
+
+    f[1, 2] = Legend(f, ax, merge=true, unique=true, tellheight=true, tellwidth=true)
+    save("Elevation_angle_vs_time.png", f)
+
+    @info("Plotted elevation angles 🙆")
 end
