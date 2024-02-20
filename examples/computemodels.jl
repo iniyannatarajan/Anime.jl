@@ -70,7 +70,7 @@ troposphere!(obs1, h5file, absorptionfile=absorptionfile, dispersivefile=dispers
 plotelevationangle(elevfile, obs1.scanno, obs1.times, obs1.stationinfo.station)
 
 # The transmission values computed can be plotted using
-plottransmission(h5file, obs1.stationinfo.station, obs1.times, obs1.chanfreqvec, save=false)
+plottransmission(h5file, obs1.stationinfo.station, obs1.times, obs1.chanfreqvec)
 # Since this is a channel-averaged data set, the frequency-dependent transmission reduces to a single curve per station.
 
 # The delays due to the mean component of the troposphere can be plotted as follows:

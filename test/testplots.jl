@@ -74,10 +74,14 @@
 
     # test transmission plotting
     @inferred plottransmission(h5file, obs.stationinfo.station, obs.times, obs.chanfreqvec)
-    rm("transmission.png")
+    for file in glob("Transmission_*.png")
+        rm(file)
+    end
 
     @inferred plottransmission(h5file2, obs2.stationinfo.station, obs2.times, obs2.chanfreqvec)
-    rm("transmission.png")
+    for file in glob("Transmission_*.png")
+        rm(file)
+    end
 
     @inferred plotmeandelays(h5file, obs.stationinfo.station, obs.times, obs.chanfreqvec)
     rm("meandelays.png")

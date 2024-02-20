@@ -1,4 +1,5 @@
-export plotvis, plotstationgains, plotbandpass, plotpointingerrors, plotelevationangle, plotparallacticangle, plotdterms
+export plotvis, plotstationgains, plotbandpass, plotpointingerrors, plotelevationangle, plotparallacticangle, plotdterms,
+plottransmission
 
 """
     plotvis(uvw::Matrix{Float64}, chanfreqvec::Array{Float64,1}, flag::Array{Bool,4}, data::Array{Complex{Float32},4},
@@ -416,4 +417,44 @@ function plotdterms(h5file::String, stationnames::Vector{String3}, chanfreqvec::
     save("Dterms_vs_frequency.png", f)
 
     @info("Plotted D-terms 🙆")
+end
+
+"""
+    plottransmission(h5file::String, stationnames::Vector{String3}, times::Vector{Float64}, chanfreqvec::Vector{Float64})
+
+Plot tropospheric transmission variation with frequency.
+"""
+function plottransmission(h5file::String, stationnames::Vector{String3}, times::Vector{Float64}, chanfreqvec::Vector{Float64})
+    @info("Plotting station-based transmission values")
+
+    # get unique times
+    uniqtimes = unique(times)
+    reltimes = (uniqtimes .- first(uniqtimes))/3600.0 # in units of hours
+
+    chanfreqvec_ghz = chanfreqvec/1e9 # in GHz
+
+    # read in the computed transmission values
+    fid = h5open(h5file, "r")
+    tr = read(fid["troposphere"]["transmission"])
+    close(fid)
+
+    if length(chanfreqvec_ghz) == 1
+        f = Figure(size=(500, 300))
+        ax = Axis(f[1, 1], xlabel="Relative time (hr)", ylabel="Transmission")
+        for ant in eachindex(stationnames)
+            scatter!(ax, reltimes, tr[1,:,ant], markersize=2, color=ColorSchemes.mk_15[ant], label=stationnames[ant])
+        end
+        f[1, 2] = Legend(f, ax, merge=true, unique=true, tellheight=true, tellwidth=true)
+        save("Transmission_vs_time.png", f)
+    else
+        for ant in eachindex(stationnames)
+            xtr = tr[:,:,ant]'
+            f = Figure(size=(500, 300))
+            ax = Axis(f[1, 1], xlabel="Relative time (hr)", ylabel="Frequency (GHz)", title="Transmission ($(stationnames[ant]))")
+            contour!(ax, reltimes, chanfreqvec_ghz, xtr, title=stationnames[ant], levels=5, color=ColorSchemes.mk_15[ant])
+            save("Transmission_$(stationnames[ant]).png", f)
+        end
+    end
+
+    @info("Plotted tropospheric transmission 🙆")
 end
