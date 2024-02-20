@@ -9,7 +9,7 @@ relativepath = "../../../"
 include(joinpath(relativepath, "src", "Anime.jl"))
 using .Anime
 using HDF5
-using Plots
+using CairoMakie
 
 # We also load two instances of *observation* from existing data sets to illustrate the various models that are generated -- a single-channel data set
 # and a multi-frequency data set.
@@ -67,14 +67,14 @@ troposphere!(obs1, h5file, absorptionfile=absorptionfile, dispersivefile=dispers
 # observing scans.
 
 # For example, to plot the elevation angles by station we can just do
-plotelevationangle(elevfile, obs1.scanno, obs1.times, obs1.stationinfo.station, save=false)
+plotelevationangle(elevfile, obs1.scanno, obs1.times, obs1.stationinfo.station)
 
 # The transmission values computed can be plotted using
-plottransmission(h5file, obs1.stationinfo.station, obs1.times, obs1.chanfreqvec, save=false)
+plottransmission(h5file, obs1.stationinfo.station, obs1.times, obs1.chanfreqvec)
 # Since this is a channel-averaged data set, the frequency-dependent transmission reduces to a single curve per station.
 
 # The delays due to the mean component of the troposphere can be plotted as follows:
-plotmeandelays(h5file, obs1.stationinfo.station, obs1.times, obs1.chanfreqvec, save=false)
+plotmeandelays(h5file, obs1.stationinfo.station, obs1.times, obs1.chanfreqvec)
 #-
 rm(h5file) # hide
 rm("atm.csv") # hide
@@ -89,7 +89,7 @@ pointing!(obs1, h5file=h5file)
 # Note that this method is a shorthand for another method with multiple arguments that provides more fine-grained control over the input parameters.
 
 # We now plot the pointing model generated:
-plotpointingerrors(h5file, obs1.scanno, obs1.stationinfo.station, save=false)
+plotpointingerrors(h5file, obs1.scanno, obs1.stationinfo.station)
 # Mispointings of station LM (Large Millimeter Telescope, Mexico), the largest dish in the array, result in the largest attenuation of amplitude.
 rm(h5file) # hide
 
@@ -104,7 +104,7 @@ rm(h5file) # hide
 inh5file = joinpath(relativepath, "test", "data", "insmodeluvf.h5")
 instrumentalpolarization!(obs1, h5file=h5file, elevfile=inh5file, parangfile=inh5file)
 #-
-plotparallacticangle(h5file, obs1.scanno, obs1.times, obs1.stationinfo.station, save=false)
+plotparallacticangle(h5file, obs1.scanno, obs1.times, obs1.stationinfo.station)
 #-
 plotdterms(h5file, obs1.stationinfo.station, obs1.chanfreqvec)
 # There is only one frequency channel since this is a channel-averaged data set.

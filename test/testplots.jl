@@ -18,28 +18,27 @@
     @inferred plotuvcov(obs.uvw, obs.flagrow, obs.chanfreqvec)
     rm("test_uvcoverage.png")
 
-    @inferred plotvis(obs.uvw, obs.chanfreqvec, obs.flag, obs.data, obs.numchan, obs.times, plotphases=true, saveprefix="test_")
-    rm("test_visampvspbs.png")
-    rm("test_visphasevspbs.png")
-    rm("test_visampvstime.png")
-    rm("test_visphasevstime.png")
+    @inferred plotvis(obs.uvw, obs.chanfreqvec, obs.flag, obs.data, obs.numchan, obs.times, plotphases=true, saveprefix="test")
+    rm("test_visibilityphase_vs_baseline.png")
+    rm("test_visibilityamplitude_vs_baseline.png")
+    rm("test_visibilityphase_vs_time.png")
+    rm("test_visibilityamplitude_vs_time.png")
 
     @inferred plotstationgains(h5file, obs.scanno, obs.times, obs.exposure, obs.stationinfo.station)
-    rm("gains_vs_time.png")
+    rm("StationGains_vs_time.png")
 
     @inferred plotstationgains(h5file2, obs2.scanno, obs2.times, obs2.exposure, obs2.stationinfo.station)
-    rm("gains_vs_time.png")
+    rm("StationGains_vs_time.png")
 
     @inferred plotbandpass(h5file, obs.stationinfo.station, obs.chanfreqvec)
-    rm("bpamplitudes_vs_frequency.png")
+    rm("BandpassGains_vs_frequency.png")
 
     @inferred plotpointingerrors(h5file, obs.scanno, obs.stationinfo.station)
-    rm("pointingoffsets.png")
-    rm("pointingamplitudeerrors.png")
+    rm("Pointing_offsets_amplitude_errors_vs_time.png")
 
     # test elevation angle plotting
     @inferred plotelevationangle(h5file, obs.scanno, obs.times, obs.stationinfo.station)
-    rm("elevationangle.png")
+    rm("ElevationAngle_vs_time.png")
 
     fid = h5open("testing.h5", "w")
     close(fid)
@@ -55,7 +54,7 @@
 
     # test parallactic angle plotting
     @inferred plotparallacticangle(h5file, obs.scanno, obs.times, obs.stationinfo.station)
-    rm("parallacticangle.png")
+    rm("ParallacticAngle_vs_time.png")
 
     fid = h5open("testing.h5", "w")
     close(fid)
@@ -71,15 +70,19 @@
 
     # test d-terms plotting
     @inferred plotdterms(h5file, obs.stationinfo.station, obs.chanfreqvec)
-    rm("dterms.png")
+    rm("Dterms_vs_frequency.png")
 
     # test transmission plotting
     @inferred plottransmission(h5file, obs.stationinfo.station, obs.times, obs.chanfreqvec)
-    rm("transmission.png")
+    for file in glob("Transmission_*.png")
+        rm(file)
+    end
 
     @inferred plottransmission(h5file2, obs2.stationinfo.station, obs2.times, obs2.chanfreqvec)
-    rm("transmission.png")
+    for file in glob("Transmission_*.png")
+        rm(file)
+    end
 
     @inferred plotmeandelays(h5file, obs.stationinfo.station, obs.times, obs.chanfreqvec)
-    rm("meandelays.png")
+    rm("MeanDelays_vs_time.png")
 end

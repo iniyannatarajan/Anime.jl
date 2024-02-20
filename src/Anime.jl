@@ -5,7 +5,7 @@
 """
 module Anime
 
-using Plots, ColorSchemes, LaTeXStrings
+using CairoMakie, ColorSchemes, LaTeXStrings
 using Tables
 using Logging
 using CSV

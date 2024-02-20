@@ -13,8 +13,8 @@ function stationgains!(data::Array{Complex{Float32},4}, scanno::Vector{Int32}, t
     if !isempty(h5file)
         fid = h5open(h5file, "cw")
         g = create_group(fid, "stationgains")
-        attributes(g)["desc"] = "Numerical values of time-variable per station G-Jones terms applied to data"
-        attributes(g)["dims"] = "2 x 2 x ntimes_per_scan x nant" #for each scan, a 4d array of 2 x 2 x ntime x nant is stored
+        HDF5.attributes(g)["desc"] = "Numerical values of time-variable per station G-Jones terms applied to data"
+        HDF5.attributes(g)["dims"] = "2 x 2 x ntimes_per_scan x nant" #for each scan, a 4d array of 2 x 2 x ntime x nant is stored
     end
 
     # get unique scan numbers
@@ -93,7 +93,7 @@ function stationgains!(data::Array{Complex{Float32},4}, scanno::Vector{Int32}, t
 
     # add datatype attribute
     if !isempty(h5file)
-        attributes(g)["datatype"] = string(typeof(read(g[keys(g)[1]])))
+        HDF5.attributes(g)["datatype"] = string(typeof(read(g[keys(g)[1]])))
         close(fid)
     end
 

@@ -53,8 +53,8 @@ function thermalnoise!(data::Array{Complex{Float32},4}, times::Vector{Float64}, 
     if !isempty(h5file)
         fid = h5open(h5file, "cw")
         g = create_group(fid, "thermalnoise")
-        attributes(g)["desc"] = "Numerical values of thermal noise corruptions added to data"
-        attributes(g)["dims"] = "stokes x nchan x ntimes_per_baseline (for all scans)"
+        HDF5.attributes(g)["desc"] = "Numerical values of thermal noise corruptions added to data"
+        HDF5.attributes(g)["dims"] = "stokes x nchan x ntimes_per_baseline (for all scans)"
 
         if !(haskey(g, "thermalnoiserms"))
             g["thermalnoiserms"] = thermalnoiserms
@@ -64,7 +64,7 @@ function thermalnoise!(data::Array{Complex{Float32},4}, times::Vector{Float64}, 
         end
 
         # add datatype attribute
-        attributes(g)["datatype"] = string(typeof(read(g[keys(g)[1]])))
+        HDF5.attributes(g)["datatype"] = string(typeof(read(g[keys(g)[1]])))
 
         # close h5 file
         close(fid)

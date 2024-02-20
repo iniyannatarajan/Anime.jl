@@ -57,10 +57,10 @@ function bandpass!(data::Array{Complex{Float32},4}, bandpassfile::String, statio
     if !isempty(h5file)
         fid = h5open(h5file, "cw")
         g = create_group(fid, "bandpass")
-        attributes(g)["desc"] = "Numerical values of frequency-variable per station B-Jones terms applied to data"
-        attributes(g)["dims"] = "2 x 2 x nchannels x nant" #for each scan, a 4d array of 2 x 2 x nchan x nant is stored
+        HDF5.attributes(g)["desc"] = "Numerical values of frequency-variable per station B-Jones terms applied to data"
+        HDF5.attributes(g)["dims"] = "2 x 2 x nchannels x nant" #for each scan, a 4d array of 2 x 2 x nchan x nant is stored
         g["bjonesmatrices"] = bjonesmatrices
-        attributes(g)["datatype"] = string(typeof(read(g[keys(g)[1]])))
+        HDF5.attributes(g)["datatype"] = string(typeof(read(g[keys(g)[1]])))
         close(fid)
     end
 
