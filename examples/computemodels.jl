@@ -9,7 +9,7 @@ relativepath = "../../../"
 include(joinpath(relativepath, "src", "Anime.jl"))
 using .Anime
 using HDF5
-using Plots
+using CairoMakie
 
 # We also load two instances of *observation* from existing data sets to illustrate the various models that are generated -- a single-channel data set
 # and a multi-frequency data set.

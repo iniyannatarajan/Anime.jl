@@ -3,7 +3,7 @@ using .Anime
 #using Anime
 using Test
 
-using Plots, ColorSchemes, LaTeXStrings
+using CairoMakie, ColorSchemes, LaTeXStrings
 using Tables
 using Logging
 using CSV
