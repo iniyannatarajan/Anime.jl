@@ -38,7 +38,7 @@
 
     # test elevation angle plotting
     @inferred plotelevationangle(h5file, obs.scanno, obs.times, obs.stationinfo.station)
-    rm("elevationangle.png")
+    rm("Elevation_angle_vs_time.png")
 
     fid = h5open("testing.h5", "w")
     close(fid)
@@ -54,7 +54,7 @@
 
     # test parallactic angle plotting
     @inferred plotparallacticangle(h5file, obs.scanno, obs.times, obs.stationinfo.station)
-    rm("parallacticangle.png")
+    rm("Parallactic_angle_vs_time.png")
 
     fid = h5open("testing.h5", "w")
     close(fid)

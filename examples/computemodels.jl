@@ -104,7 +104,7 @@ rm(h5file) # hide
 inh5file = joinpath(relativepath, "test", "data", "insmodeluvf.h5")
 instrumentalpolarization!(obs1, h5file=h5file, elevfile=inh5file, parangfile=inh5file)
 #-
-plotparallacticangle(h5file, obs1.scanno, obs1.times, obs1.stationinfo.station, save=false)
+plotparallacticangle(h5file, obs1.scanno, obs1.times, obs1.stationinfo.station)
 #-
 plotdterms(h5file, obs1.stationinfo.station, obs1.chanfreqvec)
 # There is only one frequency channel since this is a channel-averaged data set.

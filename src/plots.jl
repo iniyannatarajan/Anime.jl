@@ -1,4 +1,4 @@
-export plotvis, plotstationgains, plotbandpass, plotpointingerrors, plotelevationangle
+export plotvis, plotstationgains, plotbandpass, plotpointingerrors, plotelevationangle, plotparallacticangle
 
 """
     plotvis(uvw::Matrix{Float64}, chanfreqvec::Array{Float64,1}, flag::Array{Bool,4}, data::Array{Complex{Float32},4},
@@ -312,4 +312,53 @@ function plotelevationangle(h5file::String, scanno::Vector{Int32}, times::Vector
     save("Elevation_angle_vs_time.png", f)
 
     @info("Plotted elevation angles 🙆")
+end
+
+"""
+    plotparallacticangle(h5file::String, scanno::Vector{Int32}, times::Vector{Float64}, stationnames::Vector{String3})
+
+Plot evolution of station parallactic angles during the course of the observation.
+"""
+function plotparallacticangle(h5file::String, scanno::Vector{Int32}, times::Vector{Float64}, stationnames::Vector{String3})
+    @info("Plotting elevation angles by station...")
+    
+    # get unique scan numbers
+    uniqscans = unique(scanno)
+
+    # get unique times
+    uniqtimes = unique(times)
+    x = (uniqtimes .- first(uniqtimes)) / 3600.0
+
+    fid = h5open(h5file, "r")
+
+    if "polarization" in keys(fid)
+        parangmat = read(fid["polarization"]["parallacticangle"])
+    else
+        close(fid)
+        @error("$h5file does not contain parallactic angle information. Not plotting parallactic angles 🤷")
+        throw(KeyError("parallacticangle"))
+    end
+
+    if length(stationnames) != size(parangmat)[2]
+        close(fid)
+        throw(BoundsError("$h5file does not match the stations in station information. Not plotting parallactic angles 🤷"))
+    end
+
+    if length(x) != size(parangmat)[1]
+        close(fid)
+        throw(DimensionMismatch("The number of timestamps in $h5file does not match that in the observation. Not plotting parallactic angles 🤷"))
+    end
+
+    f = Figure(size=(500, 300))
+    ax = Axis(f[1, 1], xlabel="Relative time (hr)", ylabel="Parallactic angle (°)", title="Parallactic angles by station")
+
+    for ant in eachindex(stationnames)
+        scatter!(ax, x, rad2deg.(parangmat[:,ant]), color=ColorSchemes.mk_15[ant], label=stationnames[ant], markersize=2)
+    end
+    close(fid) # close HDF5 file
+
+    f[1, 2] = Legend(f, ax, merge=true, unique=true, tellheight=true, tellwidth=true)
+    save("Parallactic_angle_vs_time.png", f)
+
+    @info("Plotted parallactic angles 🙆")
 end
