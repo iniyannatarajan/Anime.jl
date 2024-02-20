@@ -1,4 +1,4 @@
-export plotvis, plotstationgains, plotbandpass, plotpointingerrors, plotelevationangle, plotparallacticangle
+export plotvis, plotstationgains, plotbandpass, plotpointingerrors, plotelevationangle, plotparallacticangle, plotdterms
 
 """
     plotvis(uvw::Matrix{Float64}, chanfreqvec::Array{Float64,1}, flag::Array{Bool,4}, data::Array{Complex{Float32},4},
@@ -361,4 +361,59 @@ function plotparallacticangle(h5file::String, scanno::Vector{Int32}, times::Vect
     save("Parallactic_angle_vs_time.png", f)
 
     @info("Plotted parallactic angles 🙆")
+end
+
+"""
+    plotdterms(h5file::String, stationnames::Vector{String3}, chanfreqvec::Vector{Float64})
+
+Plot frequency-dependent complex instrumental polarization.
+"""
+function plotdterms(h5file::String, stationnames::Vector{String3}, chanfreqvec::Vector{Float64})
+    @info("Plotting cross-hand instrumental leakage (D-terms) by station...")
+
+    # read in the D-terms
+    fid = h5open(h5file, "r")
+    d = read(fid["polarization"]["djonesmatrices"])
+    close(fid)
+
+    chanfreqvec_ghz = chanfreqvec/1e9 # in GHz
+
+    #=p = plot()
+    for ant in eachindex(stationnames)
+        plot!(p, real(d[1,2,:,ant]), imag(d[1,2,:,ant]), seriestype=:scatter, markershape=:circle, ms=3, mc=ColorSchemes.mk_15[ant], msc=ColorSchemes.mk_15[ant], label=stationnames[ant]*"-RL")
+        plot!(p, real(d[2,1,:,ant]), imag(d[2,1,:,ant]), seriestype=:scatter, markershape=:diamond, ms=3, mc=ColorSchemes.mk_15[ant], msc=ColorSchemes.mk_15[ant], label=stationnames[ant]*"-LR")
+    end
+
+    plot!(p, xlabel="Real", ylabel="Imag", title="D-terms", legend=:outertop, legendcolumns=6)=#
+
+    f = Figure(size=(500, 300))
+    axphase1 = Axis(f[1, 1], ylabel="Phases (°)", title="D-terms (CrossPol1)")
+    axamp1 = Axis(f[2, 1], xlabel="Frequency (GHz)", ylabel="Amplitudes")
+    axphase2 = Axis(f[1, 2], title="D-terms (CrossPol2)")
+    axamp2 = Axis(f[2, 2], xlabel="Frequency (GHz)")
+
+    # modify axis attributes
+    hidexdecorations!(axphase1, grid=false, ticks=false)
+    hidexdecorations!(axphase2, grid=false, ticks=false)
+    hideydecorations!(axamp2, grid=false, ticks=false)
+    hideydecorations!(axphase2, grid=false, ticks=false)
+
+    for ant in eachindex(stationnames)
+        lines!(axamp1, chanfreqvec_ghz, abs.(d[1, 2, :, ant]), lw=1, color=ColorSchemes.mk_15[ant], label=stationnames[ant])
+        lines!(axphase1, chanfreqvec_ghz, rad2deg.(angle.(d[1, 2, :, ant])), lw=1, color=ColorSchemes.mk_15[ant], label=stationnames[ant])
+
+        lines!(axamp2, chanfreqvec_ghz, abs.(d[2, 1, :, ant]), lw=1, color=ColorSchemes.mk_15[ant], label=stationnames[ant])
+        lines!(axphase2, chanfreqvec_ghz, rad2deg.(angle.(d[2, 1, :, ant])), lw=1, color=ColorSchemes.mk_15[ant], label=stationnames[ant])
+    end
+    close(fid) # close HDF5 file
+
+    linkxaxes!(axamp1, axphase1)
+    linkxaxes!(axamp2, axphase2)
+    linkyaxes!(axamp1, axamp2)
+    linkyaxes!(axphase1, axphase2)
+
+    f[1:2, 3] = Legend(f, axamp1, merge=true, unique=true, tellheight=true, tellwidth=true)
+    save("Dterms_vs_frequency.png", f)
+
+    @info("Plotted D-terms 🙆")
 end

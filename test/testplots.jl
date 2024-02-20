@@ -70,7 +70,7 @@
 
     # test d-terms plotting
     @inferred plotdterms(h5file, obs.stationinfo.station, obs.chanfreqvec)
-    rm("dterms.png")
+    rm("Dterms_vs_frequency.png")
 
     # test transmission plotting
     @inferred plottransmission(h5file, obs.stationinfo.station, obs.times, obs.chanfreqvec)
