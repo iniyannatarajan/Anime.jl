@@ -17,7 +17,7 @@ function plotuvcov(uvw::Matrix{Float64}, flagrow::Vector{Bool}, chanfreqvec::Vec
     mvwave[maskindices] .= NaN
 
     f = Figure(size=(600, 600))
-    ax = Axis(f[1, 1], xlabel="u (Gλ)", ylabel="v (Gλ)", title="uv-coverage", xflip=true)
+    ax = Axis(f[1, 1], xlabel="u (Gλ)", ylabel="v (Gλ)", title="uv-coverage")
     lines!(ax, muwave, mvwave, color=:blue, label="", markersize=2)
 
     save(saveprefix*"_uvcoverage.png", f)
