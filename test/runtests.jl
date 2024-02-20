@@ -7,6 +7,7 @@ using CairoMakie, ColorSchemes, LaTeXStrings
 using Tables
 using Logging
 using CSV
+using Glob
 using HDF5
 using YAML
 using Random
