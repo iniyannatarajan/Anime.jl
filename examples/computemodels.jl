@@ -111,7 +111,7 @@ instrumentalpolarization!(obs1, h5file=h5file, elevfile=inh5file, parangfile=inh
 plotparallacticangle(h5file, obs1.scanno, obs1.times, obs1.stationinfo.station)
 # ![Parallactic angle](ParallacticAngle_vs_time.png)
 #-
-plotdterms(h5file, obs1.stationinfo.station, obs1.chanfreqvec)
+plotdterms(h5file, obs2.stationinfo.station, obs2.chanfreqvec)
 # ![D-terms](Dterms_vs_frequency.png)
 # There is only one frequency channel since this is a channel-averaged data set.
 
