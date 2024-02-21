@@ -68,13 +68,16 @@ troposphere!(obs1, h5file, absorptionfile=absorptionfile, dispersivefile=dispers
 
 # For example, to plot the elevation angles by station we can just do
 plotelevationangle(elevfile, obs1.scanno, obs1.times, obs1.stationinfo.station)
+# ![Elevation angle](ElevationAngle_vs_time.png)
 
 # The transmission values computed can be plotted using
 plottransmission(h5file, obs1.stationinfo.station, obs1.times, obs1.chanfreqvec)
+# ![Transmission](Transmission_vs_time.png)
 # Since this is a channel-averaged data set, the frequency-dependent transmission reduces to a single curve per station.
 
 # The delays due to the mean component of the troposphere can be plotted as follows:
 plotmeandelays(h5file, obs1.stationinfo.station, obs1.times, obs1.chanfreqvec)
+# ![Mean Delays](MeanDelays_vs_time.png)
 #-
 rm(h5file) # hide
 rm("atm.csv") # hide
@@ -90,6 +93,7 @@ pointing!(obs1, h5file=h5file)
 
 # We now plot the pointing model generated:
 plotpointingerrors(h5file, obs1.scanno, obs1.stationinfo.station)
+# ![Pointing errors](Pointing_offsets_amplitude_errors_vs_time.png)
 # Mispointings of station LM (Large Millimeter Telescope, Mexico), the largest dish in the array, result in the largest attenuation of amplitude.
 rm(h5file) # hide
 
@@ -105,8 +109,10 @@ inh5file = joinpath(relativepath, "test", "data", "insmodeluvf.h5")
 instrumentalpolarization!(obs1, h5file=h5file, elevfile=inh5file, parangfile=inh5file)
 #-
 plotparallacticangle(h5file, obs1.scanno, obs1.times, obs1.stationinfo.station)
+# ![Parallactic angle](ParallacticAngle_vs_time.png)
 #-
 plotdterms(h5file, obs1.stationinfo.station, obs1.chanfreqvec)
+# ![D-terms](Dterms_vs_frequency.png)
 # There is only one frequency channel since this is a channel-averaged data set.
 
 rm(h5file) # hide
@@ -119,6 +125,7 @@ rm(h5file) # hide
 stationgains!(obs2, h5file=h5file)
 #-
 plotstationgains(h5file, obs2.scanno, obs2.times, obs2.exposure, obs2.stationinfo.station)
+# ![Station gains](StationGains_vs_time.png)
 #-
 rm(h5file) # hide
 
@@ -127,6 +134,7 @@ rm(h5file) # hide
 bandpass!(obs2, h5file=h5file)
 #-
 plotbandpass(h5file, obs2.stationinfo.station, obs2.chanfreqvec)
+# ![Bandpass](BandpassGains_vs_frequency.png)
 #-
 rm(h5file) # hide
 
