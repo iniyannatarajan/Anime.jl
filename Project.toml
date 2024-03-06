@@ -35,10 +35,10 @@ YAML = "ddb6d928-2868-570f-bddf-ab3f9cf99eb6"
 
 [compat]
 ArgParse = "1.1"
-CFITSIO_jll = "=4.0.0"
+CFITSIO_jll = "4.3"
 CSV = "0.10"
 CairoMakie = "0.11"
-Casacore = "0.2"
+Casacore = "0.3"
 ColorSchemes = "3.21"
 CondaPkg = "0.2"
 DataFrames = "1.5"
