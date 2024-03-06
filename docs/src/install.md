@@ -1,6 +1,6 @@
 # Installation
 
-`Anime` has been tested with Julia 1.9 and Ubuntu Linux. It can be installed using Julia's package manager by entering the Julia REPL and typing
+`Anime` has been tested with Julia 1.10 and Ubuntu Linux. It can be installed using Julia's package manager by entering the Julia REPL and typing
 ```julia
 using Pkg
 Pkg.add("Anime")
