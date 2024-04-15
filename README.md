@@ -20,3 +20,6 @@ or by entering package mode by typing `]` in the Julia REPL and then typing
 ```julia
 add Anime
 ```
+
+## Contributing
+[![ColPrac: Contributor's Guide on Collaborative Practices for Community Packages](https://img.shields.io/badge/ColPrac-Contributor's%20Guide-blueviolet)](https://github.com/SciML/ColPrac)
