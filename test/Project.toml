@@ -30,3 +30,5 @@ YAML = "ddb6d928-2868-570f-bddf-ab3f9cf99eb6"
 [compat]
 HDF5 = "0.16"
 HDF5_jll = "1.12.2"
+OpenSSL_jll = "=1.1.21"
+PythonCall = "=0.9.15"
