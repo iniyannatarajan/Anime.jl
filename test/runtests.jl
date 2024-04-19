@@ -31,20 +31,12 @@ tb = table()
 me = measures()
 sm = simulator()
 
-@testset "Create data set" begin
-    include("testcreatems.jl")
-end
-
-@testset "Load Observation" begin
-    include("testloadobs.jl")
+@testset "I/O" begin
+    include("testio.jl")
 end
 
 @testset "Instrument Models" begin
     include("testinstrumentmodels.jl")
-end
-
-@testset "Storage Utilities" begin
-    include("teststorageutils.jl")
 end
 
 @testset "Stats Methods" begin

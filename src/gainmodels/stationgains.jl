@@ -2,13 +2,16 @@ export stationgains!
 
 """
     stationgains!(data::Array{Complex{Float32},4}, scanno::Vector{Int32}, times::Vector{Float64}, exposure::Float64, 
-    stationinfo::DataFrame, mode::String, rngcorrupt::AbstractRNG, antenna1::Vector{Int32}, antenna2::Vector{Int32}, numchan::Int64; h5file::String="")
+    stationinfo::DataFrame, mode::String, corruptseed::Int, antenna1::Vector{Int32}, antenna2::Vector{Int32}, numchan::Int64; h5file::String="")
 
-Compute time-variable complex station gains and apply to data. The actual numerical values are serialized in HDF5 format.
+Compute time-variable complex station gains and apply to data; write model to HDF5 file.
 """
 function stationgains!(data::Array{Complex{Float32},4}, scanno::Vector{Int32}, times::Vector{Float64}, exposure::Float64, 
-    stationinfo::DataFrame, mode::String, rngcorrupt::AbstractRNG, antenna1::Vector{Int32}, antenna2::Vector{Int32}, numchan::Int64; h5file::String="")
-    
+    stationinfo::DataFrame, mode::String, corruptseed::Int, antenna1::Vector{Int32}, antenna2::Vector{Int32}, numchan::Int64; h5file::String="")
+    @info("Computing station gains...")
+    # initialize RNG with seed
+    rngcorrupt = Xoshiro(corruptseed)
+
     # open h5 file for writing
     if !isempty(h5file)
         fid = h5open(h5file, "cw")
@@ -102,11 +105,11 @@ function stationgains!(data::Array{Complex{Float32},4}, scanno::Vector{Int32}, t
 end
 
 """
-    stationgains!(obs::CjlObservation; h5file::String="")
+    stationgains!(ms::MeasurementSet, stationinfo::DataFrame, obsconfig::Dict; h5file::String="")
 
-Shorthand for station gains function when CjlObservation struct object is available.
+Alias for use in pipelines.
 """
-function stationgains!(obs::CjlObservation; h5file::String="")
-    stationgains!(obs.data, obs.scanno, obs.times, obs.exposure, obs.stationinfo, obs.stationgainsmode,
-    obs.rngcorrupt, obs.antenna1, obs.antenna2, obs.numchan, h5file=h5file)
+function stationgains!(ms::MeasurementSet, stationinfo::DataFrame, obsconfig::Dict; h5file::String="")
+    stationgains!(ms.data, ms.scanno, ms.times, ms.exposure, stationinfo, obsconfig["stationgains"]["mode"],
+    obsconfig["corruptseed"], ms.antenna1, ms.antenna2, ms.numchan, h5file=h5file)
 end

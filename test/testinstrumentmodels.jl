@@ -1,108 +1,92 @@
 @testset "Troposphere" begin
-    y = YAML.load_file("data/config1.yaml", dicttype=Dict{String,Any}) # sample dict to test loadms()
+    obsconfig = readobsconfig("data/config1.yaml")
+    stationinfo = readstationinfo(obsconfig["stations"], delim=",", ignorerepeated=false)
     h5file = "tropos.h5"
 
-    obs = loadms(y["msname"], y["stations"], Int(y["corruptseed"]), Int(y["troposphere"]["tropseed"]), y["troposphere"]["wetonly"], y["correff"], 
-    y["troposphere"]["attenuate"], y["troposphere"]["skynoise"], y["troposphere"]["meandelays"], y["troposphere"]["turbulence"], 
-    y["instrumentalpolarization"]["visibilityframe"], y["instrumentalpolarization"]["mode"], y["pointing"]["interval"], y["pointing"]["scale"], y["pointing"]["mode"], y["stationgains"]["mode"], 
-    y["bandpass"]["bandpassfile"], delim=",", ignorerepeated=false)
+    ms = readms(obsconfig["msname"])
 
-    @inferred troposphere!(obs, h5file, absorptionfile="data/absorption1.csv", dispersivefile="data/dispersive1.csv", elevfile="data/insmodel1.h5")
+    @inferred troposphere!(ms, stationinfo, obsconfig, h5file, absorptionfile="data/absorption1.csv", dispersivefile="data/dispersive1.csv", elevfile="data/insmodel1.h5")
 
     rm("atm.csv")
     rm(h5file)
 end
 
 @testset "Polarization" begin
-    y = YAML.load_file("data/config1.yaml", dicttype=Dict{String,Any}) # sample dict to test loadms()
+    obsconfig = readobsconfig("data/config1.yaml")
+    stationinfo = readstationinfo(obsconfig["stations"], delim=",", ignorerepeated=false)
     h5file = "inspol.h5"
 
-    obs = loadms(y["msname"], y["stations"], Int(y["corruptseed"]), Int(y["troposphere"]["tropseed"]), y["troposphere"]["wetonly"], y["correff"], 
-    y["troposphere"]["attenuate"], y["troposphere"]["skynoise"], y["troposphere"]["meandelays"], y["troposphere"]["turbulence"], 
-    y["instrumentalpolarization"]["visibilityframe"], y["instrumentalpolarization"]["mode"], y["pointing"]["interval"], y["pointing"]["scale"], y["pointing"]["mode"], y["stationgains"]["mode"], 
-    y["bandpass"]["bandpassfile"], delim=",", ignorerepeated=false)
+    ms = readms(obsconfig["msname"])
 
-    @inferred instrumentalpolarization!(obs, h5file=h5file)
+    @inferred instrumentalpolarization!(ms, stationinfo, obsconfig, h5file=h5file)
     rm(h5file)
 
-    @inferred instrumentalpolarization!(obs, h5file=h5file, elevfile="data/insmodel1.h5", parangfile="data/insmodel1.h5")
+    @inferred instrumentalpolarization!(ms, stationinfo, obsconfig, h5file=h5file, elevfile="data/insmodel1.h5", parangfile="data/insmodel1.h5")
     rm(h5file)
 
     # write vis in antenna frame
-    obs = loadms(y["msname"], y["stations"], Int(y["corruptseed"]), Int(y["troposphere"]["tropseed"]), y["troposphere"]["wetonly"], y["correff"], 
-    y["troposphere"]["attenuate"], y["troposphere"]["skynoise"], y["troposphere"]["meandelays"], y["troposphere"]["turbulence"], 
-    "antenna", y["instrumentalpolarization"]["mode"], y["pointing"]["interval"], y["pointing"]["scale"], y["pointing"]["mode"], y["stationgains"]["mode"], 
-    y["bandpass"]["bandpassfile"], delim=",", ignorerepeated=false)
+    ms = readms(obsconfig["msname"])
 
-    @inferred instrumentalpolarization!(obs, h5file=h5file, elevfile="data/insmodel1.h5", parangfile="data/insmodel1.h5")
+    @inferred instrumentalpolarization!(ms, stationinfo, obsconfig, h5file=h5file, elevfile="data/insmodel1.h5", parangfile="data/insmodel1.h5")
     rm(h5file)
 end
 
 @testset "Primary Beam" begin
-    y = YAML.load_file("data/config1.yaml", dicttype=Dict{String,Any}) # sample dict to test loadms()
+    obsconfig = readobsconfig("data/config1.yaml")
+    stationinfo = readstationinfo(obsconfig["stations"], delim=",", ignorerepeated=false)
     h5file = "beam.h5"
 
-    obs = loadms(y["msname"], y["stations"], Int(y["corruptseed"]), Int(y["troposphere"]["tropseed"]), y["troposphere"]["wetonly"], y["correff"], 
-    y["troposphere"]["attenuate"], y["troposphere"]["skynoise"], y["troposphere"]["meandelays"], y["troposphere"]["turbulence"], 
-    y["instrumentalpolarization"]["visibilityframe"], y["instrumentalpolarization"]["mode"], y["pointing"]["interval"], y["pointing"]["scale"], y["pointing"]["mode"], y["stationgains"]["mode"], 
-    y["bandpass"]["bandpassfile"], delim=",", ignorerepeated=false)
+    ms = readms(obsconfig["msname"])
 
-    @inferred pointing!(obs, h5file=h5file)
+    @inferred pointing!(ms, stationinfo, obsconfig, h5file=h5file)
     rm(h5file)
 
-    obs = loadms(y["msname"], y["stations"], Int(y["corruptseed"]), Int(y["troposphere"]["tropseed"]), y["troposphere"]["wetonly"], y["correff"], 
-    y["troposphere"]["attenuate"], y["troposphere"]["skynoise"], y["troposphere"]["meandelays"], y["troposphere"]["turbulence"], 
-    y["instrumentalpolarization"]["visibilityframe"], y["instrumentalpolarization"]["mode"], 0.0, y["pointing"]["scale"], y["pointing"]["mode"], y["stationgains"]["mode"], 
-    y["bandpass"]["bandpassfile"], delim=",", ignorerepeated=false)
+    # set pointing interval to 0.0
+    obsconfig["pointing"]["interval"] = 0.0
 
-    @inferred pointing!(obs, h5file=h5file)
+    @inferred pointing!(ms, stationinfo, obsconfig, h5file=h5file)
     rm(h5file)
 end
 
 @testset "Station Gains" begin
-    y = YAML.load_file("data/config1.yaml", dicttype=Dict{String,Any}) # sample dict to test loadms()
+    obsconfig = readobsconfig("data/config1.yaml")
+    stationinfo = readstationinfo(obsconfig["stations"], delim=",", ignorerepeated=false)
     h5file = "gains.h5"
 
-    obs = loadms(y["msname"], y["stations"], Int(y["corruptseed"]), Int(y["troposphere"]["tropseed"]), y["troposphere"]["wetonly"], y["correff"], 
-    y["troposphere"]["attenuate"], y["troposphere"]["skynoise"], y["troposphere"]["meandelays"], y["troposphere"]["turbulence"], 
-    y["instrumentalpolarization"]["visibilityframe"], y["instrumentalpolarization"]["mode"], y["pointing"]["interval"], y["pointing"]["scale"], y["pointing"]["mode"], y["stationgains"]["mode"], 
-    y["bandpass"]["bandpassfile"], delim=",", ignorerepeated=false)
+    ms = readms(obsconfig["msname"])
 
-    @inferred stationgains!(obs, h5file=h5file)
+    @inferred stationgains!(ms, stationinfo, obsconfig, h5file=h5file)
 
     rm(h5file)
 end
 
 @testset "Bandpass" begin
-    y = YAML.load_file("data/config1.yaml", dicttype=Dict{String,Any}) # sample dict to test loadms()
+    obsconfig = readobsconfig("data/config1.yaml")
+    stationinfo = readstationinfo(obsconfig["stations"], delim=",", ignorerepeated=false)
+    bandpassinfo = readbandpassinfo(obsconfig["bandpass"]["bandpassfile"], delim=",", ignorerepeated=false)
     h5file = "bandpass.h5"
 
-    obs = loadms(y["msname"], y["stations"], Int(y["corruptseed"]), Int(y["troposphere"]["tropseed"]), y["troposphere"]["wetonly"], y["correff"], 
-    y["troposphere"]["attenuate"], y["troposphere"]["skynoise"], y["troposphere"]["meandelays"], y["troposphere"]["turbulence"], 
-    y["instrumentalpolarization"]["visibilityframe"], y["instrumentalpolarization"]["mode"], y["pointing"]["interval"], y["pointing"]["scale"], y["pointing"]["mode"], y["stationgains"]["mode"], 
-    y["bandpass"]["bandpassfile"], delim=",", ignorerepeated=false)
+    ms = readms(obsconfig["msname"])
 
-    @inferred bandpass!(obs, h5file=h5file)
+    @inferred bandpass!(ms, stationinfo, bandpassinfo, obsconfig, h5file=h5file)
 
     rm(h5file)
 end
 
 @testset "Thermal Noise" begin
-    y = YAML.load_file("data/config1.yaml", dicttype=Dict{String,Any}) # sample dict to test loadms()
+    obsconfig = readobsconfig("data/config1.yaml")
+    stationinfo = readstationinfo(obsconfig["stations"], delim=",", ignorerepeated=false)
     h5file = "noise.h5"
 
-    obs = loadms(y["msname"], y["stations"], Int(y["corruptseed"]), Int(y["troposphere"]["tropseed"]), y["troposphere"]["wetonly"], y["correff"], 
-    y["troposphere"]["attenuate"], y["troposphere"]["skynoise"], y["troposphere"]["meandelays"], y["troposphere"]["turbulence"], 
-    y["instrumentalpolarization"]["visibilityframe"], y["instrumentalpolarization"]["mode"], y["pointing"]["interval"], y["pointing"]["scale"], y["pointing"]["mode"], y["stationgains"]["mode"], 
-    y["bandpass"]["bandpassfile"], delim=",", ignorerepeated=false)
+    ms = readms(obsconfig["msname"])
 
-    @inferred thermalnoise!(obs, h5file=h5file)
+    @inferred thermalnoise!(ms, stationinfo, obsconfig, h5file=h5file)
     rm(h5file)
 
-    @inferred thermalnoise!(obs, h5file=h5file, noisefile="data/insmodel1.h5")
+    @inferred thermalnoise!(ms, stationinfo, obsconfig, h5file=h5file, noisefile="data/insmodel1.h5")
     rm(h5file)
 
-    @inferred thermalnoise!(obs, h5file=h5file, noisefile="data/insmodel2.h5")
+    @inferred thermalnoise!(ms, stationinfo, obsconfig, h5file=h5file, noisefile="data/insmodel2.h5")
     rm(h5file)
 
 end

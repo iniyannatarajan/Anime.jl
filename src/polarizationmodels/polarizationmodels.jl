@@ -1,15 +1,20 @@
 export instrumentalpolarization!
 
 """
-    instrumentalpolarization!(data::Array{Complex{Float32},4}, scanno::Vector{Int32}, times::Vector{Float64}, stationinfo::DataFrame, phasedir::Array{Float64,2},
-    pos::Array{Float64, 2}, chanfreqvec::Vector{Float64}, polframe::String, polmode::String, antenna1::Vector{Int32}, antenna2::Vector{Int32}, 
-    exposure::Float64, rngcorrupt::AbstractRNG; h5file::String="", elevfile::String="", parangfile::String="")
+    instrumentalpolarization!(data::Array{Complex{Float32},4}, scanno::Vector{Int32}, times::Vector{Float64},
+    stationinfo::DataFrame, phasedir::Array{Float64,2}, pos::Array{Float64, 2}, chanfreqvec::Vector{Float64}, polframe::String,
+    polmode::String, antenna1::Vector{Int32}, antenna2::Vector{Int32}, exposure::Float64, corruptseed::Int; h5file::String="",
+    elevfile::String="", parangfile::String="")
 
-Compute frequency-varying instrumental polarization (leakage, or "D-Jones" terms) and apply to data. The actual numerical values are serialized as HDF5.
+Compute frequency-varying instrumental polarization (leakage, or "D-Jones" terms) and apply to data; write model to HDF5 file.
 """
-function instrumentalpolarization!(data::Array{Complex{Float32},4}, scanno::Vector{Int32}, times::Vector{Float64}, stationinfo::DataFrame, phasedir::Array{Float64,2},
-    pos::Array{Float64, 2}, chanfreqvec::Vector{Float64}, polframe::String, polmode::String, antenna1::Vector{Int32}, antenna2::Vector{Int32}, 
-    exposure::Float64, rngcorrupt::AbstractRNG; h5file::String="", elevfile::String="", parangfile::String="")
+function instrumentalpolarization!(data::Array{Complex{Float32},4}, scanno::Vector{Int32}, times::Vector{Float64},
+    stationinfo::DataFrame, phasedir::Array{Float64,2}, pos::Array{Float64, 2}, chanfreqvec::Vector{Float64}, polframe::String,
+    polmode::String, antenna1::Vector{Int32}, antenna2::Vector{Int32}, exposure::Float64, corruptseed::Int; h5file::String="",
+    elevfile::String="", parangfile::String="")
+    @info("Computing polarization models...")
+    # initialize RNG with seed
+    rngcorrupt = Xoshiro(corruptseed)
 
     # get unique scan numbers
     uniqscans = unique(scanno)
@@ -240,16 +245,19 @@ function instrumentalpolarization!(data::Array{Complex{Float32},4}, scanno::Vect
         close(fid)
     end
 
-    @info("Done 🙆")
+    @info("Compute and apply polarization models 🙆")
     
 end
 
 """
-    instrumentalpolarization!(obs::CjlObservation; h5file::String="", elevfile::String="", parangfile::String="")
+    instrumentalpolarization!(ms::MeasurementSet, stationinfo::DataFrame, obsconfig::Dict; h5file::String="",
+    elevfile::String="", parangfile::String="")
 
-Shorthand for instrumental polarization function when CjlObservation struct object is available.
+Alias for use in pipelines.
 """
-function instrumentalpolarization!(obs::CjlObservation; h5file::String="", elevfile::String="", parangfile::String="")
-    instrumentalpolarization!(obs.data, obs.scanno, obs.times, obs.stationinfo, obs.phasedir, obs.pos, obs.chanfreqvec, obs.polframe,
-    obs.polmode, obs.antenna1, obs.antenna2, obs.exposure, obs.rngcorrupt, h5file=h5file, elevfile=elevfile, parangfile=parangfile)
+function instrumentalpolarization!(ms::MeasurementSet, stationinfo::DataFrame, obsconfig::Dict; h5file::String="",
+    elevfile::String="", parangfile::String="")
+    instrumentalpolarization!(ms.data, ms.scanno, ms.times, stationinfo, ms.phasedir, ms.pos, ms.chanfreqvec,
+    obsconfig["instrumentalpolarization"]["visibilityframe"], obsconfig["instrumentalpolarization"]["mode"], ms.antenna1,
+    ms.antenna2, ms.exposure, obsconfig["corruptseed"], h5file=h5file, elevfile=elevfile, parangfile=parangfile)
 end

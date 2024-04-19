@@ -13,7 +13,7 @@ In modular mode, any calibration or imaging software can call any function in th
 ## Input files
 
 ### Observation parameters
-Functions such as [`msfromconfig`](@ref Anime.msfromconfig) require the user to input various arguments that define the parameters of observation. For ease of use, these parameters can be collected in a YAML file which can be passed directly to `Anime` in pipeline mode.
+Functions such as [`createmsfromconfig`](@ref Anime.createmsfromconfig) require the user to input various arguments that define the parameters of observation. For ease of use, these parameters can be collected in a YAML file which can be passed directly to `Anime` in pipeline mode.
 
 ```yaml
 ####################################################

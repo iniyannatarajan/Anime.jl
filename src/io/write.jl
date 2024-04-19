@@ -1,17 +1,15 @@
-export msfromconfig, msfromuvfits, mstouvfits
+export makecasaantennatable, addweightcolumns, createmsfromuvfits, createuvfitsfromms, createmsfromconfig, writems
 
 using StatsBase: mode
 
 """
-    makecasaanttable(stations::String, casaanttemplate::String; delim::String=",", ignorerepeated::Bool=false)
+    makecasaantennatable(df::DataFrame, casaanttemplate::String; delim::String=",", ignorerepeated::Bool=false)
 
-Create CASA antenna table from station info file `stations` using `casaanttemplate` as template. Requires `casatools` to be installed.
+Create CASA antenna table from the DataFrame df containing station information using `casaanttemplate` as template. Requires `casatools`.
 """
-function makecasaanttable(stations::String, casaanttemplate::String; delim::String=",", ignorerepeated::Bool=false)
-    # read in the stations CSV file
-    df = CSV.read(stations, DataFrame; delim=delim, ignorerepeated=ignorerepeated)
-    
-    stationtable = "ANTENNA_$(split(basename(stations), '.')[1])"
+function makecasaantennatable(df::DataFrame, casaanttemplate::String; delim::String=",", ignorerepeated::Bool=false)    
+    #stationtable = "ANTENNA_$(split(basename(stations), '.')[1])"
+    stationtable = "ANTENNA_temp"
 
     # read template table and copy
     tb.open(casaanttemplate)
@@ -45,11 +43,11 @@ function makecasaanttable(stations::String, casaanttemplate::String; delim::Stri
 end
 
 """
-    addweightcols(msname::String, mode::String, sigmaspec::Bool, weightspec::Bool)
+    addweightcolumns(msname::String, mode::String, sigmaspec::Bool, weightspec::Bool)
 
-Add ```WEIGHT_SPECTRUM``` and ```SIGMA_SPECTRUM``` columns to MS. Requires `casatools` to be installed.
+Add ```WEIGHT_SPECTRUM``` and ```SIGMA_SPECTRUM``` columns to existing MS. Requires `casatools` to be installed.
 """
-function addweightcols(msname::String, mode::String, sigmaspec::Bool, weightspec::Bool)
+function addweightcolumns(msname::String, mode::String, sigmaspec::Bool, weightspec::Bool)
     # get quantities to define array shapes
     tb.open("$(msname)::SPECTRAL_WINDOW")
     numchan = pyconvert(Int64, tb.getcol("NUM_CHAN")[0])
@@ -110,16 +108,16 @@ function msfromvex()
 end=#
 
 """
-    msfromuvfits(uvfits::String, msname::String, mscreationmode::String, overwrite::Bool=true)
+    createmsfromuvfits(uvfits::String, msname::String, mscreationmode::String; overwrite::Bool=true)
 
-Convert `uvfits` file to MS named `msname`. Requires `casatools` and `casatasks` to be installed.
+Convert `uvfits` to MS. Requires `casatools` and `casatasks`.
 """
-function msfromuvfits(uvfits::String, msname::String, mscreationmode::String, overwrite::Bool=true)
+function createmsfromuvfits(uvfits::String, msname::String, mscreationmode::String; overwrite::Bool=true)
 
     # overwrite existing MS
     if isdir(msname)
         if !overwrite
-            @error("$msname exists but overwrite=$overwrite; not converting uvfits to ms 🤷")
+            @error("$msname exists and overwrite set to $overwrite; not converting uvfits to ms 🤷")
             exit()
         else
             @info("Removing existing $msname...")
@@ -155,16 +153,16 @@ function msfromuvfits(uvfits::String, msname::String, mscreationmode::String, ov
     tb.close()
 
     # WEIGHT_SPECTRUM is added by importuvfits; add only SIGMA_SPECTRUM manually
-    addweightcols(msname, mscreationmode, true, true)
+    addweightcolumns(msname, mscreationmode, true, true)
 end
 
 """
-    mstouvfits(msname::String, uvfits::String, datacolumn::String; field::String="", spw::String="", antenna::String="",
+    createuvfitsfromms(msname::String, uvfits::String, datacolumn::String; field::String="", spw::String="", antenna::String="",
     timerange::String="", overwrite::Bool=true)
 
-Convert MS to UVFITS. Requires `casatasks` to be installed.
+Create UVFITS from existing MS. Requires `casatasks`.
 """
-function mstouvfits(msname::String, uvfits::String, datacolumn::String; field::String="", spw::String="", antenna::String="",
+function createuvfitsfromms(msname::String, uvfits::String, datacolumn::String; field::String="", spw::String="", antenna::String="",
     timerange::String="", overwrite::Bool=true)
     @info("Creating $uvfits from $msname...")
 
@@ -177,14 +175,14 @@ function mstouvfits(msname::String, uvfits::String, datacolumn::String; field::S
 end
 
 """
-    msfromconfig(msname::String, mscreationmode::String, stations::String, casaanttemplate::String, spw_centrefreq::Array{Float64, 1}, 
+    createmsfromconfig(msname::String, mscreationmode::String, casaanttemplate::String, stationinfo::DataFrame, spw_centrefreq::Array{Float64, 1}, 
     spw_bw::Array{Float64, 1}, spw_channels::Array{Int64, 1}, sourcedict::Dict{String, Any}, starttime::String, exposure::Float64, scans::Int64,
     scanlengths::Array{Float64, 1}, scanlag::Float64; autocorr::Bool=false, telescopename::String="VLBA", feed::String="perfect R L",
     shadowlimit::Float64=1e-6, elevationlimit::String="10deg", stokes::String="RR RL LR LL", delim::String=",", ignorerepeated::Bool=false)
 
-Create Measurement Set from observation parameters. Requires `casatools`.
+Create Measurement Set from observation parameters and DataFrame containing station information. Requires `casatools`.
 """
-function msfromconfig(msname::String, mscreationmode::String, stations::String, casaanttemplate::String, spw_centrefreq::Array{Float64, 1}, 
+function createmsfromconfig(msname::String, mscreationmode::String, casaanttemplate::String, stationinfo::DataFrame, spw_centrefreq::Array{Float64, 1}, 
     spw_bw::Array{Float64, 1}, spw_channels::Array{Int64, 1}, sourcedict::Dict{String, Any}, starttime::String, exposure::Float64, scans::Int64,
     scanlengths::Array{Float64, 1}, scanlag::Float64; autocorr::Bool=false, telescopename::String="VLBA", feed::String="perfect R L",
     shadowlimit::Float64=1e-6, elevationlimit::String="10deg", stokes::String="RR RL LR LL", delim::String=",", ignorerepeated::Bool=false)
@@ -195,11 +193,11 @@ function msfromconfig(msname::String, mscreationmode::String, stations::String, 
     Bool(autocorr) ? sm.setauto(autocorrwt=1.0) : sm.setauto(autocorrwt=0.0)
     
     # set antenna config -- create a new CASA ANTENNA table if the station info is in a CSV file
-    if isfile(stations) && isdir(casaanttemplate)
-        @info("Creating new ANTENNA table from CSV station info file...")
-	    stationtable = makecasaanttable(stations, casaanttemplate; delim=delim, ignorerepeated=ignorerepeated)
+    if isdir(casaanttemplate)
+        @info("Creating new ANTENNA table using stationinfo DataFrame...")
+	    stationtable = makecasaantennatable(stationinfo, casaanttemplate; delim=delim, ignorerepeated=ignorerepeated)
     else
-        error("Either $(stations) or $(casaanttemplate) does not exist 🤷")
+        error("The CASA ANTENNA template table $(casaanttemplate) does not exist 🤷")
     end
 
     # station locations are contained in a casa antenna table
@@ -273,6 +271,95 @@ function msfromconfig(msname::String, mscreationmode::String, stations::String, 
     # clean up
     sm.close()
 
-    addweightcols(msname, mscreationmode, true, true) # add weight columns
+    addweightcolumns(msname, mscreationmode, true, true) # add weight columns
 
+end
+
+"""
+    createmsfromconfig(obsconfig, stationinfo::DataFrame)
+
+Alias with fewer arguments for use in pipelines.
+"""
+function createmsfromconfig(obsconfig::Dict, stationinfo::DataFrame)
+    createmsfromconfig(obsconfig["msname"], obsconfig["mode"], obsconfig["casaanttemplate"], stationinfo, obsconfig["spw"]["centrefreq"], obsconfig["spw"]["bandwidth"],
+    obsconfig["spw"]["channels"], obsconfig["source"], obsconfig["starttime"], obsconfig["exposure"], obsconfig["scans"], obsconfig["scanlengths"], obsconfig["scanlag"];
+    autocorr=obsconfig["autocorr"], telescopename=obsconfig["telescopename"], feed=obsconfig["feed"], shadowlimit=obsconfig["shadowlimit"],
+    elevationlimit=obsconfig["elevationlimit"], stokes=obsconfig["stokes"], delim=",", ignorerepeated=false)
+end
+
+"""
+    computeweights!(totalrmsspec::Array{Float32, 4}, totalwtspec::Array{Float32, 4}; h5file::String="")
+
+Compute total rms (sigma) values and inverse-squared visibility weights from thermal+sky noise terms stored in `h5file`.
+"""
+function computeweights!(totalrmsspec::Array{Float32, 4}, totalwtspec::Array{Float32, 4}; h5file::String="")
+
+    fid = h5open(h5file, "r")
+    if haskey(fid, "thermalnoise") && haskey(fid["thermalnoise"], "thermalnoiserms")
+        totalrmsspec[:,:,:,:] = read(fid["thermalnoise"]["thermalnoiserms"]).^2
+    end
+    if haskey(fid, "troposphere") && haskey(fid["troposphere"], "skynoiserms")
+        totalrmsspec[:,:,:,:] = totalrmsspec[:,:,:,:] + read(fid["troposphere"]["skynoiserms"]).^2
+    end
+
+    # compute sigma_spectrum
+    totalrmsspec[:,:,:,:] = sqrt.(totalrmsspec[:,:,:,:])
+
+    # compute weight_spectrum
+    totalwtspec[:,:,:,:] = 1 ./(totalrmsspec[:,:,:,:].^2)
+
+    return totalrmsspec, totalwtspec
+end
+
+"""
+    writems(ms::MeasurementSet; h5file::String="")
+
+Write data to MS. Optionally, add weight columns from `h5file`.
+"""
+function writems(ms::MeasurementSet; h5file::String="")
+    # replace NaNs with zeros
+    ms.data[isnan.(ms.data)] .= 0.0+0.0*im
+
+    # compute weight columns
+    #@warn("WEIGHT_SPECTRUM and SIGMA_SPECTRUM are not filled in properly at the moment, while the code is being optimised.")
+    totalrmsspec = zeros(Float32, 2, 2, ms.numchan, size(ms.data)[4]) # noise rms zero by default
+    totalwtspec = ones(Float32, 2, 2, ms.numchan, size(ms.data)[4]) # weights unity by default
+
+    if isfile(h5file)
+        @info("Populating weight and sigma spectrum arrays...")
+        computeweights!(totalrmsspec, totalwtspec, h5file=h5file)
+    end
+
+    # convert the sigma_spec and weight_spec arrays to the format required by Casacore.jl
+    revtotalrmsspec3dres = permutedims(totalrmsspec, (2,1,3,4))
+    revtotalrmsspec3d = reshape(revtotalrmsspec3dres, 4, size(revtotalrmsspec3dres)[3], :)
+    revtotalrmsspec = [Matrix{Float32}(revtotalrmsspec3d[:,:,i]) for i in 1:size(revtotalrmsspec3d)[3]]
+
+    revtotalwtspec3dres = permutedims(totalwtspec, (2,1,3,4))
+    revtotalwtspec3d = reshape(revtotalwtspec3dres, 4, size(revtotalwtspec3dres)[3], :)
+    revtotalwtspec = [Matrix{Float32}(revtotalwtspec3d[:,:,i]) for i in 1:size(revtotalwtspec3d)[3]]
+
+    # compute channel averaged weight and sigma column values
+    revtotalrms = Vector{Vector{Float32}}()
+    revtotalwt = Vector{Vector{Float32}}()
+    for row in 1:size(ms.data)[4] # nrows
+        tmpvec = dropdims(mean(revtotalrmsspec[row], dims=2), dims=2)
+        push!(revtotalrms, tmpvec) # average the sigma values
+        push!(revtotalwt, 1 ./tmpvec.^2)
+    end
+
+    # reshape data array for Casacore.jl
+    revdata3dres = permutedims(ms.data, (2,1,3,4))
+    revdata3d = reshape(revdata3dres, 4, size(revdata3dres)[3], :)
+    revdata = [Matrix{ComplexF32}(revdata3d[:,:,i]) for i in 1:size(revdata3d)[3]]
+
+    # when all the corruptions have been applied, write the above columns back to disk
+    table = CCTable(ms.name, CCTables.Update)
+    table[:DATA] = revdata
+    table[:SIGMA_SPECTRUM] = revtotalrmsspec
+	table[:WEIGHT_SPECTRUM] = revtotalwtspec
+    table[:SIGMA] = revtotalrms
+	table[:WEIGHT] = revtotalwt
+
+    @info("Write arrays to disk... 🙆")
 end

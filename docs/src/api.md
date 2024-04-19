@@ -12,13 +12,20 @@ Pages = ["api.md"]
 
 ## Public API
 
-### Storage
+### I/O
 ```@docs
-Anime.msfromconfig
-Anime.msfromuvfits
-Anime.mstouvfits
-Anime.loadms
-Anime.postprocessms
+Anime.readms
+Anime.readobsconfig
+Anime.readstationinfo
+Anime.readbandpassinfo
+Anime.readalistv5
+Anime.readalistv6
+Anime.createmsfromconfig
+Anime.createmsfromuvfits
+Anime.createuvfitsfromms
+Anime.writems
+Anime.makecasaantennatable
+Anime.addweightcolumns
 ```
 
 ### Coherency
@@ -63,13 +70,11 @@ Anime.plotmeandelays
 
 ## Data Types
 ```@docs
-Anime.CjlObservation
+Anime.MeasurementSet
 ```
 
 ## Internal
 ```@docs
-Anime.addweightcols
-Anime.makecasaanttable
 Anime.copymodeltodata
 Anime.computeweights!
 Anime.run_aatm

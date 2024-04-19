@@ -1,20 +1,18 @@
-export loadms, CjlObservation
-
-abstract type AbstractObservation{T} end
+export readms, readobsconfig, readstationinfo, readbandpassinfo, readalistv5, readalistv6, MeasurementSet
 
 """
     $(TYPEDEF)
 
-Container type for storing observation parameters and data.
+Composite type for storing data from a Measurement Set.
 
 # Fields
 $(FIELDS)
 """
-struct CjlObservation{T} <: AbstractObservation{T}
+struct MeasurementSet{T}
     """
-    Name of the Measurement Set
+    Measurement Set name
     """
-    msname::String
+    name::String
     """
     Complex visibility data (MS `DATA` column)
     """
@@ -48,13 +46,9 @@ struct CjlObservation{T} <: AbstractObservation{T}
     """
     exposure::Float64
     """
-    Scan numbers (MS ```SCAN_NUMBER``` column)
+    Scan numbers (```SCAN_NUMBER``` column in MS)
     """
     scanno::Vector{Int32}
-    #=weight::Vector{Vector{Float32}}
-    weightspec::Array{Float32,3}
-    sigma::Vector{Vector{Float32}}
-    sigmaspec::Array{Float32,3}=#
     """
     Number of frequency channels
     """
@@ -75,91 +69,14 @@ struct CjlObservation{T} <: AbstractObservation{T}
     Antenna positions in x,y,z coordinates
     """
     pos::Array{Float64, 2}
-    """
-    Dataframe of station information input by user
-    """
-    stationinfo::DataFrame
-    #yamlconf::Dict
-    """
-    Consider only water vapour in the troposphere
-    """
-    tropwetonly::Bool
-    """
-    Correlator efficiency
-    """
-    correff::Float64
-    """
-    Introduce attenuation by the troposphere
-    """
-    tropattenuate::Bool
-    """
-    Introduce noise due to troposphere
-    """
-    tropskynoise::Bool
-    """
-    Introduce mean delays due to troposphere
-    """
-    tropmeandelays::Bool
-    """
-    Introduce turbulence in troposphere
-    """
-    tropturbulence::Bool
-    """
-    Polarization frame
-    """
-    polframe::String
-    """
-    Mode to use to create frequency-varying D-term samples
-    """
-    polmode::String
-    """
-    Pointing interval (s)
-    """
-    ptginterval::Float64
-    """
-    Pointing scale mixture parameter
-    """
-    ptgscale::Float64
-    """
-    Mode to use to create pointing error time samples
-    """
-    ptgmode::String
-    """
-    Mode to use to create station gain time samples
-    """
-    stationgainsmode::String
-    """
-    Input bandpass file
-    """
-    bandpassfile::String
-    """
-    RNG for all models except troposphere
-    """
-    rngcorrupt::AbstractRNG
-    """
-    RNG for tropospheric models
-    """
-    rngtrop::AbstractRNG
 end
 
-struct CpyObservation{T} <: AbstractObservation{T} end
-
-# implement Tables interface for CjlObservation
-#Tables.istable(::Type{<:CjlObservation}) = true
-#Tables.columnaccess(::Type{<:CjlObservation}) = true
-#Tables.columns(m::CjlObservation) = m
-
 """
-    loadms(msname::String, stations::String, corruptseed::Int64, tropseed::Int64, tropwetonly::Bool, correff::Float64, tropattenuate::Bool,
-    tropskynoise::Bool, tropmeandelays::Bool, tropturbulence::Bool, polframe::String, polmode::String, ptginterval::Float64, ptgscale::Float64, ptgmode::String,
-    stationgainsmode::String, bandpassfile::String; delim::String=",", ignorerepeated::Bool=false)
+    readms(msname::String)
 
-Load data and metadata from MS and station & bandpass tables and return a CjlObservation object.
+Read data from Measurement Set.
 """
-function loadms(msname::String, stations::String, corruptseed::Int64, tropseed::Int64, tropwetonly::Bool, correff::Float64, tropattenuate::Bool,
-    tropskynoise::Bool, tropmeandelays::Bool, tropturbulence::Bool, polframe::String, polmode::String, ptginterval::Float64, ptgscale::Float64, ptgmode::String,
-    stationgainsmode::String, bandpassfile::String; delim::String=",", ignorerepeated::Bool=false)
-
+function readms(msname::String)
     tab = CCTable(msname, CCTables.Old)
 
     # read values from ms
@@ -173,9 +90,18 @@ function loadms(msname::String, stations::String, corruptseed::Int64, tropseed::
     exposure::Float64 = tab[:EXPOSURE][1]
     scanno::Vector{Int32} = tab[:SCAN_NUMBER][:]
     #=weight::Vector{Vector{Float32}} = tab[:WEIGHT][:]
-    weightspec::Array{Float32, 3} = tab[:WEIGHT_SPECTRUM][:,:,:]
+    if :WEIGHT_SPECTRUM in keys(tab)
+        weight_spectrum::Vector{Matrix{Float32}} = tab[:WEIGHT_SPECTRUM][:,:,:]
+    else
+        weight_spectrum = fill(fill(missing, (2, 2)), size(data))
+    end
+
     sigma::Vector{Vector{Float32}} = tab[:SIGMA][:]
-    sigmaspec::Array{Float32, 3} = tab[:SIGMA_SPECTRUM][:,:,:]=#
+    if :SIGMA_SPECTRUM in keys(tab)
+        sigma_spectrum::Vector{Matrix{Float32}} = tab[:SIGMA_SPECTRUM][:,:,:]
+    else
+        sigma_spectrum = fill(fill(missing, (2, 2)), size(data))
+    end=#
 
     spectab = tab.SPECTRAL_WINDOW
     numchan::Int32 = spectab[:NUM_CHAN][1]
@@ -197,8 +123,33 @@ function loadms(msname::String, stations::String, corruptseed::Int64, tropseed::
     flag3dres = reshape(flag3d, 2, 2, size(flag[1])[2], :) # get nchan as 3rd dim and all rows as 4th dim
     flag3dresandperm = permutedims(flag3dres, (2,1,3,4))
 
+    # populate MeasurementSet    
+    measurementset = MeasurementSet{Float64}(msname, data3dresandperm, flag3dresandperm, flagrow, antenna1, 
+    antenna2, uvw, times, exposure, scanno, numchan, chanfreqvec, chanwidth, phasedir, pos)
+
+    @info("Load data from MS 🙆")
+    return measurementset
+end
+
+"""
+    readobsconfig(configfile::String)
+
+Read YAML configuration file with observation settings in a Dictionary.
+"""
+function readobsconfig(configfile::String)
+    obsconfig = YAML.load_file(configfile, dicttype=Dict{String,Any}) # load YAML config file
+
+    return obsconfig
+end
+
+"""
+    readstationinfo(stationfile::String; delim::String=",", ignorerepeated::Bool=false)
+
+Read additional information about stations from CSV file into a DataFrame.
+"""
+function readstationinfo(stationfile::String; delim::String=",", ignorerepeated::Bool=false)
     # read values from station info csv file
-    stationinfo = CSV.read(stations, DataFrame; delim=delim, ignorerepeated=ignorerepeated)
+    stationinfo = CSV.read(stationfile, DataFrame; delim=delim, ignorerepeated=ignorerepeated)
 
     # parse strings to complex values for gjones terms
     stationinfo.g_pol1_loc = map(x->parse(ComplexF32,x), stationinfo.g_pol1_loc)
@@ -212,10 +163,57 @@ function loadms(msname::String, stations::String, corruptseed::Int64, tropseed::
     stationinfo.d_pol1_scale = map(x->parse(ComplexF32,x), stationinfo.d_pol1_scale)
     stationinfo.d_pol2_scale = map(x->parse(ComplexF32,x), stationinfo.d_pol2_scale)
 
-    # parse strings t
+    # strip strings of superflous whitespaces
     stationinfo.pbmodel = map(strip, stationinfo.pbmodel)
     stationinfo.mount = map(strip, stationinfo.mount)
+    
+    return stationinfo
+end
 
+"""
+    readbandpassinfo(bandpassfile::String; delim::String=",", ignorerepeated::Bool=false)
+
+Read bandpass information from CSV file into a DataFrame.
+"""
+function readbandpassinfo(bandpassfile::String; delim::String=",", ignorerepeated::Bool=false)
+    bandpassinfo = CSV.read(bandpassfile, DataFrame; delim=",", ignorerepeated=false)
+
+    return bandpassinfo
+end
+
+"""
+    readalistv5(alistfile::String)
+
+Read in an alist v5 file generated by HOPS. 
+"""
+function readalistv5(alistfile::String)
+
+    # set header names
+    columns = "version,root_id,two,extent_no,duration,length,offset,expt_no,scan_id,procdate,year,timetag,scan_offset,source,baseline,quality,freq_code,polarization,lags,amp,snr,resid_phas,phase_snr,datatype,sbdelay,mbdelay,ambiguity,delay_rate,ref_elev,rem_elev,ref_az,rem_az,u,v,esdesp,epoch,ref_freq,total_phas,total_rate,total_mbdelay,total_sbresid,srch_cotime,noloss_cotime"
+    header = [string(sub) for sub in split(columns, ",")]
+
+    df = CSV.read(alistfile, DataFrame; header=header, comment="*", delim=" ", ignorerepeated=true)
+
+    return df
+end
+
+"""
+    readalistv6(alistfile::String)
+
+Read in an alist v6 file generated by HOPS. 
+"""
+function readalistv6(alistfile::String)
+
+    # set header names
+    columns = "version,root_id,two,extent_no,duration,length,offset,expt_no,scan_id,procdate,year,timetag,scan_offset,source,baseline,quality,freq_code,polarization,lags,amp,snr,resid_phas,phase_snr,datatype,sbdelay,mbdelay,ambiguity,delay_rate,ref_elev,rem_elev,ref_az,rem_az,u,v,esdesp,epoch,ref_freq,total_phas,total_rate,total_mbdelay,total_sbresid,srch_cotime,noloss_cotime,ra_hrs,dec_deg,resid_delay"
+    header = [string(sub) for sub in split(columns, ",")]
+
+    df = CSV.read(alistfile, DataFrame; header=header, comment="*", delim=" ", ignorerepeated=true)
+
+    return df
+end
+
+#=
     # generate some quantities to be available for all corrupting functions and them to the observation composite type
     rngcorrupt = Xoshiro(corruptseed)
     rngtrop = Xoshiro(tropseed)
@@ -224,7 +222,4 @@ function loadms(msname::String, stations::String, corruptseed::Int64, tropseed::
     observation = CjlObservation{Float64}(msname,data3dresandperm,flag3dresandperm,flagrow,antenna1,antenna2,uvw,times,exposure,scanno,numchan,chanfreqvec,
     chanwidth,phasedir,pos,stationinfo,tropwetonly,correff,tropattenuate,tropskynoise,tropmeandelays,tropturbulence,polframe,polmode,
     ptginterval,ptgscale,ptgmode,stationgainsmode,bandpassfile,rngcorrupt,rngtrop)
-
-    @info("Load data for processing 🙆")
-    return observation
-end
+=#

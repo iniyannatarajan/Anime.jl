@@ -1,88 +1,84 @@
 @testset "Plots" begin
-    y = YAML.load_file("data/config1.yaml", dicttype=Dict{String,Any}) # sample dict to test loadms()
+    obsconfig1 = readobsconfig("data/config1.yaml")
     h5file = "data/insmodel1.h5"
 
-    obs = loadms(y["msname"], y["stations"], Int(y["corruptseed"]), Int(y["troposphere"]["tropseed"]), y["troposphere"]["wetonly"], y["correff"], 
-    y["troposphere"]["attenuate"], y["troposphere"]["skynoise"], y["troposphere"]["meandelays"], y["troposphere"]["turbulence"], 
-    y["instrumentalpolarization"]["visibilityframe"], y["instrumentalpolarization"]["mode"], y["pointing"]["interval"], y["pointing"]["scale"], y["pointing"]["mode"], y["stationgains"]["mode"], 
-    y["bandpass"]["bandpassfile"], delim=",", ignorerepeated=false)
+    ms1 = readms(obsconfig1["msname"])
 
-    y2 = YAML.load_file("data/configuvf.yaml", dicttype=Dict{String,Any}) # sample dict to test loadms()
+    obsconfig2 = readobsconfig("data/configuvf.yaml")
     h5file2 = "data/insmodeluvf.h5"
 
-    obs2 = loadms(y2["msname"], y2["stations"], Int(y2["corruptseed"]), Int(y2["troposphere"]["tropseed"]), y2["troposphere"]["wetonly"], y2["correff"], 
-    y2["troposphere"]["attenuate"], y2["troposphere"]["skynoise"], y2["troposphere"]["meandelays"], y2["troposphere"]["turbulence"], 
-    y2["instrumentalpolarization"]["visibilityframe"], y2["instrumentalpolarization"]["mode"], y2["pointing"]["interval"], y["pointing"]["scale"], y2["pointing"]["mode"], y2["stationgains"]["mode"], 
-    y2["bandpass"]["bandpassfile"], delim=",", ignorerepeated=false)
+    ms2 = readms(obsconfig2["msname"])
 
-    @inferred plotuvcov(obs.uvw, obs.flagrow, obs.chanfreqvec)
+    stationinfo = readstationinfo(obsconfig1["stations"])
+
+    @inferred plotuvcov(ms1.uvw, ms1.flagrow, ms1.chanfreqvec)
     rm("test_uvcoverage.png")
 
-    @inferred plotvis(obs.uvw, obs.chanfreqvec, obs.flag, obs.data, obs.numchan, obs.times, plotphases=true, saveprefix="test")
+    @inferred plotvis(ms1.uvw, ms1.chanfreqvec, ms1.flag, ms1.data, ms1.numchan, ms1.times, plotphases=true, saveprefix="test")
     rm("test_visibilityphase_vs_baseline.png")
     rm("test_visibilityamplitude_vs_baseline.png")
     rm("test_visibilityphase_vs_time.png")
     rm("test_visibilityamplitude_vs_time.png")
 
-    @inferred plotstationgains(h5file, obs.scanno, obs.times, obs.exposure, obs.stationinfo.station)
+    @inferred plotstationgains(h5file, ms1.scanno, ms1.times, ms1.exposure, stationinfo.station)
     rm("StationGains_vs_time.png")
 
-    @inferred plotstationgains(h5file2, obs2.scanno, obs2.times, obs2.exposure, obs2.stationinfo.station)
+    @inferred plotstationgains(h5file2, ms2.scanno, ms2.times, ms2.exposure, stationinfo.station)
     rm("StationGains_vs_time.png")
 
-    @inferred plotbandpass(h5file, obs.stationinfo.station, obs.chanfreqvec)
+    @inferred plotbandpass(h5file, stationinfo.station, ms1.chanfreqvec)
     rm("BandpassGains_vs_frequency.png")
 
-    @inferred plotpointingerrors(h5file, obs.scanno, obs.stationinfo.station)
+    @inferred plotpointingerrors(h5file, ms1.scanno, stationinfo.station)
     rm("Pointing_offsets_amplitude_errors_vs_time.png")
 
     # test elevation angle plotting
-    @inferred plotelevationangle(h5file, obs.scanno, obs.times, obs.stationinfo.station)
+    @inferred plotelevationangle(h5file, ms1.scanno, ms1.times, stationinfo.station)
     rm("ElevationAngle_vs_time.png")
 
     fid = h5open("testing.h5", "w")
     close(fid)
-    @test_throws KeyError plotelevationangle("testing.h5", obs.scanno, obs.times, obs.stationinfo.station)
+    @test_throws KeyError plotelevationangle("testing.h5", ms1.scanno, ms1.times, stationinfo.station)
     rm("testing.h5")
 
-    st = vcat(obs.stationinfo.station, obs.stationinfo.station)
-    @test_throws BoundsError plotelevationangle(h5file, obs.scanno, obs.times, st)
+    st = vcat(stationinfo.station, stationinfo.station)
+    @test_throws BoundsError plotelevationangle(h5file, ms1.scanno, ms1.times, st)
 
-    ts = deepcopy(obs.times)
+    ts = deepcopy(ms1.times)
     push!(ts, ts[end]+(ts[end]-ts[begin]))
-    @test_throws DimensionMismatch plotelevationangle(h5file, obs.scanno, ts, obs.stationinfo.station)
+    @test_throws DimensionMismatch plotelevationangle(h5file, ms1.scanno, ts, stationinfo.station)
 
     # test parallactic angle plotting
-    @inferred plotparallacticangle(h5file, obs.scanno, obs.times, obs.stationinfo.station)
+    @inferred plotparallacticangle(h5file, ms1.scanno, ms1.times, stationinfo.station)
     rm("ParallacticAngle_vs_time.png")
 
     fid = h5open("testing.h5", "w")
     close(fid)
-    @test_throws KeyError plotparallacticangle("testing.h5", obs.scanno, obs.times, obs.stationinfo.station)
+    @test_throws KeyError plotparallacticangle("testing.h5", ms1.scanno, ms1.times, stationinfo.station)
     rm("testing.h5")
 
-    st = vcat(obs.stationinfo.station, obs.stationinfo.station)
-    @test_throws BoundsError plotparallacticangle(h5file, obs.scanno, obs.times, st)
+    st = vcat(stationinfo.station, stationinfo.station)
+    @test_throws BoundsError plotparallacticangle(h5file, ms1.scanno, ms1.times, st)
 
-    ts = deepcopy(obs.times)
+    ts = deepcopy(ms1.times)
     push!(ts, ts[end]+(ts[end]-ts[begin]))
-    @test_throws DimensionMismatch plotparallacticangle(h5file, obs.scanno, ts, obs.stationinfo.station)
+    @test_throws DimensionMismatch plotparallacticangle(h5file, ms1.scanno, ts, stationinfo.station)
 
     # test d-terms plotting
-    @inferred plotdterms(h5file, obs.stationinfo.station, obs.chanfreqvec)
+    @inferred plotdterms(h5file, stationinfo.station, ms1.chanfreqvec)
     rm("Dterms_vs_frequency.png")
 
     # test transmission plotting
-    @inferred plottransmission(h5file, obs.stationinfo.station, obs.times, obs.chanfreqvec)
+    @inferred plottransmission(h5file, stationinfo.station, ms1.times, ms1.chanfreqvec)
     for file in glob("Transmission_*.png")
         rm(file)
     end
 
-    @inferred plottransmission(h5file2, obs2.stationinfo.station, obs2.times, obs2.chanfreqvec)
+    @inferred plottransmission(h5file2, stationinfo.station, ms2.times, ms2.chanfreqvec)
     for file in glob("Transmission_*.png")
         rm(file)
     end
 
-    @inferred plotmeandelays(h5file, obs.stationinfo.station, obs.times, obs.chanfreqvec)
+    @inferred plotmeandelays(h5file, stationinfo.station, ms1.times, ms1.chanfreqvec)
     rm("MeanDelays_vs_time.png")
 end
