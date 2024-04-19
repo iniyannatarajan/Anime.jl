@@ -14,33 +14,36 @@ using .Anime
 
 # ## In manual mode
 
-# In manual mode, the function [`msfromconfig`](@ref Anime.msfromconfig) is used to create an MS from scratch, with the observation and site parameters
+# In manual mode, the function [`createmsfromconfig`](@ref Anime.createmsfromconfig) is used to create an MS from scratch, with the observation and site parameters
 # passed as arguments. The `casatools` python library is used under the hood.
-msname = "eht.ms"
-mode = "manual"
-stations = joinpath(relativepath, "inputs", "eht_2017.stations")
-casaanttemplate = joinpath(relativepath, "inputs", "antenna_table.template")
-spw_centrefreq = [229.0e9]
-spw_bw = [2.0e9]
-spw_channels = [32]
-sourcedict = Dict{String, Any}("M87" => Dict{String, String}("RA"=>"12h30m49.42", "Dec"=>"+12.23.28.04", "epoch"=>"J2000"))
-starttime = "UTC,2021/04/28/00:00:00.00"
-exposure = 1.0
-scans = 2
-scanlengths = [900.0, 600.0]
-scanlag = 300.0
-autocorr = false
-telescopename = "VLBA"
-feed = "perfect R L"
-shadowlimit = 1e-6
-elevationlimit = "10deg"
-stokes = "RR RL LR LL"
+obsconfig = Dict()
+obsconfig["msname"] = "eht.ms"
+obsconfig["mode"] = "manual"
+obsconfig["stations"] = joinpath(relativepath, "inputs", "eht_2017.stations")
+obsconfig["casaanttemplate"] = joinpath(relativepath, "inputs", "antenna_table.template")
+obsconfig["spw"] = Dict()
+obsconfig["spw"]["centrefreq"] = [229.0e9]
+obsconfig["spw"]["bandwidth"] = [2.0e9]
+obsconfig["spw"]["channels"] = [32]
+obsconfig["source"] = Dict{String, Any}("M87" => Dict{String, String}("RA"=>"12h30m49.42", "Dec"=>"+12.23.28.04", "epoch"=>"J2000"))
+obsconfig["starttime"] = "UTC,2021/04/28/00:00:00.00"
+obsconfig["exposure"] = 1.0
+obsconfig["scans"] = 2
+obsconfig["scanlengths"] = [900.0, 600.0]
+obsconfig["scanlag"] = 300.0
+obsconfig["autocorr"] = false
+obsconfig["telescopename"] = "VLBA"
+obsconfig["feed"] = "perfect R L"
+obsconfig["shadowlimit"] = 1e-6
+obsconfig["elevationlimit"] = "10deg"
+obsconfig["stokes"] = "RR RL LR LL"
+
 delim = ","
 ignorerepeated = false
 
-msfromconfig(msname, mode, stations, casaanttemplate, spw_centrefreq, spw_bw, spw_channels, sourcedict, starttime, exposure, scans, scanlengths, scanlag;
- autocorr=autocorr, telescopename=telescopename, feed=feed, shadowlimit=shadowlimit, elevationlimit=elevationlimit, stokes=stokes, 
- delim=delim, ignorerepeated=ignorerepeated)
+stationinfo = readstationinfo(obsconfig["stations"], delim=",", ignorerepeated=false) # read station info file
+
+createmsfromconfig(obsconfig, stationinfo)
 
 # The above step creates a fully functional MS that can be used for further processing.
 
@@ -52,12 +55,12 @@ rm("ANTENNA_eht_2017", force=true, recursive=true) # hide
 # ## In uvfits mode
 
 # This method accepts an existing uvfits file (e.g. output by `eht-imaging`) and uses `CASA` to convert between the two formats.
-# This is done via [`msfromuvfits`](@ref Anime.msfromuvfits):
+# This is done via [`createmsfromuvfits`](@ref Anime.createmsfromuvfits):
 uvfits = joinpath(relativepath, "inputs", "uvfitsfiles", "hops_lo_3601_M87+zbl-dtcal_selfcal.uvfits")
 msname = "eht.ms"
 mode = "uvfits"
 
-msfromuvfits(uvfits, msname, mode)
+createmsfromuvfits(uvfits, msname, mode)
 
 # It is the responsibility of the user to ensure that the input uvfits file contains all the necessary information that `CASA` would need to create an MS.
 # `eht-imaging` output files are consistent with these specifications.
@@ -67,7 +70,7 @@ msname = "eht.ms"
 uvfits = "eht.uvfits"
 datacolumn = "data"
 
-mstouvfits(msname, uvfits, datacolumn)
+createuvfitsfromms(msname, uvfits, datacolumn)
 
 rm("eht.ms", force=true, recursive=true) # hide
 
