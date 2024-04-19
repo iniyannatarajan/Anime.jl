@@ -39,7 +39,6 @@ Pages = [
 
 ### References
 [^RJ2020]: Roelofs F., Janssen M., Natarajan I. et al. SYMBA: An end-to-end VLBI synthetic data generation pipeline (2020) [A&A](https://www.aanda.org/articles/aa/full_html/2020/04/aa36622-19/aa36622-19.html)
-[^AC2018]: Chael A. et al., Interferometric Imaging Directly with Closure Phases and Closure Amplitudes (2018) [ApJ](https://iopscience.iop.org/article/10.3847/1538-4357/aab6a8)
 [^IN2022]: Natarajan I. et al. MeqSilhouette v2: spectrally resolved polarimetric synthetic data generation for EHT (2022) [MNRAS](https://academic.oup.com/mnras/article/512/1/490/6537429)
 [^TB2017]: Blecher T. et al. MEQSILHOUETTE: a mm-VLBI observation and signal corruption simulator (2017) [MNRAS](https://academic.oup.com/mnras/article/464/1/143/2194682)
 [^MJ2019]: Janssen M. et al. rPICARD: A CASA-based calibration pipeline for VLBI data (2019) [A&A](https://www.aanda.org/articles/aa/full_html/2019/06/aa35181-19/aa35181-19.html)
