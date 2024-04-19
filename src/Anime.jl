@@ -8,9 +8,7 @@ module Anime
 using CairoMakie, ColorSchemes, LaTeXStrings
 using Tables
 using Logging
-using CSV
 using HDF5
-using YAML
 using Random
 using Statistics
 using SpecialFunctions
@@ -18,7 +16,6 @@ using DataFrames
 using Distributions
 using DocStringExtensions
 using LinearAlgebra
-using Casacore.Tables: Tables as CCTables, Table as CCTable
 using PythonCall
 
 quanta = pyimport("casatools" => "quanta")
@@ -32,7 +29,7 @@ tb = table()
 me = measures()
 sm = simulator()
 
-include("storageutils/storageutils.jl")
+include("io/io.jl")
 include("coherency/coherency.jl")
 include("atmosphericmodels/atmosphericmodels.jl")
 include("polarizationmodels/polarizationmodels.jl")

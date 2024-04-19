@@ -1,7 +1,5 @@
 export run_wsclean
 
-tb = table()
-
 """
     copymodeltodata(msname::String)
 

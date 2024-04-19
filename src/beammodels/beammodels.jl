@@ -40,16 +40,17 @@ end=#
 
 """
     pointing!(data::Array{Complex{Float32},4}, stationinfo::DataFrame, scanno::Vector{Int32}, chanfreqvec::Vector{Float64}, 
-    ptgint::Float64, ptgscale::Float64, ptgmode::String, exposure::Float64, times::Vector{Float64}, rngcorrupt::AbstractRNG, antenna1::Vector{Int32}, 
+    ptgint::Float64, ptgscale::Float64, ptgmode::String, exposure::Float64, times::Vector{Float64}, corruptseed::Int, antenna1::Vector{Int32}, 
     antenna2::Vector{Int32}, numchan::Int64; α=1.0, h5file::String="")
 
-Compute pointing model and apply to data. The actual numerical values are serialized in HDF5 format.
+Compute pointing model and apply to data; write model to HDF5 file.
 """
 function pointing!(data::Array{Complex{Float32},4}, stationinfo::DataFrame, scanno::Vector{Int32}, chanfreqvec::Vector{Float64}, 
-    ptgint::Float64, ptgscale::Float64, ptgmode::String, exposure::Float64, times::Vector{Float64}, rngcorrupt::AbstractRNG, antenna1::Vector{Int32}, 
+    ptgint::Float64, ptgscale::Float64, ptgmode::String, exposure::Float64, times::Vector{Float64}, corruptseed::Int, antenna1::Vector{Int32}, 
     antenna2::Vector{Int32}, numchan::Int64; α=1.0, h5file::String="")
     @info("Computing pointing errors...")
-
+    # initialize RNG with seed
+    rngcorrupt = Xoshiro(corruptseed)
     nant = size(stationinfo)[1]
  
     # open h5 file for writing
@@ -128,15 +129,15 @@ function pointing!(data::Array{Complex{Float32},4}, stationinfo::DataFrame, scan
         close(fid)
     end
 
-    @info("Apply pointing errors to visibilities... 🙆")
+    @info("Compute and apply pointing model 🙆")
 end
 
 """
-    pointing!(obs::CjlObservation; h5file::String="")
+    pointing!(ms::MeasurementSet, stationinfo::DataFrame, obsconfig::Dict; h5file::String="")
 
-Shorthand for pointing model function when CjlObservation struct object is available.
+Alias with fewer arguments for use in pipelines.
 """
-function pointing!(obs::CjlObservation; h5file::String="")
-    pointing!(obs.data, obs.stationinfo, obs.scanno, obs.chanfreqvec, obs.ptginterval, obs.ptgscale, obs.ptgmode, obs.exposure, obs.times, obs.rngcorrupt,
-    obs.antenna1, obs.antenna2, obs.numchan, h5file=h5file)
+function pointing!(ms::MeasurementSet, stationinfo::DataFrame, obsconfig::Dict; h5file::String="")
+    pointing!(ms.data, stationinfo, ms.scanno, ms.chanfreqvec, obsconfig["pointing"]["interval"], obsconfig["pointing"]["scale"],
+    obsconfig["pointing"]["mode"], ms.exposure, ms.times, obsconfig["corruptseed"], ms.antenna1, ms.antenna2, ms.numchan, h5file=h5file)
 end

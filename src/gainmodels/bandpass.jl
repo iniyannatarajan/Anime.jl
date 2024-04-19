@@ -3,26 +3,27 @@ export bandpass!
 using Interpolations
 
 """
-    bandpass!(data::Array{Complex{Float32},4}, bandpassfile::String, stationinfo::DataFrame, rngcorrupt::AbstractRNG,
+    bandpass!(data::Array{Complex{Float32},4}, stationinfo::DataFrame, bandpassinfo::DataFrame, corruptseed::Int,
     antenna1::Vector{Int32}, antenna2::Vector{Int32}, numchan::Int64, chanfreqvec::Vector{Float64}; h5file::String="")
 
-Compute the complex bandpass model and apply to data. The actual numerical values are serialized in HDF5 format.
+Compute the complex bandpass model and apply to data; write model to HDF5 file.
 """
-function bandpass!(data::Array{Complex{Float32},4}, bandpassfile::String, stationinfo::DataFrame, rngcorrupt::AbstractRNG,
+function bandpass!(data::Array{Complex{Float32},4}, stationinfo::DataFrame, bandpassinfo::DataFrame, corruptseed::Int,
     antenna1::Vector{Int32}, antenna2::Vector{Int32}, numchan::Int64, chanfreqvec::Vector{Float64}; h5file::String="")
-    # read in the station bandpass file
-    bpinfo = CSV.read(bandpassfile, DataFrame; delim=",", ignorerepeated=false)
+    @info("Computing bandpass...")
+    #initialize RNG with seed
+    rngcorrupt = Xoshiro(corruptseed)
 
     # create empty array of dims 2 x 2 x nchannels x nant
     bjonesmatrices = zeros(eltype(data), 2, 2, numchan, size(stationinfo)[1]) # 2 x 2 x ntimes x nant
 
     for station in eachindex(stationinfo.station)
 	    # read in bandpass info from the input bandpass file
-	    freqvec = bpinfo[(bpinfo[!,:station].==stationinfo.station[station]),:freq_Hz].*1e9
-	    pol1amp = bpinfo[(bpinfo[!,:station].==stationinfo.station[station]),:pol1_amp]
-	    pol2amp = bpinfo[(bpinfo[!,:station].==stationinfo.station[station]),:pol1_amp]
-	    pol1phaserange = Float32(bpinfo[(bpinfo[!,:station].==stationinfo.station[station]),:pol1_phaserange_deg][1]) # read only the first value
-	    pol2phaserange = Float32(bpinfo[(bpinfo[!,:station].==stationinfo.station[station]),:pol2_phaserange_deg][1]) # read only the first value
+	    freqvec = bandpassinfo[(bandpassinfo[!,:station].==stationinfo.station[station]),:freq_Hz].*1e9
+	    pol1amp = bandpassinfo[(bandpassinfo[!,:station].==stationinfo.station[station]),:pol1_amp]
+	    pol2amp = bandpassinfo[(bandpassinfo[!,:station].==stationinfo.station[station]),:pol1_amp]
+	    pol1phaserange = Float32(bandpassinfo[(bandpassinfo[!,:station].==stationinfo.station[station]),:pol1_phaserange_deg][1]) # read only the first value
+	    pol2phaserange = Float32(bandpassinfo[(bandpassinfo[!,:station].==stationinfo.station[station]),:pol2_phaserange_deg][1]) # read only the first value
 
         # throw a warning if extrapolation is needed, by comparing freqvec and chanfreqvec
 	    if !(first(freqvec) <= first(chanfreqvec) <= last(freqvec)) || !(first(freqvec) <= last(chanfreqvec) <= last(freqvec))
@@ -68,11 +69,11 @@ function bandpass!(data::Array{Complex{Float32},4}, bandpassfile::String, statio
 end
 
 """
-    bandpass!(obs::CjlObservation; h5file::String="")
+    bandpass!(ms::MeasurementSet, stationinfo::DataFrame, bandpassinfo::DataFrame, obsconfig::Dict; h5file::String="")
 
-Shorthand for bandpass function when CjlObservation struct object is available.
+Alias for use in pipelines.
 """
-function bandpass!(obs::CjlObservation; h5file::String="")
-    bandpass!(obs.data, obs.bandpassfile, obs.stationinfo, obs.rngcorrupt, obs.antenna1, obs.antenna2,
-    obs.numchan, obs.chanfreqvec, h5file=h5file)
+function bandpass!(ms::MeasurementSet, stationinfo::DataFrame, bandpassinfo::DataFrame, obsconfig::Dict; h5file::String="")
+    bandpass!(ms.data, stationinfo, bandpassinfo, obsconfig["corruptseed"], ms.antenna1, ms.antenna2,
+    ms.numchan, ms.chanfreqvec, h5file=h5file)
 end

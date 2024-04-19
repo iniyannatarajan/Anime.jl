@@ -1,13 +1,19 @@
 export thermalnoise!
 
 """
-    thermalnoise!(data::Array{Complex{Float32},4}, times::Vector{Float64}, antenna1::Vector{Int32}, antenna2::Vector{Int32}, correff::Float64,
-    exposure::Float64, chanwidth::Float64, rngcorrupt::AbstractRNG, sefd::Vector{Float64}; h5file::String="", noisefile::String="")
+    thermalnoise!(data::Array{Complex{Float32},4}, times::Vector{Float64}, antenna1::Vector{Int32}, antenna2::Vector{Int32},
+    correff::Float64, exposure::Float64, chanwidth::Float64, corruptseed::Int, sefd::Vector{Float64}; h5file::String="",
+    noisefile::String="")
 
 Compute per-baseline thermal noise using radiometer equation and apply to data. The actual numerical values are serialized in HDF5 format.
 """
-function thermalnoise!(data::Array{Complex{Float32},4}, times::Vector{Float64}, antenna1::Vector{Int32}, antenna2::Vector{Int32}, correff::Float64,
-    exposure::Float64, chanwidth::Float64, rngcorrupt::AbstractRNG, sefd::Vector{Float64}; h5file::String="", noisefile::String="")
+function thermalnoise!(data::Array{Complex{Float32},4}, times::Vector{Float64}, antenna1::Vector{Int32}, antenna2::Vector{Int32},
+    correff::Float64, exposure::Float64, chanwidth::Float64, corruptseed::Int, sefd::Vector{Float64}; h5file::String="",
+    noisefile::String="")
+    @info("Computing thermal noise...")
+    #initialize RNG with seed
+    rngcorrupt = Xoshiro(corruptseed)
+
     # get unique times
     uniqtimes = unique(times)
     ntimes = size(uniqtimes)[1]
@@ -74,11 +80,11 @@ function thermalnoise!(data::Array{Complex{Float32},4}, times::Vector{Float64}, 
 end
 
 """
-    thermalnoise!(obs::CjlObservation; h5file::String="", noisefile::String="")
+    thermalnoise!(ms::MeasurementSet, stationinfo::DataFrame, obsconfig::Dict; h5file::String="", noisefile::String="")
 
-Shorthand for thermal noise function when CjlObservation struct object is available.
+Alias for use in pipelines.
 """
-function thermalnoise!(obs::CjlObservation; h5file::String="", noisefile::String="")
-    thermalnoise!(obs.data, obs.times, obs.antenna1, obs.antenna2, obs.correff, obs.exposure, obs.chanwidth,
-     obs.rngcorrupt, obs.stationinfo.sefd_Jy, h5file=h5file, noisefile=noisefile)
+function thermalnoise!(ms::MeasurementSet, stationinfo::DataFrame, obsconfig::Dict; h5file::String="", noisefile::String="")
+    thermalnoise!(ms.data, ms.times, ms.antenna1, ms.antenna2, obsconfig["correff"], ms.exposure, ms.chanwidth,
+     obsconfig["corruptseed"], stationinfo.sefd_Jy, h5file=h5file, noisefile=noisefile)
 end
