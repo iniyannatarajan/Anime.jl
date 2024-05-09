@@ -13,7 +13,7 @@ The source code of `Anime` can be found [here](https://github.com/iniyannataraja
 
 The python packages `casatools`, `casatasks`, and `casadata` are required to handle the creation of [Measurement Sets](https://casa.nrao.edu/Memos/229.html) (MS) and conversion between uvfits and MS formats. These are automatically installed when `Anime` is installed via `Pkg`.
 
-> **Note:** For Mac users, the `casatools` package must be installed using the [following workaround ](https://casadocs.readthedocs.io/en/stable/notebooks/introduction.html#Modular-Packages). This will be a tricky issue to navigate without downgrading the `CASA` version that is currently used in `Anime`. More discussion on this issue can be found [here](https://github.com/iniyannatarajan/Anime.jl/issues/26).
+> **Note:** For Mac users, the `casatools` package must be installed using the [following workaround ](https://casadocs.readthedocs.io/en/stable/notebooks/introduction.html#Modular-Packages). This will be a tricky issue to navigate without downgrading the `CASA` version that is currently used in `Anime`. More discussion on this issue can be found [here](https://github.com/iniyannatarajan/Anime.jl/issues/26). If installing `Anime` from source, setting `casatools` and `casatasks` versions to 6.5.1.23 in `CondaPkg.toml` could help in successful installation on Mac.
 
 ## External Software
 
