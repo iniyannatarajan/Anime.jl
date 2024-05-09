@@ -3,11 +3,16 @@
 # The primary goal of `Anime` is to generate instrument models tailored to specific observations. The models are optionally stored in HDF5 format.
 # Basic plotting functions are also provided to visualize the models. The following example demonstrates how to compute and visualize the models.
 
-# All functions that follow require loading the following modules:
-relativepath = "../../../"
 
-include(joinpath(relativepath, "src", "Anime.jl"))
-using .Anime
+# Load necessary modules:
+# ```julia
+# using Anime
+# ```
+
+relativepath = "../../../" # hide
+
+include(joinpath(relativepath, "src", "Anime.jl")) # hide
+using .Anime # hide
 using HDF5
 using CairoMakie
 

@@ -1,16 +1,31 @@
+# ### A note on generating tutorial outputs
+# All the tutorial outputs along with the entire documentation can be generated locally from the source code as shown below:
+# ```bash
+# $ git clone https://github.com/iniyannatarajan/Anime.jl.git
+# $ cd Anime.jl
+# $ julia --project=docs/
+# (docs) pkg> instantiate
+# (docs) pkg> dev .
+# julia> include("docs/make.jl")
+# ```
+# The outputs are generated in the `docs/build` directory.
+
 # # Creating data sets
 
 # `Anime` uses the `CASA` Measurement Set (MS) data format as on-disk storage format from which data are read and written back to.
 # Conversion to and from the more traditional uvfits format is also supported. While there is no standard format for storing VLBI data, support for a handful of
 # commonly used data formats will be made available.
 
-# We load the necessary modules first.
+# Assuming `Anime` is installed and the necessary dependencies are met, the following code snippets demonstrate how to create an MS from scratch and from an existing uvfits file.
+# We load `Anime` first.
+# ```julia
+# using Anime
+# ```
 
-relativepath = "../../../"
+relativepath = "../../../" # hide
 
-include(joinpath(relativepath, "src", "Anime.jl"))
-using .Anime
-#using Anime
+include(joinpath(relativepath, "src", "Anime.jl")) # hide
+using .Anime # hide
 
 # ## In manual mode
 

@@ -3,12 +3,15 @@
 # `Anime` stores various arrays read from a Measurement Set to a custom struct (see [`MeasurementSet`](@ref Anime.MeasurementSet)).
 # All relevant data are read from the MS into this struct using [`readms`](@ref Anime.readms).
 
-# Load necessary modules
+# Load necessary modules:
+# ```julia
+# using Anime
+# ```
 
-relativepath = "../../../"
+relativepath = "../../../" # hide
 
-include(joinpath(relativepath, "src", "Anime.jl"))
-using .Anime
+include(joinpath(relativepath, "src", "Anime.jl")) # hide
+using .Anime # hide
 
 # For this example, we will read an MS from the `test/data/` directory. 
 msname = joinpath(relativepath, "test", "data", "eht1.ms")

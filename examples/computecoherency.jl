@@ -25,6 +25,7 @@
 # `WSClean`:
 
 # ```julia
+# using Anime
 # msname = "../../../test/data/eht.ms"
 # skymodel = "../../../test/data/grmhdpol"
 # polarized = true
