@@ -9,7 +9,11 @@ or by entering package mode by typing `]` in the Julia REPL and then typing
 ```julia
 add Anime
 ```
-The source code of `Anime` can be found [here](https://github.com/iniyannatarajan/Anime.jl).
+The latest "dev" version of `Anime` can be installed by typing
+```julia
+add https://github.com/iniyannatarajan/Anime.jl
+```
+More ways of installing packages can be found [here](https://pkgdocs.julialang.org/v1/managing-packages/#Adding-packages).
 
 The python packages `casatools`, `casatasks`, and `casadata` are required to handle the creation of [Measurement Sets](https://casa.nrao.edu/Memos/229.html) (MS) and conversion between uvfits and MS formats. These are automatically installed when `Anime` is installed via `Pkg`.
 
