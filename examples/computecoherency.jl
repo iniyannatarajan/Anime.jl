@@ -26,8 +26,8 @@
 
 # ```julia
 # using Anime
-# msname = "../../../test/data/eht.ms"
-# skymodel = "../../../test/data/grmhdpol"
+# msname = "eht.ms" # path to existing Measurement Set
+# skymodel = "grmhdpol" # path to existing sky model; samples are available in the `inputs/` directory in the source code
 # polarized = true
 # channelgroups = 1
 # oversamplingfactor = 8191

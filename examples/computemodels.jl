@@ -9,12 +9,15 @@
 # using Anime
 # ```
 
-relativepath = "../../../" # hide
+relativepath = dirname(dirname(dirname(@__DIR__))) # hide
 
 include(joinpath(relativepath, "src", "Anime.jl")) # hide
 using .Anime # hide
 using HDF5
 using CairoMakie
+
+# In all the following examples, replace `relativepath` with the path to the source code of `Anime.jl` which contains sample input files
+# under `inputs/` and sample pre-created data sets and instrument models under `test/`.
 
 # We will use two data sets to illustrate instrument model generation -- a single-channel data set
 # and a multi-frequency data set. We first prepare config Dicts for use with the two data sets.
