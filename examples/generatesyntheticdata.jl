@@ -5,8 +5,9 @@
 # and writing gain tables and making diagnostic plots.
 
 # !!! note 
-#     Some steps listed here involve the use of external software such as `WSClean` and hence this script is provided as a "passive" example that is not 
-#     executed in the deployed documentation. It can be run by the user on their machine to generate synthetic data.
+#     Some steps listed here involve the use of external software such as `WSClean` and hence this script is provided as a "passive"
+#     example that is not executed in the deployed documentation. It can be run by the user on their machine to generate synthetic data
+#     if `WSClean` is pre-installed.
 
 # Import the necessary modules
 # ```julia

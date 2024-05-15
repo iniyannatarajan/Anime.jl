@@ -8,12 +8,13 @@
 # using Anime
 # ```
 
-relativepath = "../../../" # hide
+relativepath = dirname(dirname(dirname(@__DIR__))) # hide
 
 include(joinpath(relativepath, "src", "Anime.jl")) # hide
 using .Anime # hide
 
-# For this example, we will read an MS from the `test/data/` directory. 
+# For this example, we will read an MS from the `test/data/` directory. In the following, replace `relativepath` with the
+# path to the source code of `Anime.jl` which contains sample MSes under `test/data/`.
 msname = joinpath(relativepath, "test", "data", "eht1.ms")
 
 ms = readms(msname)

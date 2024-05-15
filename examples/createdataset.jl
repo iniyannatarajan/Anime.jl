@@ -13,8 +13,8 @@
 # # Creating data sets
 
 # `Anime` uses the `CASA` Measurement Set (MS) data format as on-disk storage format from which data are read and written back to.
-# Conversion to and from the more traditional uvfits format is also supported. While there is no standard format for storing VLBI data, support for a handful of
-# commonly used data formats will be made available.
+# Conversion to and from the more traditional uvfits format is also supported. While there is no standard modern data format yet
+# for storing VLBI data, support for a handful of commonly used data formats will be made available.
 
 # Assuming `Anime` is installed and the necessary dependencies are met, the following code snippets demonstrate how to create an MS from scratch and from an existing uvfits file.
 # We load `Anime` first.
@@ -22,15 +22,17 @@
 # using Anime
 # ```
 
-relativepath = "../../../" # hide
+relativepath = dirname(dirname(dirname(@__DIR__))) # hide
 
 include(joinpath(relativepath, "src", "Anime.jl")) # hide
 using .Anime # hide
 
 # ## In manual mode
 
-# In manual mode, the function [`createmsfromconfig`](@ref Anime.createmsfromconfig) is used to create an MS from scratch, with the observation and site parameters
-# passed as arguments. The `casatools` python library is used under the hood.
+# In manual mode, the function [`createmsfromconfig`](@ref Anime.createmsfromconfig) is used to create an MS from scratch,
+# with the observation and site parameters passed as arguments. The `casatools` python library is used under the hood.
+# In the following, replace `relativepath` with the path to the source code of `Anime.jl` which contains sample input files
+# under `inputs/`.
 obsconfig = Dict()
 obsconfig["msname"] = "eht.ms"
 obsconfig["mode"] = "manual"
@@ -70,7 +72,9 @@ rm("ANTENNA_eht_2017", force=true, recursive=true) # hide
 # ## In uvfits mode
 
 # This method accepts an existing uvfits file (e.g. output by `eht-imaging`) and uses `CASA` to convert between the two formats.
-# This is done via [`createmsfromuvfits`](@ref Anime.createmsfromuvfits):
+# This is done via [`createmsfromuvfits`](@ref Anime.createmsfromuvfits).
+# As before, replace `relativepath` with the path to the source code of `Anime.jl` which contains sample input files
+# under `inputs/`:
 uvfits = joinpath(relativepath, "inputs", "uvfitsfiles", "hops_lo_3601_M87+zbl-dtcal_selfcal.uvfits")
 msname = "eht.ms"
 mode = "uvfits"
@@ -81,7 +85,7 @@ createmsfromuvfits(uvfits, msname, mode)
 # `eht-imaging` output files are consistent with these specifications.
 
 # A helper function to convert an MS back to uvfits format is also provided:
-msname = "eht.ms"
+msname = "eht.ms" # the MS we just created above
 uvfits = "eht.uvfits"
 datacolumn = "data"
 
