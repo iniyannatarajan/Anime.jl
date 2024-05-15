@@ -125,8 +125,10 @@ function createmsfromuvfits(uvfits::String, msname::String, mscreationmode::Stri
        end
     end
 
+    @info("Converting $uvfits to $msname...")
     # convert uvfits to ms
     importuvfits(fitsfile=uvfits, vis=msname)
+    @info("Conversion complete! 🎉")
 
     #= # compare ANTENNA table in ms with stations file
     df = CSV.read(stations, DataFrame; delim=delim, ignorerepeated=ignorerepeated)

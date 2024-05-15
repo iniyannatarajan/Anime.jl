@@ -105,7 +105,10 @@
 # obsconfig["instrumentalpolarization"]["enable"] && instrumentalpolarization!(ms, stationinfo, obsconfig, h5file=h5file)
 # obsconfig["pointing"]["enable"] && pointing!(ms, stationinfo, obsconfig, h5file=h5file)
 # obsconfig["stationgains"]["enable"] && stationgains!(ms, stationinfo, obsconfig, h5file=h5file)
-# obsconfig["bandpass"]["enable"] && bandpassinfo = readbandpassinfo(obsconfig["bandpass"]["bandpassfile"])
+# if obsconfig["bandpass"]["enable"]
+#     bandpassinfo = readbandpassinfo(obsconfig["bandpass"]["bandpassfile"])
+#     bandpass!(ms, stationinfo, obsconfig, bandpassinfo, h5file=h5file)
+# end
 # obsconfig["thermalnoise"]["enable"] && thermalnoise!(ms, stationinfo, obsconfig, h5file=h5file)
 # ```
 
