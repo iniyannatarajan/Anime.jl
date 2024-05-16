@@ -21,6 +21,9 @@
 # ```julia
 # using Anime
 # ```
+# The python `casatasks` and `casatools` modules can sometimes refuse to load, raising a segmentation fault.
+# These modules are necessary for synthetic data generation from scratch. In such cases, an alternative approach is to include the module
+# directly by typing `include("path/to/Anime.jl/src/Anime.jl")` in the REPL. This will load the module without the need to call `using Anime`.
 
 relativepath = dirname(dirname(dirname(@__DIR__))) # hide
 
