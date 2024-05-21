@@ -65,20 +65,21 @@ In pipeline mode, no user interaction is required to generate instrument models 
 ```julia
 # Example synthetic data generation with Anime
 using Anime
-msfromuvfits("eht.uvfits", "eht.ms", "uvfits") # generate MS from UVFITS
+createmsfromuvfits("eht.uvfits", "eht.ms", "uvfits") # generate MS from UVFITS
 run_wsclean("eht.ms", "polring", true, 1, 8191) # compute source coherency
-# load data and observation parameters into Observation struct
-obs = loadms("eht.ms", "eht.stations", 42, 12345, false, 0.88, false, true,
-             true, true, "sky", "gp", 5.0, 100.0, "gp", "gp", "eht.bp")
+obs = readms("eht.ms") # load MS into memory
+stationinfo = readstationinfo("eht.stations") # load CSV file containing station and site information
+obsconfig = readobsconfig("config.yaml") # load YAML file with observation schedule information
 # compute instrument models
 h5file = "models.h5"
-troposphere!(obs, h5file)
-instrumentalpolarization!(obs, h5file=h5file)
-pointing!(obs, h5file=h5file)
-stationgains!(obs, h5file=h5file)
-bandpass!(obs, h5file=h5file)
-thermalnoise!(obs, h5file=h5file)
-postprocessms(obs, h5file=h5file) # write changes to disk
+troposphere!(obs, stationinfo, obsconfig, h5file)
+instrumentalpolarization!(obs, stationinfo, obsconfig, h5file=h5file)
+pointing!(obs, stationinfo, obsconfig, h5file=h5file)
+stationgains!(obs, stationinfo, obsconfig, h5file=h5file)
+bpinfo = readbandpassinfo("eht.bandpass") # load CSV file with bandpass gain information at representative frequencies
+bandpass!(obs, stationinfo, obsconfig, bpinfo, h5file=h5file)
+thermalnoise!(obs, stationinfo, obsconfig, h5file=h5file)
+writems(obs, h5file=h5file) # write changes to disk
 ```
 ![Amplitudes of the four polarization products with instrument models applied versus the baseline length between pairs of stations.](datavis_visampvspbs.png)
 
